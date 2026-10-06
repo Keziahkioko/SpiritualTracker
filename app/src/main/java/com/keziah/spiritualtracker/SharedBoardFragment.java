@@ -416,7 +416,7 @@ public class SharedBoardFragment extends Fragment {
             okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(
                     okhttp3.MediaType.parse("application/json; charset=utf-8"), json.toString());
             okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url("https://YOUR-PIPEDREAM-ENDPOINT")
+                    .url(BuildConfig.PIPEDREAM_URL)
                     .post(requestBody).build();
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override public void onFailure(okhttp3.Call call, java.io.IOException e) {}

@@ -59,8 +59,8 @@ public class JournalActivity extends AppCompatActivity {
     // --- NOTIFICATION VARIABLE ---
     private String partnerId = null;
 
-    private static final String CLOUD_NAME = "YOUR_CLOUDINARY_CLOUD_NAME";
-    private static final String UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+    private static final String CLOUD_NAME = BuildConfig.CLOUDINARY_CLOUD_NAME;
+    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
 
     private Runnable timerRunnable = new Runnable() {
         @Override
@@ -445,7 +445,7 @@ public class JournalActivity extends AppCompatActivity {
 
             // Using your exact Pipedream URL
             okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url("https://YOUR-NOTIFY-WEBHOOK/api/notify")
+                    .url(BuildConfig.NOTIFY_URL)
                     .post(body)
                     .build();
 

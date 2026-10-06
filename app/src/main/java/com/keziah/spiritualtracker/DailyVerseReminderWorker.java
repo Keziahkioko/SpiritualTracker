@@ -33,7 +33,7 @@ public class DailyVerseReminderWorker extends Worker {
     private static final String TAG       = "DailyVerseWorker";
     private static final String WORK_NAME = "daily_verse_reminder";
     private static final String NOTIFY_URL =
-            "https://YOUR-NOTIFY-WEBHOOK/api/notify";
+            BuildConfig.NOTIFY_URL;
 
     public DailyVerseReminderWorker(@NonNull Context ctx, @NonNull WorkerParameters params) {
         super(ctx, params);

@@ -253,7 +253,7 @@ public class BibleActivity extends AppCompatActivity {
             okhttp3.RequestBody body = okhttp3.RequestBody.create(
                     json.toString(), okhttp3.MediaType.get("application/json; charset=utf-8"));
             okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url("https://YOUR-PIPEDREAM-ENDPOINT").post(body).build();
+                    .url(BuildConfig.PIPEDREAM_URL).post(body).build();
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override public void onFailure(okhttp3.Call call, java.io.IOException e) {}
                 @Override public void onResponse(okhttp3.Call call, okhttp3.Response r)

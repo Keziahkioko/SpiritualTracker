@@ -1,0 +1,6 @@
+# Copy these into local.properties (which is not committed) and fill in your own values.
+sdk.dir=/path/to/Android/Sdk
+cloudinary.cloudName=YOUR_CLOUDINARY_CLOUD_NAME
+cloudinary.uploadPreset=YOUR_UNSIGNED_UPLOAD_PRESET
+notify.url=https://YOUR-NOTIFY-WEBHOOK/api/notify
+pipedream.url=https://YOUR-PIPEDREAM-ENDPOINT

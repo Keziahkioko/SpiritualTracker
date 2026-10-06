@@ -117,7 +117,7 @@ public class ConnectionFragment extends Fragment {
     private boolean hasScrolledToUnread = false;
 
     // --- AUDIO RECORDING VARIABLES ---
-    private static final String UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
     private LinearLayout layoutRecordingUI;
     private TextView tvRecordTimer;
     private ImageButton btnDiscardAudio;
@@ -823,7 +823,7 @@ public class ConnectionFragment extends Fragment {
             json.put("type", type);
             json.put("docId", currentUserId);
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
-            Request request = new Request.Builder().url("https://YOUR-PIPEDREAM-ENDPOINT").post(requestBody).build();
+            Request request = new Request.Builder().url(BuildConfig.PIPEDREAM_URL).post(requestBody).build();
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {}
                 @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException { response.close(); }

@@ -126,7 +126,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     private com.google.firebase.firestore.ListenerRegistration typingListener;
     private boolean isCurrentlyTyping = false;
 
-    private static final String UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
 
 
     // --- NEW: THE TIMEOUT TIMER ---
@@ -1172,7 +1172,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             );
 
             okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url("https://YOUR-PIPEDREAM-ENDPOINT")
+                    .url(BuildConfig.PIPEDREAM_URL)
                     .post(body)
                     .build();
 

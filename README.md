@@ -136,16 +136,16 @@ app/src/main/java/com/keziah/spiritualtracker/
 
 ### 2. Cloudinary Setup (audio/image uploads)
 1. Create a free account at [cloudinary.com](https://cloudinary.com/).
-2. Create an **unsigned upload preset** named `YOUR_UNSIGNED_UPLOAD_PRESET` (or update the preset name referenced in `ConnectionFragment.java` / `JournalDetailActivity.java` to match your own).
-3. Initialize `MediaManager` with your Cloudinary cloud name (the app currently expects this to be configured at app startup — wire your cloud name into `SpiritualTrackerApp.java` if it isn't already).
+2. Create an **unsigned upload preset**.
+3. Copy `local.properties.example` into your `local.properties` and set `cloudinary.cloudName` and `cloudinary.uploadPreset`. These are exposed to the app as `BuildConfig` fields; `local.properties` is git-ignored, so they never get committed.
 
 ### 3. Push Notification Relay
 Sending FCM pushes requires a server-side credential (the Firebase Admin SDK), which can't safely live inside the Android app. This project calls a small external HTTP endpoint that does that server-side send on its behalf:
 
-- `DailyVerseReminderWorker`, `MemorizeActivity`, and `JournalActivity` call `https://YOUR-NOTIFY-WEBHOOK/api/notify`.
-- `BibleActivity`, `ConnectionFragment`, `JournalDetailActivity`, and `SharedBoardFragment` currently call a Pipedream debug endpoint (`https://YOUR-PIPEDREAM-ENDPOINT`).
+- `DailyVerseReminderWorker`, `MemorizeActivity`, and `JournalActivity` call `BuildConfig.NOTIFY_URL` (`notify.url` in `local.properties`).
+- `BibleActivity`, `ConnectionFragment`, `JournalDetailActivity`, and `SharedBoardFragment` call `BuildConfig.PIPEDREAM_URL` (`pipedream.url` in `local.properties`).
 
-Both of these are the original author's personal endpoints. **You will need to deploy your own relay** (a tiny serverless function using the Firebase Admin SDK to call `admin.messaging().send(...)`) and point all of these URLs at it before notifications will work for your own Firebase project. Centralizing them into a single `BuildConfig` field or remote config value is recommended so you only have to change one place.
+**You will need to deploy your own relay** (a tiny serverless function using the Firebase Admin SDK to call `admin.messaging().send(...)`) and set both properties to it before notifications will work for your own Firebase project.
 
 ### 4. Build & Run
 ```bash
@@ -185,7 +185,7 @@ This repository's first commit includes `app/google-services.json`, which contai
 ## Known Limitations / Roadmap
 
 - No in-app partner invite/pairing flow — `partnerId` must be set manually in Firestore today.
-- Push relay endpoints are hardcoded to the original author's personal Vercel/Pipedream URLs and are split across two different services; these need to be replaced and consolidated.
+- Push relay endpoints are split across two different properties/services; these should be consolidated.
 - `journal_entries` vs. `journals/{id}/replies` collection naming is inconsistent and worth normalizing.
 - `isMinifyEnabled` is `false` for release builds — consider enabling R8/ProGuard with the included `proguard-rules.pro` before shipping.
 - No automated test coverage beyond the default generated `ExampleUnitTest` / `ExampleInstrumentedTest`.

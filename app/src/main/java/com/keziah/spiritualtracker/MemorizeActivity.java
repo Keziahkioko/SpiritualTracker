@@ -53,7 +53,7 @@ public class MemorizeActivity extends AppCompatActivity {
     private static final int    MASTERED_IDX = 4;
     private static final String DATE_FMT     = "yyyy-MM-dd";
     private static final String NOTIFY_URL   =
-            "https://YOUR-NOTIFY-WEBHOOK/api/notify";
+            BuildConfig.NOTIFY_URL;
 
     // Views
     private RecyclerView                 rvVerses;

@@ -7,8 +7,7 @@ import java.util.Map;
 
 public class SpiritualTrackerApp extends Application {
 
-    // Replace this with the actual text value of your CLOUD_NAME from JournalActivity
-    private static final String CLOUD_NAME = "YOUR_CLOUDINARY_CLOUD_NAME";
+    private static final String CLOUD_NAME = BuildConfig.CLOUDINARY_CLOUD_NAME;
 
     @Override
     public void onCreate() {

@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
 }
+
+// Private config (Cloudinary, notification endpoints) lives in local.properties, which is not committed.
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun localProp(key: String): String = localProps.getProperty(key, "")
 
 android {
     namespace = "com.keziah.spiritualtracker"
@@ -15,6 +24,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProp("cloudinary.cloudName")}\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localProp("cloudinary.uploadPreset")}\"")
+        buildConfigField("String", "NOTIFY_URL", "\"${localProp("notify.url")}\"")
+        buildConfigField("String", "PIPEDREAM_URL", "\"${localProp("pipedream.url")}\"")
     }
 
     buildTypes {
@@ -32,6 +46,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

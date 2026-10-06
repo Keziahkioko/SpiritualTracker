@@ -57,5 +57,4 @@
     <string name="extra_target_doc_id">targetDocId</string>
     
     <!-- API Endpoints -->
-    <string name="url_notify">https://YOUR-NOTIFY-WEBHOOK/api/notify</string>
 </resources>
