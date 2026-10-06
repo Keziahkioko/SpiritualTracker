@@ -1,3 +1,61 @@
 <resources>
     <string name="app_name">SpiritualTracker</string>
+
+    <!-- MainActivity UI Strings -->
+    <string name="days_together">DAYS TOGETHER</string>
+    <string name="default_score">0</string>
+    <string name="label_bible">Bible</string>
+    <string name="label_prayer">Prayer</string>
+    <string name="label_journal">Journal</string>
+    <string name="label_memorize">Memorize</string>
+    <string name="votd_title">✨ Verse of the Day</string>
+    <string name="add_to_memorize">Add to Memorize →</string>
+    <string name="default_votd_text">“For I know the plans I have for you, declares the Lord…”</string>
+    <string name="default_votd_ref">Jeremiah 29:11</string>
+
+    <!-- Memorize Activity Strings -->
+    <string name="title_memorize">MEMORIZE</string>
+    <string name="your_verses">Your Verses</string>
+    <string name="memorize_subtitle">Hide, repeat, master.</string>
+    <string name="due_today">Due today</string>
+    <string name="mastered">Mastered</string>
+    <string name="partner_progress">Partner\'s progress</string>
+    <string name="partner_mastered_suffix">— mastered</string>
+    <string name="no_verses_yet">No verses yet</string>
+    <string name="add_first_verse_hint">Tap + to add the first verse you want to memorize.</string>
+    <string name="btn_add_verse">Add Verse</string>
+
+    <!-- Item Memory Verse Strings -->
+    <string name="default_verse_ref">John 3:16</string>
+    <string name="review_now">Review now</string>
+    <string name="default_verse_text">For God so loved the world...</string>
+    <string name="stage_learning">📖 Learning</string>
+
+    <!-- Worker Strings -->
+    <string name="notif_daily_reminder_title">📖 %1$d verse%2$s to review today</string>
+    <string name="notif_daily_reminder_body">Keep your memorization streak going!</string>
+    <string name="plural_s">s</string>
+
+    <!-- Log Messages -->
+    <string name="log_listen_failed">Listen failed.</string>
+    <string name="log_push_failed">Push failed</string>
+    <string name="log_scheduled">Daily verse reminder scheduled</string>
+
+    <!-- Technical Keys -->
+    <string name="key_users">users</string>
+    <string name="key_fcm_token">fcmToken</string>
+    <string name="key_memory_verses">memory_verses</string>
+    <string name="key_next_review_date">nextReviewDate</string>
+    <string name="key_stage">stage</string>
+    <string name="key_mastered">mastered</string>
+    <string name="key_shared_score">sharedScore</string>
+    <string name="key_unread_bible">unreadBible</string>
+    <string name="key_unread_prayer">unreadPrayer</string>
+    <string name="key_unread_journal">unreadJournal</string>
+    <string name="extra_type">type</string>
+    <string name="extra_doc_id">docId</string>
+    <string name="extra_target_doc_id">targetDocId</string>
+    
+    <!-- API Endpoints -->
+    <string name="url_notify">https://YOUR-NOTIFY-WEBHOOK/api/notify</string>
 </resources>

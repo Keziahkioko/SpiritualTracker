@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Purple header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_dialog_header"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="28dp"
+        android:paddingBottom="24dp"
+        android:paddingHorizontal="24dp">
+
+        <!-- Vault icon circle -->
+        <LinearLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="#30FFFFFF"
+            android:gravity="center"
+            android:layout_marginBottom="14dp">
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:src="@drawable/ic_vault_open"
+                app:tint="#FFFFFF"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvDialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prayer Title"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:fontFamily="serif"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            android:layout_marginBottom="6dp"/>
+
+        <TextView
+            android:id="@+id/tvDialogAuthor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="By Partner · Apr 2026"
+            android:textColor="#CE93D8"
+            android:textSize="11sp"/>
+    </LinearLayout>
+
+    <!-- Content body -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ORIGINAL PRAYER"
+            android:textColor="#9575CD"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvDialogDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prayer description..."
+            android:textColor="#4A4A4E"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="20dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EDE7F6"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GOD'S ANSWER"
+            android:textColor="#7E57C2"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Testimony quote block -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#F3E5F5"
+            android:orientation="horizontal"
+            android:padding="14dp"
+            android:layout_marginBottom="24dp">
+
+            <View
+                android:layout_width="3dp"
+                android:layout_height="match_parent"
+                android:background="#7E57C2"
+                android:layout_marginEnd="12dp"/>
+
+            <TextView
+                android:id="@+id/tvDialogTestimony"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="No testimony recorded yet."
+                android:textColor="#4A148C"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:fontFamily="serif"
+                android:textStyle="italic"/>
+        </LinearLayout>
+
+        <!-- Delete button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteTestimony"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Remove from Vault"
+            android:textColor="#B71C1C"
+            android:textAllCaps="false"
+            android:textSize="14sp"
+            app:strokeColor="#FFCDD2"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconTint="#B71C1C"/>
+    </LinearLayout>
+</LinearLayout>

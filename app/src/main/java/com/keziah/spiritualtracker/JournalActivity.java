@@ -1,11 +1,18 @@
 package com.keziah.spiritualtracker;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -15,9 +22,15 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.keziah.spiritualtracker.databinding.ActivityJournalBinding;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +45,36 @@ public class JournalActivity extends AppCompatActivity {
     private AudioRecorder audioRecorder;
     private String localAudioPath = null;
     private boolean isRecording = false;
+    private boolean isPaused = false; // NEW: Track the pause state
+
+    // --- TIMER VARIABLES ---
+    private Handler timerHandler = new Handler();
+    private int secondsElapsed = 0;
+    private String currentDuration = "00:00";
 
     // --- EDIT MODE VARIABLES ---
     private String existingDocId = null;
     private String existingAudioUrl = null;
 
+    // --- NOTIFICATION VARIABLE ---
+    private String partnerId = null;
+
     private static final String CLOUD_NAME = "YOUR_CLOUDINARY_CLOUD_NAME";
     private static final String UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+
+    private Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isRecording) { // Only increment if we are actively recording
+                secondsElapsed++;
+                int mins = secondsElapsed / 60;
+                int secs = secondsElapsed % 60;
+                currentDuration = String.format("%02d:%02d", mins, secs);
+                binding.tvRecordTimer.setText(currentDuration);
+                timerHandler.postDelayed(this, 1000);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,27 +84,30 @@ public class JournalActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        audioRecorder = new AudioRecorder();
+        audioRecorder = new AudioRecorder(this);
+
+        // Fetch partner ID for notifications
+        fetchPartnerId();
 
         initCloudinary();
 
-        // --- NEW: CHECK IF WE ARE IN EDIT MODE ---
         if (getIntent().hasExtra("docId")) {
             existingDocId = getIntent().getStringExtra("docId");
             existingAudioUrl = getIntent().getStringExtra("audioUrl");
             existingDateStr = getIntent().getStringExtra("originalDate");
 
-            // Fill the UI with existing data
             binding.etTitle.setText(getIntent().getStringExtra("title"));
             binding.etContent.setText(getIntent().getStringExtra("content"));
 
-            // Change UI to reflect Editing
             binding.btnSaveJournal.setText("UPDATE ENTRY");
-            if (existingAudioUrl != null) {
-                // Hint to the user that audio already exists
-                Toast.makeText(this, "Editing entry with existing audio", Toast.LENGTH_SHORT).show();
-            }
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                checkUnsavedChanges();
+            }
+        });
 
         binding.btnRecord.setOnClickListener(v -> {
             if (checkPermissions()) {
@@ -79,122 +118,270 @@ public class JournalActivity extends AppCompatActivity {
         });
 
         binding.btnSaveJournal.setOnClickListener(v -> {
-            saveJournalEntry();
+            saveJournalEntry("published");
+        });
+
+        binding.btnDiscardAudio.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Discard Recording?")
+                    .setMessage("Are you sure you want to delete this audio and start over?")
+                    .setPositiveButton("Discard", (dialog, which) -> discardAudio())
+                    .setNegativeButton("Cancel", null)
+                    .show();
         });
     }
 
-    private void toggleRecording() {
-        if (!isRecording) {
-            localAudioPath = getExternalCacheDir().getAbsolutePath() + "/temp_audio_" + System.currentTimeMillis() + ".mp3";
-            audioRecorder.startRecording(localAudioPath);
-            isRecording = true;
-            binding.btnRecord.setImageResource(android.R.drawable.ic_media_pause);
-            binding.btnRecord.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_red_dark));
-            Toast.makeText(this, "Recording Started...", Toast.LENGTH_SHORT).show();
-        } else {
-            audioRecorder.stopRecording();
-            isRecording = false;
-            binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
-            binding.btnRecord.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#673AB7")));
-            Toast.makeText(this, "Audio Captured!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void saveJournalEntry() {
+    private void checkUnsavedChanges() {
         String title = binding.etTitle.getText().toString().trim();
         String content = binding.etContent.getText().toString().trim();
 
-        if (TextUtils.isEmpty(title)) {
-            Toast.makeText(this, "Please write a title!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        binding.btnSaveJournal.setEnabled(false);
-        binding.btnSaveJournal.setText("PROCESSING...");
-
-        // SCENARIO 1: New Audio recorded -> Upload first
-        if (localAudioPath != null) {
-            uploadAudioToCloudinary(title, content);
-        }
-        // SCENARIO 2: No NEW audio, but KEEPING OLD audio (or no audio at all)
-        else {
-            saveToFirestore(title, content, existingAudioUrl);
+        if (localAudioPath != null || isRecording || !TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Save Draft?")
+                    .setMessage("You have unsaved changes. Would you like to save this as a draft?")
+                    .setPositiveButton("Save Draft", (dialog, which) -> saveJournalEntry("draft"))
+                    .setNegativeButton("Discard", (dialog, which) -> finish())
+                    .setNeutralButton("Cancel", null)
+                    .show();
+        } else {
+            finish();
         }
     }
 
-    private void uploadAudioToCloudinary(String title, String content) {
+    private void toggleRecording() {
+        if (!isRecording && !isPaused) {
+            // STATE 1: START FRESH
+            localAudioPath = getExternalCacheDir().getAbsolutePath() + "/temp_audio_" + System.currentTimeMillis() + ".mp3";
+            audioRecorder.startRecording(localAudioPath);
+            isRecording = true;
+            isPaused = false;
+
+            secondsElapsed = 0;
+            binding.tvRecordTimer.setVisibility(View.VISIBLE);
+            binding.btnDiscardAudio.setVisibility(View.VISIBLE);
+            binding.tvRecordTimer.setText("00:00");
+            timerHandler.postDelayed(timerRunnable, 1000);
+
+            updateUIForRecording();
+            Toast.makeText(this, "Recording Started...", Toast.LENGTH_SHORT).show();
+
+        } else if (isRecording) {
+            // STATE 2: PAUSE
+            audioRecorder.pauseRecording();
+            isRecording = false;
+            isPaused = true;
+
+            timerHandler.removeCallbacks(timerRunnable); // Stop the clock
+            updateUIForPaused();
+            Toast.makeText(this, "Recording Paused", Toast.LENGTH_SHORT).show();
+
+        } else if (isPaused) {
+            // STATE 3: RESUME
+            audioRecorder.resumeRecording();
+            isRecording = true;
+            isPaused = false;
+
+            timerHandler.postDelayed(timerRunnable, 1000); // Resume the clock
+            updateUIForRecording();
+            Toast.makeText(this, "Resumed Recording", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateUIForRecording() {
+        binding.btnRecord.setImageResource(android.R.drawable.ic_media_pause);
+        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
+    }
+
+    private void updateUIForPaused() {
+        // Using Green for "Captured/Paused" state as requested
+        binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2E7D32")));
+    }
+
+    private void stopAndFinalizeRecording() {
+        if (isRecording || isPaused) {
+            audioRecorder.stopRecording();
+            isRecording = false;
+            isPaused = false;
+            timerHandler.removeCallbacks(timerRunnable);
+
+            binding.btnDiscardAudio.setVisibility(View.GONE);
+
+            // Return icon to normal purple after save/stop logic is complete elsewhere
+            binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+            binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
+        }
+    }
+
+    // NEW METHOD: Discard current recording and reset UI
+    private void discardAudio() {
+        // 1. Stop the recorder if it's running
+        if (isRecording || isPaused) {
+            audioRecorder.stopRecording();
+        }
+
+        // 2. Delete the physical file so it doesn't waste phone space
+        if (localAudioPath != null) {
+            java.io.File audioFile = new java.io.File(localAudioPath);
+            if (audioFile.exists()) {
+                audioFile.delete();
+            }
+            localAudioPath = null;
+        }
+
+        // 3. Reset all logic states
+        isRecording = false;
+        isPaused = false;
+        secondsElapsed = 0;
+
+        // 4. Stop the timer
+        if (timerHandler != null && timerRunnable != null) {
+            timerHandler.removeCallbacks(timerRunnable);
+        }
+
+        // 5. Reset the UI back to default
+        binding.tvRecordTimer.setVisibility(android.view.View.GONE);
+        binding.tvRecordTimer.setText("00:00");
+        binding.btnDiscardAudio.setVisibility(android.view.View.GONE);
+
+        // Reset Record button back to purple microphone
+        binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+        binding.btnRecord.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#673AB7")));
+
+        android.widget.Toast.makeText(this, "Audio discarded", android.widget.Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveJournalEntry(String status) {
+        String title = binding.etTitle.getText().toString().trim();
+        String content = binding.etContent.getText().toString().trim();
+
+        // 1. VALIDATE FIRST (Before touching the audio recorder)
+        if (status.equals("published") && TextUtils.isEmpty(title)) {
+            Toast.makeText(this, "Please write a title!", Toast.LENGTH_SHORT).show();
+
+            // If they were actively recording, let's auto-pause it so they don't lose the audio
+            if (isRecording) {
+                audioRecorder.pauseRecording();
+                isRecording = false;
+                isPaused = true;
+                timerHandler.removeCallbacks(timerRunnable);
+                updateUIForPaused(); // This turns the button GREEN
+                Toast.makeText(this, "Recording paused. Add a title to save.", Toast.LENGTH_SHORT).show();
+            }
+
+            // Exit the save process early. Audio is still safely held in the paused state!
+            return;
+        }
+
+        if (status.equals("draft") && TextUtils.isEmpty(title)) {
+            title = "Untitled Draft";
+        }
+
+        // 2. ONLY NOW do we finalize and stop the recording
+        if (isRecording || isPaused) {
+            stopAndFinalizeRecording();
+        }
+
+        binding.btnSaveJournal.setEnabled(false);
+        binding.btnSaveJournal.setText(status.equals("draft") ? "SAVING DRAFT..." : "PROCESSING...");
+
+        if (localAudioPath != null) {
+            uploadAudioToCloudinary(title, content, status);
+        } else {
+            saveToFirestore(title, content, existingAudioUrl, status);
+        }
+    }
+
+    private void uploadAudioToCloudinary(String title, String content, String status) {
         binding.btnSaveJournal.setText("UPLOADING AUDIO...");
         MediaManager.get().upload(localAudioPath)
                 .unsigned(UPLOAD_PRESET)
                 .option("resource_type", "auto")
                 .callback(new UploadCallback() {
-                    @Override public void onStart(String requestId) { }
-                    @Override public void onProgress(String requestId, long bytes, long totalBytes) { }
-
-                    @Override
-                    public void onSuccess(String requestId, Map resultData) {
+                    @Override public void onSuccess(String requestId, Map resultData) {
                         String audioUrl = (String) resultData.get("secure_url");
-                        saveToFirestore(title, content, audioUrl);
+                        
+                        // ✨ CACHE FOR INSTANT PLAY ✨
+                        cacheUploadedAudio(audioUrl);
+                        
+                        saveToFirestore(title, content, audioUrl, status);
                     }
-
-                    @Override
-                    public void onError(String requestId, ErrorInfo error) {
+                    @Override public void onError(String requestId, ErrorInfo error) {
                         runOnUiThread(() -> {
                             Toast.makeText(JournalActivity.this, "Upload Failed", Toast.LENGTH_LONG).show();
                             binding.btnSaveJournal.setEnabled(true);
-                            binding.btnSaveJournal.setText("SAVE ENTRY");
                         });
                     }
-                    @Override public void onReschedule(String requestId, ErrorInfo error) { }
+                    @Override public void onStart(String id) {}
+                    @Override public void onProgress(String id, long b, long t) {}
+                    @Override public void onReschedule(String id, ErrorInfo e) {}
                 }).dispatch();
     }
 
-    private void saveToFirestore(String title, String content, String audioUrl) {
+    private void cacheUploadedAudio(String url) {
+        if (localAudioPath == null) return;
+        File source = new File(localAudioPath);
+        File target = new File(getCacheDir(), "entry_audio_" + Math.abs(url.hashCode()) + ".m4a");
+        
+        try (FileChannel in = new FileInputStream(source).getChannel();
+             FileChannel out = new FileOutputStream(target).getChannel()) {
+            out.transferFrom(in, 0, in.size());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveToFirestore(String title, String content, String audioUrl, String status) {
         binding.btnSaveJournal.setText("SAVING...");
         String userId = auth.getCurrentUser().getUid();
 
-        if (existingDocId != null) {
-            // --- EDIT MODE: UPDATE ONLY SPECIFIC FIELDS ---
-            // We use a Map to tell Firestore exactly which fields to change
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("title", title);
-            updates.put("content", content);
+        db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
+            String authorName = documentSnapshot.getString("name");
+            if (authorName == null) authorName = "Partner";
 
-            // Only update audioUrl if it's not null (keeping old audio if no new one)
-            if (audioUrl != null) {
-                updates.put("audioUrl", audioUrl);
+            String durationToSave = (audioUrl != null) ? currentDuration : null;
+
+            if (existingDocId != null) {
+                // UPDATE EXISTING ENTRY
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("title", title);
+                updates.put("content", content);
+                updates.put("status", status);
+                if (audioUrl != null) {
+                    updates.put("audioUrl", audioUrl);
+                    updates.put("audioDuration", durationToSave);
+                }
+
+                db.collection("journal_entries").document(existingDocId)
+                        .update(updates)
+                        .addOnSuccessListener(aVoid -> finish());
+            } else {
+                // CREATE NEW ENTRY
+                JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId, null, authorName, status, durationToSave);
+
+                if (audioUrl != null) {
+                    entry.setAudioUrl(audioUrl);
+                }
+
+                entry.setReadByPartner(false);
+
+                db.collection("journal_entries")
+                        .add(entry)
+                        .addOnSuccessListener(documentReference -> {
+                            // ✨ FIRE NOTIFICATION ✨ (Only if it's new and published)
+                            if ("published".equals(status)) {
+                                incrementPartnerUnread("unreadJournal");
+                                notifyPartner("New Journal Entry", "Your partner published: " + title);
+                            }
+                            finish();
+                        });
             }
+        });
+    }
 
-            db.collection("journal_entries").document(existingDocId)
-                    .update(updates) // .update() keeps the original 'date' field safe!
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Entry Updated!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    })
-                    .addOnFailureListener(e -> {
-                        binding.btnSaveJournal.setEnabled(true);
-                        binding.btnSaveJournal.setText("UPDATE ENTRY");
-                        Toast.makeText(this, "Update Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-
-        } else {
-            // --- CREATE MODE: ADD NEW ENTRY (WITH NEW DATE) ---
-            JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId);
-            if (audioUrl != null) {
-                entry.setAudioUrl(audioUrl);
-            }
-
-            db.collection("journal_entries")
-                    .add(entry)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(this, "Entry Saved!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    })
-                    .addOnFailureListener(e -> {
-                        binding.btnSaveJournal.setEnabled(true);
-                        binding.btnSaveJournal.setText("SAVE ENTRY");
-                        Toast.makeText(this, "Save Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+    private void incrementPartnerUnread(String field) {
+        if (partnerId != null && !partnerId.isEmpty()) {
+            db.collection("users").document(partnerId).update(field, FieldValue.increment(1));
         }
     }
 
@@ -212,5 +399,71 @@ public class JournalActivity extends AppCompatActivity {
 
     private void requestPermissions() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 200);
+    }
+
+    // ==========================================
+    // NOTIFICATION & PIPEDREAM LOGIC
+    // ==========================================
+
+    private void fetchPartnerId() {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance().collection("users").document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("partnerId")) {
+                        partnerId = documentSnapshot.getString("partnerId");
+                    }
+                });
+    }
+
+    private void notifyPartner(String title, String message) {
+        if (partnerId == null) return;
+
+        FirebaseFirestore.getInstance().collection("users").document(partnerId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("fcmToken")) {
+                        String partnerToken = documentSnapshot.getString("fcmToken");
+                        sendNotificationToServer(partnerToken, title, message);
+                    }
+                })
+                .addOnFailureListener(e -> android.util.Log.e("Journal_Nudge", "Failed to get partner token", e));
+    }
+
+    private void sendNotificationToServer(String targetToken, String title, String messageBody) {
+        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("token", targetToken);
+            json.put("title", title);
+            json.put("body", messageBody);
+
+            okhttp3.RequestBody body = okhttp3.RequestBody.create(
+                    json.toString(),
+                    okhttp3.MediaType.get("application/json; charset=utf-8")
+            );
+
+            // Using your exact Pipedream URL
+            okhttp3.Request request = new okhttp3.Request.Builder()
+                    .url("https://YOUR-NOTIFY-WEBHOOK/api/notify")
+                    .post(body)
+                    .build();
+
+            client.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull java.io.IOException e) {
+                    android.util.Log.e("Journal_Nudge", "Failed to send notification request", e);
+                }
+
+                @Override
+                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws java.io.IOException {
+                    if (response.body() != null) {
+                        android.util.Log.d("Journal_Nudge", "Server says: " + response.body().string());
+                    }
+                }
+            });
+        } catch (Exception e) {
+            android.util.Log.e("Journal_Nudge", "Error building JSON", e);
+        }
     }
 }

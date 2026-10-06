@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Reference + Day progress pill -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tvQuizReference"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#1A1A2E"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="serif"/>
+
+        <TextView
+            android:id="@+id/tvQuizProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/progress_pill_bg"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="#7E57C2"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:maxHeight="300dp"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Prompt -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Can you recall this verse?"
+                android:textColor="#9E9E9E"
+                android:textSize="13sp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Progressive hint — shown at level 2+ -->
+            <TextView
+                android:id="@+id/tvQuizHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#B39DDB"
+                android:textSize="15sp"
+                android:fontFamily="monospace"
+                android:lineSpacingMultiplier="1.5"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"/>
+
+            <!-- Revealed full text -->
+            <TextView
+                android:id="@+id/tvQuizText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#1A1A2E"
+                android:textSize="16sp"
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.5"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- First-letter hint -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnFirstLetter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show first letters"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp"
+        app:strokeColor="#B39DDB"
+        app:strokeWidth="1dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:cornerRadius="20dp"/>
+
+    <!-- Reveal -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnReveal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reveal verse"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#7E57C2"
+        app:cornerRadius="12dp"/>
+
+    <!-- Got it / Try again -->
+    <LinearLayout
+        android:id="@+id/layoutQuizActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTryAgain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Try again"
+            app:strokeColor="#B39DDB"
+            app:strokeWidth="1dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:cornerRadius="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGotIt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Got it! ✓"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#4CAF50"
+            app:cornerRadius="12dp"/>
+    </LinearLayout>
+
+</LinearLayout>

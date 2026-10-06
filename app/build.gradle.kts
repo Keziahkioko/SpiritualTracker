@@ -5,14 +5,12 @@ plugins {
 
 android {
     namespace = "com.keziah.spiritualtracker"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.keziah.spiritualtracker"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -46,10 +44,19 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.auth)
     implementation(libs.cardview)
+    
+    // RecyclerView and WorkManager dependencies
+    implementation(libs.recyclerview)
+    implementation(libs.work.runtime)
+    // Fix for "cannot access ListenableFuture" error
+    implementation(libs.guava.listenablefuture)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    
     implementation("com.cloudinary:cloudinary-android:2.3.1")
     implementation("com.google.firebase:firebase-messaging:23.4.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.guava:guava:31.1-android")
 }

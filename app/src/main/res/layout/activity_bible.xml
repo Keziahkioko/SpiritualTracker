@@ -151,25 +151,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Accountability Partner"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#757575"
+                android:textColor="#8E24AA"
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="8dp"
+                android:letterSpacing="0.05"
                 android:textAllCaps="true"/>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="24dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -178,8 +180,9 @@
                         android:gravity="center_vertical">
 
                         <FrameLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:id="@+id/framePartnerIcon"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
                             android:background="@drawable/circle_bg_grey">
 
                             <TextView
@@ -187,22 +190,23 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:text="⏳"
-                                android:textSize="22sp"
+                                android:textSize="26sp"
                                 android:gravity="center"/>
 
                             <ImageView
                                 android:id="@+id/imgPartnerStatusIcon"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="10dp"
+                                android:padding="6dp"
                                 android:visibility="gone"/>
                         </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:orientation="vertical"
+                            android:gravity="center_vertical"
                             android:layout_marginStart="16dp">
 
                             <TextView
@@ -211,59 +215,52 @@
                                 android:layout_height="wrap_content"
                                 android:text="Waiting for partner..."
                                 android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#212121"/>
-
-                            <TextView
-                                android:id="@+id/tvPartnerLastRead"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="No update yet today"
-                                android:textSize="13sp"
-                                android:textColor="#9E9E9E"
-                                android:layout_marginTop="2dp"/>
+                                android:textStyle="normal"
+                                android:fontFamily="serif"
+                                android:textColor="#000000"/>
 
                         </LinearLayout>
 
                         <FrameLayout
                             android:id="@+id/btnNudge"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:clickable="true"
                             android:focusable="true"
-                            android:layout_marginStart="4dp">
+                            android:background="?attr/selectableItemBackgroundBorderless">
 
                             <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
                                 android:layout_gravity="center"
-                                android:src="@drawable/ic_nudge"
-                                /> </FrameLayout>
+                                android:src="@drawable/ic_nudge" />
+                        </FrameLayout>
                     </LinearLayout>
 
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/layoutPartnerVerse"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="12dp"
+                        app:cardCornerRadius="16dp"
                         app:cardElevation="0dp"
-                        app:cardBackgroundColor="#F8F9FA"
-                        android:layout_marginTop="16dp"
+                        app:cardBackgroundColor="#F4F0F9"
+                        android:layout_marginTop="20dp"
                         android:visibility="gone">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="20dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Portion read:"
-                                android:textSize="12sp"
-                                android:textColor="#9E9E9E"
+                                android:text="PORTION READ"
+                                android:textSize="11sp"
+                                android:textColor="#8E24AA"
                                 android:textStyle="bold"
+                                android:letterSpacing="0.1"
                                 android:textAllCaps="true"/>
 
                             <TextView
@@ -271,9 +268,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="..."
-                                android:textSize="16sp"
+                                android:textSize="18sp"
                                 android:textColor="#424242"
-                                android:layout_marginTop="6dp"
+                                android:layout_marginTop="8dp"
+                                android:lineSpacingExtra="4dp"
                                 android:textStyle="italic"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>

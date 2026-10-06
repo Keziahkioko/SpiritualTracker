@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add a Verse"
+        android:textColor="#1A1A2E"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:fontFamily="serif"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You'll be reviewed daily using spaced repetition."
+        android:textColor="#9E9E9E"
+        android:textSize="13sp"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Reference input — outlined with strong border -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Reference (e.g. John 3:16)"
+        android:layout_marginBottom="14dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="#7E57C2"
+        app:boxStrokeWidth="1.5dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="#7E57C2"
+        app:boxBackgroundColor="#F8F5FF"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etVerseReference"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="#1A1A2E"
+            android:textSize="15sp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Verse text input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Full verse text"
+        android:layout_marginBottom="18dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="#7E57C2"
+        app:boxStrokeWidth="1.5dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="#7E57C2"
+        app:boxBackgroundColor="#F8F5FF"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etVerseText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="4"
+            android:gravity="top|start"
+            android:textColor="#1A1A2E"
+            android:textSize="14sp"
+            android:paddingTop="12dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Shared toggle — only shown when user has a partner -->
+    <CheckBox
+        android:id="@+id/cbSharedVerse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Share with my partner"
+        android:textColor="#5E35B1"
+        android:textSize="14sp"
+        android:buttonTint="#7E57C2"
+        android:visibility="gone"/>
+
+</LinearLayout>

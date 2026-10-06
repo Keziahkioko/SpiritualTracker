@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_chat_input"
+    android:backgroundTint="#FFFFFF"
+    android:elevation="8dp"
+    android:orientation="vertical"
+    android:paddingVertical="8dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="4dp">
+
+        <TextView android:id="@+id/emojiHeart" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="❤️" android:textSize="24sp" android:padding="4dp" android:background="?selectableItemBackgroundBorderless"/>
+        <TextView android:id="@+id/emojiLaugh" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😂" android:textSize="24sp" android:padding="4dp" android:layout_marginStart="8dp" android:background="?selectableItemBackgroundBorderless"/>
+        <TextView android:id="@+id/emojiSurprise" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😮" android:textSize="24sp" android:padding="4dp" android:layout_marginStart="8dp" android:background="?selectableItemBackgroundBorderless"/>
+        <TextView android:id="@+id/emojiCry" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="😢" android:textSize="24sp" android:padding="4dp" android:layout_marginStart="8dp" android:background="?selectableItemBackgroundBorderless"/>
+        <TextView android:id="@+id/emojiPray" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🙏" android:textSize="24sp" android:padding="4dp" android:layout_marginStart="8dp" android:background="?selectableItemBackgroundBorderless"/>
+        <TextView android:id="@+id/emojiThumbsUp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👍" android:textSize="24sp" android:padding="4dp" android:layout_marginStart="8dp" android:background="?selectableItemBackgroundBorderless"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutMessageActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="4dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            android:id="@+id/btnEditMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Message"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:background="?selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/btnDeleteMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Message"
+            android:textColor="#D32F2F"
+            android:textSize="14sp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:background="?selectableItemBackground" />
+
+    </LinearLayout>
+</LinearLayout>

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
+    android:background="#F8F9FA"
     android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -17,69 +17,99 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Journal Entry"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#333333"
+            android:textSize="26sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#1F1F1F"
             android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"/>
 
         <EditText
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:padding="16dp"
+            android:background="@drawable/bg_rounded_input"
+            android:backgroundTint="#FFFFFF"
+            android:elevation="6dp"
+            android:padding="18dp"
             android:hint="Title"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:elevation="4dp"
             android:layout_marginBottom="16dp"
-            android:textColor="#333333"
-            android:textColorHint="#999999"/>
+            android:layout_marginHorizontal="2dp"
+            android:textColor="#1F1F1F"
+            android:textColorHint="#9E9E9E"/>
 
-        <FrameLayout
+        <EditText
+            android:id="@+id/etContent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_rounded_input"
+            android:backgroundTint="#FFFFFF"
+            android:elevation="6dp"
+            android:padding="18dp"
+            android:hint="Write your thoughts here..."
+            android:gravity="top|start"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="24dp"
+            android:layout_marginHorizontal="2dp"
+            android:textColor="#333333"
+            android:textColorHint="#9E9E9E"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|end"
             android:layout_marginBottom="24dp">
 
-            <EditText
-                android:id="@+id/etContent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/white"
-                android:padding="16dp"
-                android:paddingBottom="72dp"
-                android:hint="Write your thoughts here..."
-                android:gravity="top|start"
-                android:textSize="16sp"
-                android:elevation="4dp"
-                android:textColor="#333333"
-                android:textColorHint="#999999"/>
+            <TextView
+                android:id="@+id/tvRecordTimer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="00:00"
+                android:textColor="#999999"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="4dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnDiscardAudio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:src="@android:drawable/ic_menu_delete"
+                app:backgroundTint="#FEE7E6"
+                app:tint="#E53935"
+                app:elevation="0dp"
+                app:fabCustomSize="40dp"
+                android:visibility="gone" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btnRecord"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
                 android:src="@android:drawable/ic_btn_speak_now"
                 app:backgroundTint="#673AB7"
                 app:tint="@android:color/white"
-                app:elevation="8dp"
+                app:elevation="2dp"
                 app:fabSize="normal" />
-        </FrameLayout>
+        </LinearLayout>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveJournal"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="60dp"
             android:text="SAVE ENTRY"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="#673AB7"
+            app:cornerRadius="30dp"
+            app:backgroundTint="#673AB7"
             android:textColor="#ffffff"/>
 
     </LinearLayout>
-
 </LinearLayout>

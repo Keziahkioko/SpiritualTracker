@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F3F4F9">
+
+    <!-- Root stack: header banner + scrollable content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- ===== PURPLE HEADER BANNER (small, curved bottom) ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_header_gradient"
+            android:orientation="vertical"
+            android:paddingTop="20dp"
+            android:paddingBottom="36dp"
+            android:paddingHorizontal="20dp"
+            android:gravity="center">
+
+            <!-- Day label -->
+            <TextView
+                android:id="@+id/tvJointListTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MONDAY"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#B39DDB"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- Page title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Prayer Board"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="serif"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Subtitle -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shared space with your partner"
+                android:textColor="#D1C4E9"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <!-- ===== SCROLLABLE CONTENT BELOW CURVE ===== -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="100dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="20dp">
+
+                <!-- Prayer Focus card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    app:cardMaxElevation="4dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#EDE7F6">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="22dp">
+
+                        <!-- Card header row -->
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Prayer Focus"
+                                android:textColor="#1C1C1E"
+                                android:textSize="18sp"
+                                android:fontFamily="serif"
+                                android:textStyle="bold"
+                                android:layout_centerVertical="true"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnClearJointList"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:text="Clear all"
+                                android:textAllCaps="false"
+                                android:textSize="12sp"
+                                android:textColor="#8E8E93"
+                                android:paddingEnd="0dp"/>
+                        </RelativeLayout>
+
+                        <!-- Focus items dynamically added here -->
+                        <LinearLayout
+                            android:id="@+id/layoutJointListItems"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"/>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#12000000"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <!-- Add item button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAddJointItem"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="+ Add focus item"
+                            android:textColor="#5E35B1"
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:fontFamily="sans-serif-medium"
+                            android:paddingStart="0dp"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Active Requests section header -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ACTIVE REQUESTS"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:textColor="#8E8E93"
+                        android:letterSpacing="0.1"
+                        android:layout_centerVertical="true"/>
+
+                    <TextView
+                        android:id="@+id/btnViewVault"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:text="Prayer Vault  →"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#7E57C2"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"/>
+                </RelativeLayout>
+
+                <!-- Prayer request cards -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPrayerBoard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingHorizontal="12dp"
+                    tools:listitem="@layout/item_prayer_request"/>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
+
+    <!-- FAB pinned to bottom-end of CoordinatorLayout -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAddRequest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:text="New Request"
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:fontFamily="sans-serif-medium"
+        app:icon="@android:drawable/ic_input_add"
+        app:iconTint="#FFFFFF"
+        app:backgroundTint="#7E57C2"
+        app:cornerRadius="16dp"
+        app:elevation="6dp"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

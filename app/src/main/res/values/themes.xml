@@ -1,9 +1,52 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.SpiritualTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">#7E57C2</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#D1C4E9</item>
+        <item name="colorOnSecondaryContainer">#7E57C2</item>
+        <item name="android:windowBackground">#F3F4F9</item>
     </style>
 
     <style name="Theme.SpiritualTracker" parent="Base.Theme.SpiritualTracker" />
+
+    <style name="PrayerBottomNavTheme">
+        <item name="colorSecondaryContainer">#EDE7F6</item>
+        <item name="colorOnSecondaryContainer">#5E35B1</item>
+    </style>
+
+    <!-- Rounded MaterialAlertDialog with purple buttons — forced light appearance -->
+    <style name="ThemeOverlay_App_MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance_App_MediumComponent</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStylePrimary</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyleNeutral</item>
+        <item name="buttonBarNeutralButtonStyle">@style/DialogButtonStyleNeutral</item>
+        <!-- Force white background and dark text regardless of dark mode -->
+        <item name="android:background">@android:color/white</item>
+        <item name="android:textColor">#1A1A1A</item>
+        <item name="android:textColorPrimary">#1A1A1A</item>
+        <item name="android:textColorSecondary">#1F1F1F</item>
+        <item name="colorOnSurfaceVariant">#1F1F1F</item>
+        <item name="colorOnSurface">#1A1A1A</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="editTextStyle">@style/DialogEditTextStyle</item>
+    </style>
+
+    <style name="DialogEditTextStyle" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">#1A1A1A</item>
+        <item name="android:textColorHint">#9E9E9E</item>
+    </style>
+
+    <style name="ShapeAppearance_App_MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="DialogButtonStylePrimary" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">#7E57C2</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DialogButtonStyleNeutral" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">#4A4A4A</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

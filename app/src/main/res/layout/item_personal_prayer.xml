@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardMaxElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeWidth="1dp"
+    app:strokeColor="#EDE7F6">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Accent stripe: purple by default, dimmed if answered -->
+        <View
+            android:id="@+id/viewAccentStripe"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="#7E57C2"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Title + answered badge -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/tvPersonalTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toStartOf="@+id/personalAnsweredBadge"
+                    android:layout_marginEnd="8dp"
+                    android:layout_centerVertical="true"
+                    android:text="My Prayer"
+                    android:textColor="#1A1A1A"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:fontFamily="serif"/>
+
+                <!-- Answered pill (hidden while active) -->
+                <LinearLayout
+                    android:id="@+id/personalAnsweredBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/bg_answered_pill"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tvPersonalAnsweredLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Answered"
+                        android:textColor="#7E57C2"
+                        android:textSize="11sp"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginStart="4dp"
+                        android:src="@drawable/ic_partner_done"
+                        app:tint="#7E57C2"/>
+                </LinearLayout>
+            </RelativeLayout>
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/tvPersonalDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Details..."
+                android:textColor="#4A4A4E"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="10dp"/>
+
+            <!-- Date added -->
+            <TextView
+                android:id="@+id/tvPersonalDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Added Apr 08, 2026"
+                android:textColor="#AEAEB2"
+                android:textSize="11sp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
