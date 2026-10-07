@@ -126,7 +126,6 @@ public class JournalDetailActivity extends AppCompatActivity {
     private com.google.firebase.firestore.ListenerRegistration typingListener;
     private boolean isCurrentlyTyping = false;
 
-    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
 
 
     // --- NEW: THE TIMEOUT TIMER ---
@@ -806,7 +805,7 @@ public class JournalDetailActivity extends AppCompatActivity {
         btnSendAudio.setEnabled(false);
 
         MediaManager.get().upload(localAudioPath)
-                .unsigned(UPLOAD_PRESET)
+                .option("folder", RelaySignatureProvider.FOLDER)
                 .option("resource_type", "auto")
                 .callback(new UploadCallback() {
                     @Override
@@ -1147,7 +1146,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     }
 
     private void notifyPartner(String title, String message) {
-        PartnerNotifier.notifyPartner(partnerId, title, message, "journal_chat", docId, BuildConfig.PIPEDREAM_URL);
+        PartnerNotifier.notifyPartner(partnerId, title, message, "journal_chat", docId);
     }
 
     // ==========================================

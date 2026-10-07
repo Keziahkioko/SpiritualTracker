@@ -28,7 +28,7 @@ import java.util.TreeMap;
 /** Month-by-month history of both partners' disciplines, with streaks and trends. */
 public class HistoryActivity extends AppCompatActivity {
 
-    private static final String[] LABELS = {"Bible", "Prayer", "Journal", "Memorize"};
+    private static final String[] LABELS = ProgressMath.LABELS;
     private static final int[]    COLORS = {0xFF7E57C2, 0xFF26A69A, 0xFFFFA726, 0xFFEC407A};
     private static final String   HISTORY_START = "2000-01-01";
 
@@ -355,7 +355,7 @@ public class HistoryActivity extends AppCompatActivity {
         streakContainer.removeAllViews();
         for (int i = 0; i <= LABELS.length; i++) {
             boolean all = i == LABELS.length;
-            int[] s = streaks(days, all ? -1 : i);
+            int[] s = ProgressMath.streaks(days, all ? ProgressMath.ALL : i, ActivityLog.today());
 
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
@@ -373,41 +373,6 @@ public class HistoryActivity extends AppCompatActivity {
             row.addView(best);
             streakContainer.addView(row);
         }
-    }
-
-    /** Returns {current, best}. Today only counts once done, so an unfinished today doesn't break the streak. */
-    private int[] streaks(TreeMap<String, HistoryRepository.DayRecord> days, int discipline) {
-        if (days.isEmpty()) return new int[]{0, 0};
-
-        Calendar c = Calendar.getInstance();
-        String todayKey = ActivityLog.dayKey(c.getTime());
-        if (!done(days.get(todayKey), discipline)) c.add(Calendar.DAY_OF_YEAR, -1);
-        int current = 0;
-        while (done(days.get(ActivityLog.dayKey(c.getTime())), discipline)) {
-            current++;
-            c.add(Calendar.DAY_OF_YEAR, -1);
-        }
-
-        int best = 0, run = 0;
-        Calendar walk = Calendar.getInstance();
-        Date first = parseKey(days.firstKey());
-        if (first == null) return new int[]{current, current};
-        walk.setTime(first);
-        while (ActivityLog.dayKey(walk.getTime()).compareTo(todayKey) <= 0) {
-            if (done(days.get(ActivityLog.dayKey(walk.getTime())), discipline)) {
-                run++;
-                best = Math.max(best, run);
-            } else {
-                run = 0;
-            }
-            walk.add(Calendar.DAY_OF_YEAR, 1);
-        }
-        return new int[]{current, Math.max(best, current)};
-    }
-
-    private boolean done(HistoryRepository.DayRecord r, int discipline) {
-        if (r == null) return false;
-        return discipline < 0 ? r.doneCount() == LABELS.length : isDone(r, discipline);
     }
 
     private void renderTrends(TreeMap<String, HistoryRepository.DayRecord> days) {
@@ -481,12 +446,7 @@ public class HistoryActivity extends AppCompatActivity {
     // ─── Calculations ────────────────────────────────────────────────────────
 
     private boolean isDone(HistoryRepository.DayRecord r, int discipline) {
-        switch (discipline) {
-            case 0:  return r.bible;
-            case 1:  return r.prayed;
-            case 2:  return r.journal;
-            default: return r.memorize;
-        }
+        return ProgressMath.isDone(r, discipline);
     }
 
     private int countInMonth(TreeMap<String, HistoryRepository.DayRecord> days, Calendar monthStart, int discipline) {

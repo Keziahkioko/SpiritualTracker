@@ -26,14 +26,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProp("cloudinary.cloudName")}\"")
-        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localProp("cloudinary.uploadPreset")}\"")
-        buildConfigField("String", "NOTIFY_URL", "\"${localProp("notify.url")}\"")
-        buildConfigField("String", "PIPEDREAM_URL", "\"${localProp("pipedream.url")}\"")
+        // Base URL of the Vercel relay in server/ (push notifications + upload signing).
+        buildConfigField("String", "RELAY_URL", "\"${localProp("relay.url").trimEnd('/')}\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Shrinks and obfuscates release builds; keep-rules live in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

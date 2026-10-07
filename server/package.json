@@ -1,0 +1,12 @@
+{
+  "name": "spiritual-tracker-relay",
+  "private": true,
+  "type": "module",
+  "description": "Authenticated push-notification relay and Cloudinary upload signer for Spiritual Tracker",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

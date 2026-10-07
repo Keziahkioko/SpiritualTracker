@@ -178,8 +178,7 @@ public class BibleActivity extends AppCompatActivity {
                 checkIfTeamIsDone();
                 PartnerNotifier.incrementUnread(partnerId, "unreadBible");
                 PartnerNotifier.notifyPartner(partnerId, "Goal Completed! ✅",
-                        myName + " just finished their reading for today!", "bible_update", "",
-                        BuildConfig.PIPEDREAM_URL);
+                        myName + " just finished their reading for today!", "bible_update", "");
             }
         });
 
@@ -197,8 +196,7 @@ public class BibleActivity extends AppCompatActivity {
             }
             PartnerNotifier.incrementUnread(partnerId, "unreadBible");
             PartnerNotifier.notifyPartner(partnerId, "You've been nudged! ✨",
-                    myName + " is reminding you to read the Word! 📖", "bible_nudge", "",
-                    BuildConfig.PIPEDREAM_URL);
+                    myName + " is reminding you to read the Word! 📖", "bible_nudge", "");
             Toast.makeText(this, "Nudge sent! ✨", Toast.LENGTH_SHORT).show();
         });
     }

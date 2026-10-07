@@ -105,6 +105,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 intent = new Intent(context, PrayerActivity.class);
                 break;
 
+            case "history":
+                intent = new Intent(context, HistoryActivity.class);
+                break;
+
             case "memorize":
             case "verse_reminder":
                 intent = new Intent(context, MemorizeActivity.class);

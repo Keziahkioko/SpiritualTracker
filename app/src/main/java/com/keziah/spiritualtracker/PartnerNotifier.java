@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -19,12 +21,16 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-/** Sends push notifications and unread-badge bumps to the linked partner. */
+/**
+ * Sends push notifications and unread-badge bumps to the linked partner.
+ * Pushes go through our relay (server/api/notify.js), which checks who is signed in and looks
+ * up the partner's device itself, so the app never handles the partner's push token.
+ */
 public final class PartnerNotifier {
 
     private static final String TAG = "PartnerNotifier";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    private static final OkHttpClient CLIENT = new OkHttpClient();
+    static final OkHttpClient CLIENT = new OkHttpClient();
 
     private PartnerNotifier() {}
 
@@ -35,45 +41,40 @@ public final class PartnerNotifier {
                 .addOnFailureListener(e -> Log.w(TAG, "Unread bump failed", e));
     }
 
-    /** Looks up the partner's FCM token, then posts to the push relay at {@code relayUrl}. */
-    public static void notifyPartner(String partnerId, String title, String body,
-                                     String type, String docId, String relayUrl) {
+    /** {@code type} must be one the relay accepts; it decides which screen the tap opens. */
+    public static void notifyPartner(String partnerId, String title, String body, String type, String docId) {
         if (partnerId == null || partnerId.isEmpty()) return;
-        FirebaseFirestore.getInstance().collection("users").document(partnerId).get()
-                .addOnSuccessListener(doc -> {
-                    String token = doc.getString("fcmToken");
-                    if (token != null && !token.isEmpty()) send(token, title, body, type, docId, relayUrl);
-                })
-                .addOnFailureListener(e -> Log.w(TAG, "Partner token lookup failed", e));
-    }
-
-    public static void send(String token, String title, String body,
-                            String type, String docId, String relayUrl) {
-        if (relayUrl == null || relayUrl.isEmpty()) {
-            Log.w(TAG, "No push relay URL configured in local.properties");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String relay = BuildConfig.RELAY_URL;
+        if (user == null) return;
+        if (relay == null || relay.isEmpty()) {
+            Log.w(TAG, "relay.url is not set in local.properties; skipping push");
             return;
         }
-        try {
-            JSONObject json = new JSONObject();
-            json.put("token", token);
-            json.put("title", title);
-            json.put("body", body);
-            json.put("type", type == null ? "" : type);
-            json.put("docId", docId == null ? "" : docId);
-            Request request = new Request.Builder()
-                    .url(relayUrl)
-                    .post(RequestBody.create(json.toString(), JSON))
-                    .build();
-            CLIENT.newCall(request).enqueue(new Callback() {
-                @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    Log.w(TAG, "Push request failed", e);
-                }
-                @Override public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    response.close();
-                }
-            });
-        } catch (Exception e) {
-            Log.e(TAG, "Could not build push request", e);
-        }
+        user.getIdToken(false).addOnSuccessListener(result -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("title", title);
+                json.put("body", body);
+                json.put("type", type);
+                json.put("docId", docId == null ? "" : docId);
+                Request request = new Request.Builder()
+                        .url(relay + "/api/notify")
+                        .header("Authorization", "Bearer " + result.getToken())
+                        .post(RequestBody.create(json.toString(), JSON))
+                        .build();
+                CLIENT.newCall(request).enqueue(new Callback() {
+                    @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        Log.w(TAG, "Push request failed", e);
+                    }
+                    @Override public void onResponse(@NonNull Call call, @NonNull Response response) {
+                        if (!response.isSuccessful()) Log.w(TAG, "Relay refused push: HTTP " + response.code());
+                        response.close();
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Could not build push request", e);
+            }
+        }).addOnFailureListener(e -> Log.w(TAG, "Couldn't get sign-in token for push", e));
     }
 }

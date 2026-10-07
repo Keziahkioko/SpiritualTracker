@@ -1,13 +1,14 @@
-package com.keziah.spiritualtracker; // Make sure this matches your package name!
+package com.keziah.spiritualtracker;
 
 import android.app.Application;
+import android.util.Log;
+
 import com.cloudinary.android.MediaManager;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class SpiritualTrackerApp extends Application {
-
-    private static final String CLOUD_NAME = BuildConfig.CLOUDINARY_CLOUD_NAME;
 
     @Override
     public void onCreate() {
@@ -15,10 +16,11 @@ public class SpiritualTrackerApp extends Application {
 
         try {
             Map<String, String> config = new HashMap<>();
-            config.put("cloud_name", CLOUD_NAME);
-            MediaManager.init(this, config);
+            config.put("cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME);
+            // Uploads are signed by our relay instead of using an open unsigned preset.
+            MediaManager.init(this, new RelaySignatureProvider(), config);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("SpiritualTrackerApp", "Cloudinary init failed", e);
         }
     }
 }

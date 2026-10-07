@@ -403,6 +403,6 @@ public class SharedBoardFragment extends Fragment {
     }
 
     private void notifyPartner(String title, String body, String type) {
-        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId, BuildConfig.PIPEDREAM_URL);
+        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId);
     }
 }

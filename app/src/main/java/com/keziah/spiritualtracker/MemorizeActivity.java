@@ -52,8 +52,6 @@ public class MemorizeActivity extends AppCompatActivity {
     private static final int[]  INTERVALS    = {1, 2, 4, 7, 30};
     private static final int    MASTERED_IDX = 4;
     private static final String DATE_FMT     = "yyyy-MM-dd";
-    private static final String NOTIFY_URL   =
-            BuildConfig.NOTIFY_URL;
 
     // Views
     private RecyclerView                 rvVerses;
@@ -76,7 +74,6 @@ public class MemorizeActivity extends AppCompatActivity {
     private String               currentUserId;
     private String               partnerId;
     private String               myName;
-    private String               partnerFcmToken;
     private ListenerRegistration myVerseListener;
     private ListenerRegistration partnerVerseListener;
 
@@ -160,7 +157,6 @@ public class MemorizeActivity extends AppCompatActivity {
 
                         db.collection("users").document(partnerId).get()
                                 .addOnSuccessListener(pDoc -> {
-                                    partnerFcmToken = pDoc.getString("fcmToken");
                                     // Show partner's name on the pill label
                                     String pName = pDoc.getString("name");
                                     if (tvTogglePartnerLabel != null && pName != null) {
@@ -598,14 +594,9 @@ public class MemorizeActivity extends AppCompatActivity {
     // ─── Notifications ───────────────────────────────────────────────────────
 
     private void notifyPartnerOfMastery(String reference) {
-        if (partnerFcmToken == null) return;
-        sendPush(partnerFcmToken,
+        PartnerNotifier.notifyPartner(partnerId,
                 myName + " just mastered a verse!",
-                "\"" + reference + "\" — keep going!");
-    }
-
-    private void sendPush(String token, String title, String body) {
-        PartnerNotifier.send(token, title, body, "memorize", "", NOTIFY_URL);
+                "\"" + reference + "\" — keep going!", "memorize", "");
     }
 
     // ─── Delete ──────────────────────────────────────────────────────────────
@@ -757,13 +748,7 @@ public class MemorizeActivity extends AppCompatActivity {
     /** Due any time on its review day, not only after the exact minute it was scheduled. */
     static boolean isDue(MemoryVerse v) {
         if (v.getNextReviewDate() == null || "mastered".equals(v.getStage())) return false;
-        Calendar tomorrow = Calendar.getInstance();
-        tomorrow.add(Calendar.DAY_OF_YEAR, 1);
-        tomorrow.set(Calendar.HOUR_OF_DAY, 0);
-        tomorrow.set(Calendar.MINUTE, 0);
-        tomorrow.set(Calendar.SECOND, 0);
-        tomorrow.set(Calendar.MILLISECOND, 0);
-        return v.getNextReviewDate().toDate().before(tomorrow.getTime());
+        return ProgressMath.isDueOn(v.getNextReviewDate().toDate(), new Date());
     }
 
     /** Later parts of a passage are parked ~10 years out until the previous part advances. */

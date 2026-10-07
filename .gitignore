@@ -16,3 +16,7 @@ local.properties
 
 # Firebase config
 google-services.json
+
+# Relay dependencies
+node_modules/
+.vercel/

@@ -121,7 +121,6 @@ public class ConnectionFragment extends Fragment {
     private boolean hasScrolledToUnread = false;
 
     // --- AUDIO RECORDING VARIABLES ---
-    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
     private LinearLayout layoutRecordingUI;
     private TextView tvRecordTimer;
     private ImageButton btnDiscardAudio;
@@ -496,7 +495,7 @@ public class ConnectionFragment extends Fragment {
         btnSendAudio.setEnabled(false);
 
         MediaManager.get().upload(localAudioPath)
-                .unsigned(UPLOAD_PRESET)
+                .option("folder", RelaySignatureProvider.FOLDER)
                 .option("resource_type", "auto")
                 .callback(new UploadCallback() {
                     @Override public void onStart(String requestId) {}
@@ -834,7 +833,7 @@ public class ConnectionFragment extends Fragment {
     }
 
     private void notifyPartner(String title, String body, String type) {
-        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId, BuildConfig.PIPEDREAM_URL);
+        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId);
     }
 
 

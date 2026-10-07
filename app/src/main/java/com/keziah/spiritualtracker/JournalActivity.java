@@ -60,8 +60,6 @@ public class JournalActivity extends AppCompatActivity {
     // --- NOTIFICATION VARIABLE ---
     private String partnerId = null;
 
-    private static final String CLOUD_NAME = BuildConfig.CLOUDINARY_CLOUD_NAME;
-    private static final String UPLOAD_PRESET = BuildConfig.CLOUDINARY_UPLOAD_PRESET;
 
     private Runnable timerRunnable = new Runnable() {
         @Override
@@ -302,7 +300,7 @@ public class JournalActivity extends AppCompatActivity {
     private void uploadAudioToCloudinary(String title, String content, String status) {
         binding.btnSaveJournal.setText("UPLOADING AUDIO...");
         MediaManager.get().upload(localAudioPath)
-                .unsigned(UPLOAD_PRESET)
+                .option("folder", RelaySignatureProvider.FOLDER)
                 .option("resource_type", "auto")
                 .callback(new UploadCallback() {
                     @Override public void onSuccess(String requestId, Map resultData) {
@@ -395,7 +393,7 @@ public class JournalActivity extends AppCompatActivity {
                         com.google.firebase.firestore.SetOptions.merge());
         PartnerNotifier.incrementUnread(partnerId, "unreadJournal");
         PartnerNotifier.notifyPartner(partnerId, "New Journal Entry",
-                authorName + " published: " + title, "journal_new", docId, BuildConfig.NOTIFY_URL);
+                authorName + " published: " + title, "journal_new", docId);
     }
 
     private void onSaveFailed() {

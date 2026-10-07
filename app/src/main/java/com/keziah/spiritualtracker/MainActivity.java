@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private String partnerId = null;
     private String todayDate;
     private boolean namePromptShown = false;
+    private boolean checkedInvites = false;
+    private ListenerRegistration inviteListener;
 
     private ListenerRegistration userListener;
     private ListenerRegistration myDayListener;
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         saveFcmToken();
         requestNotificationPermission();
         DailyVerseReminderWorker.schedule(this);
+        ReminderWorker.schedule(this);
 
         setupProgressListeners();
         handleNotificationIntent(getIntent());
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         binding.cardWeek.setOnClickListener(openHistory);
         binding.cardProgress.setOnClickListener(openHistory);
         binding.tvViewHistory.setOnClickListener(openHistory);
+        binding.tvLinkPartner.setOnClickListener(v -> showLinkPartnerDialog());
     }
 
     @Override
@@ -117,8 +121,10 @@ public class MainActivity extends AppCompatActivity {
         if (!now.equals(todayDate)) {
             todayDate = now;
             attachMyDayListeners();
-            setupPartnerListeners();
         }
+        // Re-attach every time: a partner listener that hit "permission denied" (e.g. in the
+        // moments before a new link is confirmed by both sides) stops for good.
+        if (partnerId != null) setupPartnerListeners();
         loadHeatmap();
     }
 
@@ -201,6 +207,12 @@ public class MainActivity extends AppCompatActivity {
 
                     String newPartnerId = snap.getString("partnerId");
                     if (newPartnerId != null && newPartnerId.isEmpty()) newPartnerId = null;
+                    binding.tvLinkPartner.setVisibility(newPartnerId == null ? View.VISIBLE : View.GONE);
+                    if (newPartnerId == null && !checkedInvites) {
+                        // Someone may have accepted my code while the app was closed.
+                        checkedInvites = true;
+                        PartnerLink.completeAcceptedInvites(currentUserId, null);
+                    }
                     if (newPartnerId != null && !newPartnerId.equals(partnerId)) {
                         partnerId = newPartnerId;
                         setupPartnerListeners();
@@ -414,8 +426,11 @@ public class MainActivity extends AppCompatActivity {
                 resetUnreadCount("unreadPrayer");
                 startActivity(new Intent(this, PrayerActivity.class));
                 break;
-            case "verse_reminder":
+            case "verse_reminder": case "memorize":
                 startActivity(new Intent(this, MemorizeActivity.class));
+                break;
+            case "history":
+                startActivity(new Intent(this, HistoryActivity.class));
                 break;
         }
     }
@@ -428,5 +443,96 @@ public class MainActivity extends AppCompatActivity {
         if (legacyBibleListener != null) legacyBibleListener.remove();
         if (partnerListener     != null) partnerListener.remove();
         if (partnerDayListener  != null) partnerDayListener.remove();
+        if (inviteListener      != null) inviteListener.remove();
+    }
+
+    // ─── Partner linking ─────────────────────────────────────────────────────
+
+    private void showLinkPartnerDialog() {
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Link your partner")
+                .setMessage("One of you shares a code, the other enters it. Codes last 24 hours.")
+                .setPositiveButton("Share my code", (d, w) -> createAndShowCode())
+                .setNegativeButton("Enter a code", (d, w) -> showEnterCodeDialog())
+                .setNeutralButton("Cancel", null)
+                .show();
+    }
+
+    private void createAndShowCode() {
+        PartnerLink.createInvite(currentUserId, new PartnerLink.Result() {
+            @Override public void onSuccess(String code) {
+                if (isFinishing()) return;
+                TextView codeView = new TextView(MainActivity.this);
+                codeView.setText(code.substring(0, 3) + " " + code.substring(3));
+                codeView.setTextSize(34);
+                codeView.setLetterSpacing(0.15f);
+                codeView.setTextIsSelectable(true);
+                codeView.setGravity(android.view.Gravity.CENTER);
+                codeView.setTextColor(0xFF4527A0);
+                codeView.setPadding(0, 24, 0, 8);
+
+                androidx.appcompat.app.AlertDialog dialog =
+                        new MaterialAlertDialogBuilder(MainActivity.this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                                .setTitle("Your code")
+                                .setMessage("Ask your partner to open the app, tap \"Link your partner\" → \"Enter a code\". This screen updates once they've joined.")
+                                .setView(codeView)
+                                .setPositiveButton("Share", null)
+                                .setNegativeButton("Close", null)
+                                .create();
+                dialog.setOnShowListener(x -> dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)
+                        .setOnClickListener(b -> {
+                            Intent share = new Intent(Intent.ACTION_SEND);
+                            share.setType("text/plain");
+                            share.putExtra(Intent.EXTRA_TEXT, "Join me on Spiritual Tracker! My partner code is " + code);
+                            startActivity(Intent.createChooser(share, "Share code"));
+                        }));
+                dialog.setOnDismissListener(x -> {
+                    if (inviteListener != null) { inviteListener.remove(); inviteListener = null; }
+                });
+                dialog.show();
+
+                if (inviteListener != null) inviteListener.remove();
+                inviteListener = db.collection("invites").document(code).addSnapshotListener((snap, e) -> {
+                    if (snap == null || !snap.exists() || snap.getString("acceptedBy") == null) return;
+                    PartnerLink.completeAcceptedInvites(currentUserId, new PartnerLink.Result() {
+                        @Override public void onSuccess(String partner) {
+                            Toast.makeText(MainActivity.this, "You're linked! 🎉", Toast.LENGTH_LONG).show();
+                            if (dialog.isShowing()) dialog.dismiss();
+                        }
+                        @Override public void onError(String message) {}
+                    });
+                });
+            }
+            @Override public void onError(String message) {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showEnterCodeDialog() {
+        EditText input = new EditText(this);
+        input.setHint("e.g. ABC 234");
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        FrameLayout wrap = new FrameLayout(this);
+        wrap.setPadding(pad, pad / 2, pad, 0);
+        wrap.addView(input);
+
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Enter your partner's code")
+                .setView(wrap)
+                .setPositiveButton("Link", (d, w) -> PartnerLink.acceptInvite(currentUserId,
+                        input.getText().toString(), new PartnerLink.Result() {
+                            @Override public void onSuccess(String partner) {
+                                Toast.makeText(MainActivity.this,
+                                        "Linked! Your partner's app will finish linking next time it opens.",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            @Override public void onError(String message) {
+                                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                            }
+                        }))
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

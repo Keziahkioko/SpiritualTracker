@@ -59,10 +59,12 @@ A tabbed experience (via `ViewPager2` + bottom navigation) with three sections:
 
 ### 🔔 Notifications & Accountability
 - Firebase Cloud Messaging (FCM) tokens are stored per-user so partners can nudge or be notified of each other's activity (new journal entry, prayer chat message, daily verse reminder, etc.).
-- Outbound notifications are relayed through a small external webhook (since FCM "send" calls require server credentials that shouldn't live in a client app) — see [Push Notification Relay](#3-push-notification-relay) below.
+- Partner notifications go through a small authenticated relay in [`server/`](server/) (free Vercel function). It checks who is signed in and only ever notifies that person's linked partner — see [Push Notification Relay](#3-push-notification-relay).
+- Gentle local reminders: an 8pm nudge listing anything still undone today, a Sunday-evening summary of both partners' week, and the 8am memory-verse reminder.
 
-### 🔐 Auth
+### 🔐 Auth & partner linking
 - Email/password sign-up and sign-in via Firebase Authentication, with auto-login if a session already exists.
+- **Link your partner** from the dashboard: one partner shares a 6-character code (valid 24 hours), the other enters it. Each side only writes its own `partnerId`; sharing works once both point at each other.
 
 ---
 
@@ -139,16 +141,13 @@ app/src/main/java/com/keziah/spiritualtracker/
 
 ### 2. Cloudinary Setup (audio/image uploads)
 1. Create a free account at [cloudinary.com](https://cloudinary.com/).
-2. Create an **unsigned upload preset**.
-3. Copy `local.properties.example` into your `local.properties` and set `cloudinary.cloudName` and `cloudinary.uploadPreset`. These are exposed to the app as `BuildConfig` fields; `local.properties` is git-ignored, so they never get committed.
+2. Copy `local.properties.example` into your `local.properties` and set `cloudinary.cloudName`.
+3. Uploads are **signed** by the relay (`/api/cloudinary-signature`), so no unsigned upload preset is needed — delete any you created earlier.
 
 ### 3. Push Notification Relay
-Sending FCM pushes requires a server-side credential (the Firebase Admin SDK), which can't safely live inside the Android app. This project calls a small external HTTP endpoint that does that server-side send on its behalf:
+Sending FCM pushes needs a server-side credential that can't live in the app, so the app calls the relay in [`server/`](server/), deployed for free on Vercel. Follow [`server/README.md`](server/README.md) to deploy it, then set `relay.url` in `local.properties` to its base URL.
 
-- `DailyVerseReminderWorker`, `MemorizeActivity`, and `JournalActivity` call `BuildConfig.NOTIFY_URL` (`notify.url` in `local.properties`).
-- `BibleActivity`, `ConnectionFragment`, `JournalDetailActivity`, and `SharedBoardFragment` call `BuildConfig.PIPEDREAM_URL` (`pipedream.url` in `local.properties`).
-
-**You will need to deploy your own relay** (a tiny serverless function using the Firebase Admin SDK to call `admin.messaging().send(...)`) and set both properties to it before notifications will work for your own Firebase project.
+The app sends its Firebase sign-in token with every request; the relay verifies it, looks up the caller's mutual partner and their device token itself, and sends the push. (This replaces the old Pipedream workflow, which shuts down in March 2027, and the old unauthenticated Vercel webhook.)
 
 ### 4. Build & Run
 ```bash
@@ -185,11 +184,11 @@ This repository's first commit includes `app/google-services.json`, which contai
 
 ## Known Limitations / Roadmap
 
-- No in-app partner invite/pairing flow — `partnerId` must be set manually in Firestore today.
-- Push relay endpoints are split across two different properties/services; these should be consolidated.
+- No in-app way to unlink partners yet (clear `partnerId` on both user docs to unlink).
+- Voice-note links are unguessable but public URLs; making them fully private would need signed delivery URLs.
 - `journal_entries` vs. `journals/{id}/replies` collection naming is inconsistent and worth normalizing.
-- `isMinifyEnabled` is `false` for release builds — consider enabling R8/ProGuard with the included `proguard-rules.pro` before shipping.
-- No automated test coverage beyond the default generated `ExampleUnitTest` / `ExampleInstrumentedTest`.
+- Release builds are shrunk with R8 (`proguard-rules.pro` keeps the Firestore model classes).
+- Unit tests cover streaks, reminders' "what's left today", weekly counts, verse due dates and invite codes (`./gradlew testDebugUnitTest`); screens have no automated UI tests yet.
 
 ## Contributing
 
