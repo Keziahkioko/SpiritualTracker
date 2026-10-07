@@ -22,11 +22,12 @@
             android:src="@drawable/header_bg"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Dark Overlay -->
+        <!-- Shade over the photo (darker at the top for the clock, and at the bottom) -->
         <View
+            android:id="@+id/photoScrim"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:background="#40000000"
+            android:background="@drawable/bg_photo_scrim"
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Logout icon -->
@@ -69,9 +70,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/days_together"
-            android:textColor="#CCFFFFFF"
+            android:textColor="#E6FFFFFF"
             android:textSize="14sp"
             android:letterSpacing="0.2"
+            android:shadowColor="#99000000"
+            android:shadowDy="1"
+            android:shadowRadius="6"
             android:layout_marginTop="100dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -86,6 +90,9 @@
             android:textColor="#FFFFFF"
             android:textSize="72sp"
             android:textStyle="bold"
+            android:shadowColor="#80000000"
+            android:shadowDy="2"
+            android:shadowRadius="12"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvStreakTitle" />

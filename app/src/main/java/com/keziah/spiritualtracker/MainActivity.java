@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        drawPhotoBehindStatusBar();
 
         mAuth = FirebaseAuth.getInstance();
         db    = FirebaseFirestore.getInstance();
@@ -129,6 +130,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ─── Setup ───────────────────────────────────────────────────────────────
+
+    /** Lets the header photo run up behind the clock instead of under a flat purple bar. */
+    private void drawPhotoBehindStatusBar() {
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
+
+        View[] pushedDown = {binding.ivLogout, binding.tvLinkPartner, binding.tvStreakTitle};
+        int[] baseMargins = new int[pushedDown.length];
+        for (int i = 0; i < pushedDown.length; i++) {
+            baseMargins[i] = ((android.view.ViewGroup.MarginLayoutParams) pushedDown[i].getLayoutParams()).topMargin;
+        }
+        int photoHeight = binding.ivHeader.getLayoutParams().height;
+        View content = (View) binding.ivHeader.getParent();
+        int contentBottom = content.getPaddingBottom();
+
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            androidx.core.graphics.Insets bars =
+                    insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+            binding.ivHeader.getLayoutParams().height = photoHeight + bars.top;
+            binding.photoScrim.getLayoutParams().height = photoHeight + bars.top;
+            for (int i = 0; i < pushedDown.length; i++) {
+                ((android.view.ViewGroup.MarginLayoutParams) pushedDown[i].getLayoutParams()).topMargin =
+                        baseMargins[i] + bars.top;
+            }
+            content.setPadding(content.getPaddingLeft(), content.getPaddingTop(),
+                    content.getPaddingRight(), contentBottom + bars.bottom);
+            content.requestLayout();
+            return insets;
+        });
+    }
 
     private void saveFcmToken() {
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
