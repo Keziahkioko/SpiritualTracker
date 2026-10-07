@@ -110,6 +110,10 @@ public class LoginActivity extends AppCompatActivity {
     // Helper method to switch screens
     private void goToDashboard() {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        // A notification tapped while the app was closed lands here; pass its routing info on.
+        if (getIntent() != null && getIntent().getExtras() != null) {
+            intent.putExtras(getIntent().getExtras());
+        }
         startActivity(intent);
         finish(); // Prevents user from pressing "Back" to go back to login
     }

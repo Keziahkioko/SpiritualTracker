@@ -100,6 +100,10 @@ public class ConnectionFragment extends Fragment {
     private ListenerRegistration typingListener;
     private ListenerRegistration partnerStatusListener;
     private ListenerRegistration chatFeedListener;
+    private ListenerRegistration chatReceivedListener;
+    private List<DocumentSnapshot> sentDocs = new ArrayList<>();
+    private List<DocumentSnapshot> receivedDocs = new ArrayList<>();
+
     /** Stops us from stacking duplicate chat listeners when the user doc updates often. */
     private String chatFeedPartnerId = null;
     private String typingPartnerId = null;
@@ -295,13 +299,17 @@ public class ConnectionFragment extends Fragment {
 
     private void updateTypingStatus(String status) {
         if (currentUserId != null) {
-            db.collection("users").document(currentUserId).update("typingInPrayer", status);
+            db.collection("users").document(currentUserId)
+                    .set(java.util.Collections.singletonMap("typingInPrayer", status),
+                            com.google.firebase.firestore.SetOptions.merge());
         }
     }
 
     private void updateRecordingStatus(String status) {
         if (currentUserId != null) {
-            db.collection("users").document(currentUserId).update("recordingInPrayer", status);
+            db.collection("users").document(currentUserId)
+                    .set(java.util.Collections.singletonMap("recordingInPrayer", status),
+                            com.google.firebase.firestore.SetOptions.merge());
         }
     }
 
@@ -339,6 +347,7 @@ public class ConnectionFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
+                if (position == RecyclerView.NO_POSITION || position >= chatList.size()) return;
                 selectedReplyForQuoting = chatList.get(position);
                 editingReplyId = null;
 
@@ -401,7 +410,9 @@ public class ConnectionFragment extends Fragment {
 
     private void toggleRecording() {
         if (!isRecording && !isPaused) {
-            localAudioPath = requireContext().getExternalCacheDir().getAbsolutePath() + "/chat_vn_" + System.currentTimeMillis() + ".m4a";
+            java.io.File cacheDir = requireContext().getExternalCacheDir();
+            if (cacheDir == null) cacheDir = requireContext().getCacheDir();
+            localAudioPath = cacheDir.getAbsolutePath() + "/chat_vn_" + System.currentTimeMillis() + ".m4a";
             audioRecorder.startRecording(localAudioPath);
             updateRecordingStatus("prayer_chat");
             isRecording = true;
@@ -584,14 +595,10 @@ public class ConnectionFragment extends Fragment {
         selfListener = db.collection("users").document(currentUserId).addSnapshotListener((documentSnapshot, e) -> {
             if (e != null || documentSnapshot == null || !documentSnapshot.exists()) return;
 
-            String nameFromDb = documentSnapshot.getString("name");
-            if (nameFromDb != null && !nameFromDb.isEmpty()) {
-                myName = nameFromDb;
-            } else {
-                myName = "Your partner";
-            }
-            
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            myName = UserProfile.displayName(documentSnapshot);
+
+            String today = ActivityLog.today();
+
             
             // Date-based Checkbox Reset
             String prayedTodayDate = documentSnapshot.getString("prayedTodayDate");
@@ -609,7 +616,7 @@ public class ConnectionFragment extends Fragment {
             } else {
                 stopPartnerStatusListener();
                 stopPartnerActivityListener();
-                stopChatFeed();
+        stopChatFeed();
             }
         });
     }
@@ -642,6 +649,13 @@ public class ConnectionFragment extends Fragment {
             chatFeedListener.remove();
             chatFeedListener = null;
         }
+        if (chatReceivedListener != null) {
+            chatReceivedListener.remove();
+            chatReceivedListener = null;
+        }
+        sentDocs = new ArrayList<>();
+        receivedDocs = new ArrayList<>();
+
         chatFeedPartnerId = null;
         hasScrolledToUnread = false;
         firstUnreadMessageId = null;
@@ -655,9 +669,13 @@ public class ConnectionFragment extends Fragment {
 
     private void updateMyCheckbox(String field, boolean isChecked) {
         if (currentUserId == null) return;
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String today = ActivityLog.today();
+        if ("prayedTodayDate".equals(field)) ActivityLog.setPrayed(currentUserId, isChecked);
+        else ActivityLog.setPrayedForPartner(currentUserId, isChecked);
 
-        db.collection("users").document(currentUserId).update(field, isChecked ? today : "")
+        Map<String, Object> data = new HashMap<>();
+        data.put(field, isChecked ? today : "");
+        db.collection("users").document(currentUserId).set(data, com.google.firebase.firestore.SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     if (isChecked) {
                         incrementPartnerUnread("unreadPrayer");
@@ -679,10 +697,10 @@ public class ConnectionFragment extends Fragment {
         partnerStatusListener = db.collection("users").document(partnerId).addSnapshotListener((snapshot, error) -> {
             if (error != null || snapshot == null || !snapshot.exists()) return;
 
-            String partnerName = snapshot.getString("name");
-            if (partnerName != null) tvPartnerNameStatus.setText(partnerName + "'s Status");
+            tvPartnerNameStatus.setText(UserProfile.partnerName(snapshot) + "'s Status");
 
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            String today = ActivityLog.today();
+
             
             boolean hasPartnerPrayedToday = today.equals(snapshot.getString("prayedTodayDate"));
             boolean hasPartnerPrayedForMe = today.equals(snapshot.getString("prayedForPartnerDate"));
@@ -707,75 +725,89 @@ public class ConnectionFragment extends Fragment {
         if (chatFeedListener != null && partnerId.equals(chatFeedPartnerId)) {
             return;
         }
-        if (chatFeedListener != null) {
-            chatFeedListener.remove();
-            chatFeedListener = null;
-        }
+        stopChatFeed();
         chatFeedPartnerId = partnerId;
         hasScrolledToUnread = false;
         firstUnreadMessageId = null;
 
-        Query q = db.collection("prayer_messages")
-                .where(Filter.or(
-                        Filter.and(
-                                Filter.equalTo("senderId", currentUserId),
-                                Filter.equalTo("receiverId", partnerId)
-                        ),
-                        Filter.and(
-                                Filter.equalTo("senderId", partnerId),
-                                Filter.equalTo("receiverId", currentUserId)
-                        )
-                ))
-                .orderBy("timestamp", Query.Direction.ASCENDING);
-
-        chatFeedListener = q.addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        Log.e("ConnectionFragment", "Chat feed error (if index missing, check Logcat link from Firebase)", error);
-                        return;
-                    }
+        // Two plain equality queries instead of one OR + orderBy query. The OR form needs a
+        // composite index; without it the listener fails and each person only ever saw their
+        // own (locally cached) messages. Equality-only queries need no index; we sort here.
+        sentDocs = new ArrayList<>();
+        receivedDocs = new ArrayList<>();
+        chatFeedListener = db.collection("prayer_messages")
+                .whereEqualTo("senderId", currentUserId)
+                .whereEqualTo("receiverId", partnerId)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) { Log.e("ConnectionFragment", "Sent messages listener failed", error); return; }
                     if (snapshots == null) return;
-
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) rvConnectionFeed.getLayoutManager();
-                    int lastVisiblePosition = layoutManager != null
-                            ? layoutManager.findLastVisibleItemPosition()
-                            : -1;
-                    int totalItemsBefore = chatList.size();
-                    boolean wasAtBottom = (lastVisiblePosition >= totalItemsBefore - 2);
-
-                    chatList.clear();
-                    firstUnreadMessageId = null;
-                    int targetScrollIndex = -1;
-
-                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                        JournalReply reply = doc.toObject(JournalReply.class);
-                        if (reply != null) {
-                            reply.setReplyId(doc.getId());
-                            if (firstUnreadMessageId == null) {
-                                boolean isFromPartner = reply.getSenderId() != null && !reply.getSenderId().equals(currentUserId);
-                                if (isFromPartner && !"read".equals(reply.getStatus())) firstUnreadMessageId = reply.getReplyId();
-                            }
-                            if (firstUnreadMessageId != null && firstUnreadMessageId.equals(reply.getReplyId())) {
-                                reply.setFirstUnread(true);
-                                targetScrollIndex = chatList.size();
-                            } else {
-                                reply.setFirstUnread(false);
-                            }
-                            chatList.add(reply);
-                        }
-                    }
-                    chatAdapter.notifyDataSetChanged();
-                    markIncomingMessagesAsRead(chatList);
-
-                    if (targetScrollIndex != -1 && !hasScrolledToUnread) {
-                        rvConnectionFeed.scrollToPosition(targetScrollIndex);
-                        hasScrolledToUnread = true;
-                    } else if (chatList.size() > totalItemsBefore) {
-                        JournalReply lastMessage = chatList.get(chatList.size() - 1);
-                        if ((lastMessage.getSenderId() != null && lastMessage.getSenderId().equals(currentUserId)) || wasAtBottom) {
-                            rvConnectionFeed.scrollToPosition(chatList.size() - 1);
-                        }
-                    }
+                    sentDocs = snapshots.getDocuments();
+                    rebuildChat();
                 });
+        chatReceivedListener = db.collection("prayer_messages")
+                .whereEqualTo("senderId", partnerId)
+                .whereEqualTo("receiverId", currentUserId)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) { Log.e("ConnectionFragment", "Received messages listener failed", error); return; }
+                    if (snapshots == null) return;
+                    receivedDocs = snapshots.getDocuments();
+                    rebuildChat();
+                });
+    }
+
+    private void rebuildChat() {
+        if (!isAdded() || rvConnectionFeed == null) return;
+
+        List<JournalReply> merged = new ArrayList<>();
+        for (List<DocumentSnapshot> docs : java.util.Arrays.asList(sentDocs, receivedDocs)) {
+            for (DocumentSnapshot doc : docs) {
+                JournalReply reply = doc.toObject(JournalReply.class);
+                if (reply == null) continue;
+                reply.setReplyId(doc.getId());
+                merged.add(reply);
+            }
+        }
+        // A message still being sent has no server timestamp yet; keep it at the bottom.
+        java.util.Collections.sort(merged, (a, b) -> {
+            long ta = a.getTimestamp() != null ? a.getTimestamp().toDate().getTime() : Long.MAX_VALUE;
+            long tb = b.getTimestamp() != null ? b.getTimestamp().toDate().getTime() : Long.MAX_VALUE;
+            return Long.compare(ta, tb);
+        });
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) rvConnectionFeed.getLayoutManager();
+        int lastVisiblePosition = layoutManager != null ? layoutManager.findLastVisibleItemPosition() : -1;
+        int totalItemsBefore = chatList.size();
+        boolean wasAtBottom = (lastVisiblePosition >= totalItemsBefore - 2);
+
+        chatList.clear();
+        firstUnreadMessageId = null;
+        int targetScrollIndex = -1;
+
+        for (JournalReply reply : merged) {
+            if (firstUnreadMessageId == null) {
+                boolean isFromPartner = reply.getSenderId() != null && !reply.getSenderId().equals(currentUserId);
+                if (isFromPartner && !"read".equals(reply.getStatus())) firstUnreadMessageId = reply.getReplyId();
+            }
+            if (firstUnreadMessageId != null && firstUnreadMessageId.equals(reply.getReplyId())) {
+                reply.setFirstUnread(true);
+                targetScrollIndex = chatList.size();
+            } else {
+                reply.setFirstUnread(false);
+            }
+            chatList.add(reply);
+        }
+        chatAdapter.notifyDataSetChanged();
+        markIncomingMessagesAsRead(chatList);
+
+        if (targetScrollIndex != -1 && !hasScrolledToUnread) {
+            rvConnectionFeed.scrollToPosition(targetScrollIndex);
+            hasScrolledToUnread = true;
+        } else if (chatList.size() > totalItemsBefore) {
+            JournalReply lastMessage = chatList.get(chatList.size() - 1);
+            if ((lastMessage.getSenderId() != null && lastMessage.getSenderId().equals(currentUserId)) || wasAtBottom) {
+                rvConnectionFeed.scrollToPosition(chatList.size() - 1);
+            }
+        }
     }
 
     private void markIncomingMessagesAsRead(List<JournalReply> loadedReplies) {
@@ -798,38 +830,13 @@ public class ConnectionFragment extends Fragment {
     }
 
     private void incrementPartnerUnread(String field) {
-        if (partnerId != null && !partnerId.isEmpty()) {
-            db.collection("users").document(partnerId).update(field, FieldValue.increment(1));
-        }
+        PartnerNotifier.incrementUnread(partnerId, field);
     }
 
     private void notifyPartner(String title, String body, String type) {
-        if (partnerId == null || partnerId.isEmpty()) return;
-        db.collection("users").document(partnerId).get().addOnSuccessListener(doc -> {
-            if (doc.exists()) {
-                String token = doc.getString("fcmToken");
-                if (token != null && !token.isEmpty()) sendNotificationToServer(token, title, body, type);
-            }
-        });
+        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId, BuildConfig.PIPEDREAM_URL);
     }
 
-    private void sendNotificationToServer(String token, String title, String body, String type) {
-        OkHttpClient client = new OkHttpClient();
-        try {
-            JSONObject json = new JSONObject();
-            json.put("token", token);
-            json.put("title", title);
-            json.put("body", body);
-            json.put("type", type);
-            json.put("docId", currentUserId);
-            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
-            Request request = new Request.Builder().url(BuildConfig.PIPEDREAM_URL).post(requestBody).build();
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {}
-                @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException { response.close(); }
-            });
-        } catch (Exception e) { e.printStackTrace(); }
-    }
 
     @Override
     public void onDestroy() {
@@ -841,7 +848,7 @@ public class ConnectionFragment extends Fragment {
         updateTypingStatus("");
         updateRecordingStatus("");
         if (isRecording || isPaused) audioRecorder.stopRecording();
-        timerHandler.removeCallbacks(typingTimeoutRunnable);
+        typingHandler.removeCallbacks(typingTimeoutRunnable);
         timerHandler.removeCallbacks(timerRunnable);
     }
 }

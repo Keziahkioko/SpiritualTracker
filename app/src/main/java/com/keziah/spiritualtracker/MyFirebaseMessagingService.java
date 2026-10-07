@@ -1,19 +1,29 @@
 package com.keziah.spiritualtracker;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Collections;
+
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
+
+    private static final String CHANNEL_ID = "JournalChatChannel";
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
@@ -26,8 +36,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // 1. Get standard notification text (if it exists)
         if (remoteMessage.getNotification() != null) {
-            title = remoteMessage.getNotification().getTitle();
-            body = remoteMessage.getNotification().getBody();
+            if (remoteMessage.getNotification().getTitle() != null) title = remoteMessage.getNotification().getTitle();
+            if (remoteMessage.getNotification().getBody() != null) body = remoteMessage.getNotification().getBody();
         }
 
         // 2. Extract custom hidden DATA sent from backend/Firebase
@@ -38,7 +48,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             if (remoteMessage.getData().containsKey("docId")) docId = remoteMessage.getData().get("docId");
         }
 
-        showNotification(title, body, type, docId);
+        showNotification(this, title, body, type, docId);
     }
 
     @Override
@@ -47,13 +57,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         saveTokenToDatabase(token);
     }
 
-    private void showNotification(String title, String body, String type, String docId) {
-        String channelId = "JournalChatChannel";
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    /** Posts a notification that opens the screen matching {@code type}. Also used for local reminders. */
+    public static void showNotification(Context context, String title, String body, String type, String docId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    channelId,
+                    CHANNEL_ID,
                     "App Notifications",
                     NotificationManager.IMPORTANCE_HIGH
             );
@@ -68,13 +84,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             case "bible_nudge":
             case "bible_update":
             case "mark_read":
-                intent = new Intent(this, BibleActivity.class);
+                intent = new Intent(context, BibleActivity.class);
                 break;
 
             case "journal_chat":
             case "journal_new":
             case "journal":
-                intent = new Intent(this, JournalListActivity.class);
+                intent = new Intent(context, JournalListActivity.class);
                 intent.putExtra("openFromNotification", true);
                 intent.putExtra("targetDocId", docId);
                 intent.putExtra("notificationType", type);
@@ -86,12 +102,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 // Fallbacks for the old strings you were using, just in case!
             case "nudge":
             case "chat":
-                intent = new Intent(this, PrayerActivity.class);
+                intent = new Intent(context, PrayerActivity.class);
+                break;
+
+            case "memorize":
+            case "verse_reminder":
+                intent = new Intent(context, MemorizeActivity.class);
                 break;
 
             default:
                 // If it doesn't match anything, just open the dashboard safely
-                intent = new Intent(this, MainActivity.class);
+                intent = new Intent(context, MainActivity.class);
                 break;
         }
 
@@ -99,13 +120,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // We use a unique request code so Intents don't overwrite each other
         int requestCode = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, requestCode, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(title)
                 .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setAutoCancel(true) // Dismisses when tapped
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent);
@@ -121,7 +143,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             FirebaseFirestore.getInstance()
                     .collection("users")
                     .document(currentUid)
-                    .update("fcmToken", token);
+                    .set(Collections.singletonMap("fcmToken", token), SetOptions.merge());
         }
     }
 }

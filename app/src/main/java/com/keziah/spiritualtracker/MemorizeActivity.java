@@ -146,9 +146,9 @@ public class MemorizeActivity extends AppCompatActivity {
     private void fetchUserThenListen() {
         db.collection("users").document(currentUserId).get()
                 .addOnSuccessListener(doc -> {
-                    myName    = doc.getString("name");
-                    if (myName == null) myName = "Your partner";
+                    myName    = UserProfile.displayName(doc);
                     partnerId = doc.getString("partnerId");
+                    if (partnerId != null && partnerId.isEmpty()) partnerId = null;
 
                     if (partnerId != null) {
                         // Show partner pill with pulse animation
@@ -196,8 +196,7 @@ public class MemorizeActivity extends AppCompatActivity {
                             masteredList.add(v);
                         } else {
                             activeList.add(v);
-                            if (v.getNextReviewDate() != null &&
-                                    v.getNextReviewDate().toDate().before(now)) due++;
+                            if (isDue(v)) due++;
                         }
                     }
 
@@ -218,7 +217,6 @@ public class MemorizeActivity extends AppCompatActivity {
         partnerVerseListener = db.collection("users").document(partnerId)
                 .collection("memory_verses")
                 .whereEqualTo("shared", true)
-                .orderBy("nextReviewDate", Query.Direction.ASCENDING)
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null) return;
                     partnerSharedList.clear();
@@ -229,6 +227,13 @@ public class MemorizeActivity extends AppCompatActivity {
                             partnerSharedList.add(v);
                         }
                     }
+                    // Sorted here: equality + orderBy on another field needs a composite index,
+                    // and without it this list silently stayed empty.
+                    java.util.Collections.sort(partnerSharedList, (a, b) -> {
+                        long ta = a.getNextReviewDate() != null ? a.getNextReviewDate().toDate().getTime() : Long.MAX_VALUE;
+                        long tb = b.getNextReviewDate() != null ? b.getNextReviewDate().toDate().getTime() : Long.MAX_VALUE;
+                        return Long.compare(ta, tb);
+                    });
                     if (viewingPartner) rebuildPartnerDisplayList();
                 });
     }
@@ -488,6 +493,9 @@ public class MemorizeActivity extends AppCompatActivity {
         int     nextIdx;
         String  newStage;
 
+        // Any honest attempt counts as today's memorization practice.
+        logPractice(verse.getReference());
+
         if (gotIt) {
             if (sameDay) {
                 Toast.makeText(this,
@@ -526,12 +534,12 @@ public class MemorizeActivity extends AppCompatActivity {
                     boolean advanced = gotIt && !newStage.equals("learning");
                     boolean isChunk  = verse.getPassageId() != null;
 
-                    if (advanced && isChunk) {
+                    if (advanced && isChunk && verse.getChunkIndex() != null) {
                         unlockNextChunk(verse.getPassageId(), verse.getChunkIndex());
                     }
                 });
 
-        if (gotIt) writeMemoTodayDate();
+        
     }
 
     private void unlockNextChunk(String passageId, int currentChunkIndex) {
@@ -580,9 +588,11 @@ public class MemorizeActivity extends AppCompatActivity {
                 });
     }
 
-    private void writeMemoTodayDate() {
+    private void logPractice(String reference) {
+        ActivityLog.addMemorize(currentUserId, reference);
         db.collection("users").document(currentUserId)
-                .update("memorizedTodayDate", todayString());
+                .set(java.util.Collections.singletonMap("memorizedTodayDate", todayString()),
+                        com.google.firebase.firestore.SetOptions.merge());
     }
 
     // ─── Notifications ───────────────────────────────────────────────────────
@@ -595,26 +605,7 @@ public class MemorizeActivity extends AppCompatActivity {
     }
 
     private void sendPush(String token, String title, String body) {
-        OkHttpClient client = new OkHttpClient();
-        try {
-            JSONObject json = new JSONObject();
-            json.put("token", token);
-            json.put("title", title);
-            json.put("body",  body);
-            RequestBody rb = RequestBody.create(
-                    json.toString(), MediaType.get("application/json; charset=utf-8"));
-            Request req = new Request.Builder().url(NOTIFY_URL).post(rb).build();
-            client.newCall(req).enqueue(new okhttp3.Callback() {
-                @Override public void onFailure(@NonNull okhttp3.Call c,
-                                                @NonNull java.io.IOException e) {
-                    android.util.Log.e("Memorize", "Push failed", e);
-                }
-                @Override public void onResponse(@NonNull okhttp3.Call c,
-                                                 @NonNull okhttp3.Response r) { r.close(); }
-            });
-        } catch (Exception e) {
-            android.util.Log.e("Memorize", "Push error", e);
-        }
+        PartnerNotifier.send(token, title, body, "memorize", "", NOTIFY_URL);
     }
 
     // ─── Delete ──────────────────────────────────────────────────────────────
@@ -633,10 +624,7 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void onVerseTapped(MemoryVerse verse) {
         if (viewingPartner) { showVerseDetailDialog(verse); return; }
-        Date now = new Date();
-        boolean due = verse.getNextReviewDate() != null &&
-                verse.getNextReviewDate().toDate().before(now);
-        if (due) showQuizDialog(verse);
+        if (isDue(verse)) showQuizDialog(verse);
         else     showVerseDetailDialog(verse);
     }
 
@@ -712,7 +700,8 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void showVerseDetailDialog(MemoryVerse verse) {
         int    idx  = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
-        String next = verse.getNextReviewDate() != null
+        String next = isLocked(verse) ? "after the previous part advances"
+                : verse.getNextReviewDate() != null
                 ? android.text.format.DateFormat.getDateFormat(this)
                 .format(verse.getNextReviewDate().toDate()) : "—";
 
@@ -762,7 +751,25 @@ public class MemorizeActivity extends AppCompatActivity {
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private String todayString() {
-        return new SimpleDateFormat(DATE_FMT, Locale.getDefault()).format(new Date());
+        return ActivityLog.today();
+    }
+
+    /** Due any time on its review day, not only after the exact minute it was scheduled. */
+    static boolean isDue(MemoryVerse v) {
+        if (v.getNextReviewDate() == null || "mastered".equals(v.getStage())) return false;
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.add(Calendar.DAY_OF_YEAR, 1);
+        tomorrow.set(Calendar.HOUR_OF_DAY, 0);
+        tomorrow.set(Calendar.MINUTE, 0);
+        tomorrow.set(Calendar.SECOND, 0);
+        tomorrow.set(Calendar.MILLISECOND, 0);
+        return v.getNextReviewDate().toDate().before(tomorrow.getTime());
+    }
+
+    /** Later parts of a passage are parked ~10 years out until the previous part advances. */
+    static boolean isLocked(MemoryVerse v) {
+        return v.getNextReviewDate() != null &&
+                v.getNextReviewDate().toDate().getTime() - System.currentTimeMillis() > 365L * 24 * 60 * 60 * 1000;
     }
 
     private String getStageLabel(MemoryVerse v) {
@@ -843,9 +850,7 @@ public class MemorizeActivity extends AppCompatActivity {
             if (h.tvShared != null)
                 h.tvShared.setVisibility(v.isShared() ? View.VISIBLE : View.GONE);
 
-            Date    now   = new Date();
-            boolean isDue = v.getNextReviewDate() != null &&
-                    v.getNextReviewDate().toDate().before(now);
+            boolean isDue  = MemorizeActivity.isDue(v);
             boolean isMast = "mastered".equals(v.getStage());
 
             if (isMast) {
@@ -861,6 +866,11 @@ public class MemorizeActivity extends AppCompatActivity {
                     h.tvDuePill.setVisibility(View.VISIBLE);
                     h.tvDuePill.setText("Review now");
                 }
+            } else if (MemorizeActivity.isLocked(v)) {
+                h.tvStage.setText("Locked 🔒");
+                h.tvStage.setTextColor(0xFF9E9E9E);
+                h.viewStripe.setBackgroundColor(0xFFE0E0E0);
+                if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
             } else {
                 h.tvStage.setText(v.getStage() != null ? capitalize(v.getStage()) : "Learning");
                 h.tvStage.setTextColor(0xFF5E35B1);

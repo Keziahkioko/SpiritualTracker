@@ -247,7 +247,10 @@ public class JournalListActivity extends AppCompatActivity {
                         if (value != null) {
                             for (DocumentSnapshot d : value.getDocuments()) {
                                 JournalEntry entry = d.toObject(JournalEntry.class);
-                                if (entry != null) {
+                                // Drafts are private until published.
+                                boolean partnersDraft = entry != null && "draft".equals(entry.getStatus())
+                                        && !myId.equals(entry.getUserId());
+                                if (entry != null && !partnersDraft) {
                                     entry.setDocId(d.getId());
                                     fullJournalList.add(entry);
                                 }

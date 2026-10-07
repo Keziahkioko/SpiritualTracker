@@ -75,7 +75,17 @@ public class PrayerVaultActivity extends AppCompatActivity {
         rvVault.setAdapter(adapter);
 
         setupTabs();
-        loadAnsweredPrayers();
+        if (partnerId == null && currentUserId != null) {
+            // Opened before the board had loaded the partner id; look it up ourselves.
+            db.collection("users").document(currentUserId).get()
+                    .addOnSuccessListener(doc -> {
+                        partnerId = doc.getString("partnerId");
+                        loadAnsweredPrayers();
+                    })
+                    .addOnFailureListener(e -> loadAnsweredPrayers());
+        } else {
+            loadAnsweredPrayers();
+        }
     }
 
     private void setupTabs() {
@@ -131,27 +141,32 @@ public class PrayerVaultActivity extends AppCompatActivity {
     }
 
     private void loadAnsweredPrayers() {
-        if (currentUserId == null || partnerId == null) return;
+        if (currentUserId == null) return;
+
+        // Only our two authors' requests; filtered and sorted here so no composite index is needed.
+        List<String> authors = new ArrayList<>();
+        authors.add(currentUserId);
+        if (partnerId != null && !partnerId.isEmpty()) authors.add(partnerId);
 
         vaultListener = db.collection("shared_prayers")
-                .whereEqualTo("isAnswered", true)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .whereIn("authorId", authors)
                 .addSnapshotListener((value, error) -> {
-                    if (error != null) { Log.e("Vault", error.getMessage()); return; }
+                    if (error != null) { Log.e("Vault", "Vault listener failed", error); return; }
                     if (value == null) return;
 
                     fullList.clear();
                     for (DocumentSnapshot doc : value.getDocuments()) {
+                        if (!Boolean.TRUE.equals(doc.getBoolean("isAnswered"))) continue;
                         PrayerRequest r = doc.toObject(PrayerRequest.class);
-                        if (r != null) {
-                            String aid = r.getAuthorId();
-                            if (aid != null &&
-                                    (aid.equals(currentUserId) || aid.equals(partnerId))) {
-                                r.setRequestId(doc.getId());
-                                fullList.add(r);
-                            }
-                        }
+                        if (r == null) continue;
+                        r.setRequestId(doc.getId());
+                        fullList.add(r);
                     }
+                    java.util.Collections.sort(fullList, (a, b) -> {
+                        long ta = a.getTimestamp() != null ? a.getTimestamp().toDate().getTime() : 0;
+                        long tb = b.getTimestamp() != null ? b.getTimestamp().toDate().getTime() : 0;
+                        return Long.compare(tb, ta);
+                    });
                     applyFilter();
                 });
     }
@@ -195,13 +210,20 @@ public class PrayerVaultActivity extends AppCompatActivity {
                 .setPositiveButton("Praise God!", null)
                 .create();
 
-        if (btnDelete != null)
+        if (btnDelete != null) {
+            boolean mine = currentUserId != null && currentUserId.equals(request.getAuthorId());
+            btnDelete.setVisibility(mine ? View.VISIBLE : View.GONE);
             btnDelete.setOnClickListener(b -> { dialog.dismiss(); showDeleteDialog(request); });
+        }
 
         dialog.show();
     }
 
     private void showDeleteDialog(PrayerRequest request) {
+        if (currentUserId == null || !currentUserId.equals(request.getAuthorId())) {
+            Toast.makeText(this, "Only the person who posted this prayer can delete it", Toast.LENGTH_SHORT).show();
+            return;
+        }
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle("Remove from Vault?")
                 .setMessage("\"" + request.getTitle() + "\" will be permanently deleted.")

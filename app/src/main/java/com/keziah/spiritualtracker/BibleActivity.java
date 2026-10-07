@@ -1,6 +1,5 @@
 package com.keziah.spiritualtracker;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -16,16 +15,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.SetOptions;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Collections;
 
 public class BibleActivity extends AppCompatActivity {
 
@@ -43,28 +39,20 @@ public class BibleActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String currentUserId;
     private String partnerId = null;
+    private String myName = UserProfile.FALLBACK_NAME;
     private String todayDate;
+
+    private ListenerRegistration myDayListener, partnerDayListener, legacyListener;
+    private DocumentSnapshot myDayDoc, partnerDayDoc, legacyDoc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bible);
 
-        // Save FCM token — guarded with null check
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) return;
-            String token = task.getResult();
-            FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
-            if (u != null) {
-                FirebaseFirestore.getInstance().collection("users")
-                        .document(u.getUid()).update("fcmToken", token);
-            }
-        });
-
         auth = FirebaseAuth.getInstance();
         db   = FirebaseFirestore.getInstance();
 
-        // ── BUG FIX: guard getCurrentUser() before calling getUid() ──────
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
             // Session expired — send back to login
@@ -72,9 +60,7 @@ public class BibleActivity extends AppCompatActivity {
             return;
         }
         currentUserId = currentUser.getUid();
-        // ─────────────────────────────────────────────────────────────────
-
-        todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        todayDate = ActivityLog.today();
 
         cbRead          = findViewById(R.id.cbRead);
         etVerse         = findViewById(R.id.etVerse);
@@ -87,6 +73,7 @@ public class BibleActivity extends AppCompatActivity {
         layoutPartnerVerse  = findViewById(R.id.layoutPartnerVerse);
         framePartnerIcon    = findViewById(R.id.framePartnerIcon);
 
+        listenToMyDay();
         fetchPartnerId();
         setupListeners();
     }
@@ -94,40 +81,65 @@ public class BibleActivity extends AppCompatActivity {
     private void fetchPartnerId() {
         db.collection("users").document(currentUserId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("partnerId")) {
-                        partnerId = documentSnapshot.getString("partnerId");
-                        listenToDailyReadings();
+                    myName = UserProfile.displayName(documentSnapshot);
+                    String pid = documentSnapshot.getString("partnerId");
+                    if (pid != null && !pid.isEmpty()) {
+                        partnerId = pid;
+                        listenToPartnerDay();
                     } else {
                         tvPartnerStatus.setText("No Partner Linked");
                     }
                 });
     }
 
-    private void listenToDailyReadings() {
-        db.collection("daily_readings").document(todayDate)
-                .addSnapshotListener((documentSnapshot, e) -> {
+    private void listenToMyDay() {
+        myDayListener = ActivityLog.dayRef(currentUserId, todayDate)
+                .addSnapshotListener((snap, e) -> {
                     if (e != null) return;
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        if (documentSnapshot.contains(currentUserId)) {
-                            Boolean myStatus = documentSnapshot.getBoolean(currentUserId);
-                            cbRead.setChecked(Boolean.TRUE.equals(myStatus));
-                            String myVerse = documentSnapshot.getString(currentUserId + "_verse");
-                            if (myVerse != null && !myVerse.isEmpty() && !etVerse.hasFocus()) {
-                                etVerse.setText(myVerse);
-                            }
-                        }
-                        if (partnerId != null && documentSnapshot.contains(partnerId)) {
-                            Boolean partnerStatus = documentSnapshot.getBoolean(partnerId);
-                            updatePartnerUI(Boolean.TRUE.equals(partnerStatus),
-                                    documentSnapshot.getString(partnerId + "_verse"));
-                        } else {
-                            updatePartnerUI(false, null);
-                        }
-                    } else {
-                        cbRead.setChecked(false);
-                        updatePartnerUI(false, null);
-                    }
+                    myDayDoc = snap;
+                    renderMine();
                 });
+        // Readings saved by older builds of the app live in one shared doc per date.
+        legacyListener = db.collection("daily_readings").document(todayDate)
+                .addSnapshotListener((snap, e) -> {
+                    legacyDoc = e == null ? snap : null;
+                    renderMine();
+                    renderPartner();
+                });
+    }
+
+    private void listenToPartnerDay() {
+        partnerDayListener = ActivityLog.dayRef(partnerId, todayDate)
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null) return;
+                    partnerDayDoc = snap;
+                    renderPartner();
+                });
+    }
+
+    private boolean readToday(String uid, DocumentSnapshot dayDoc) {
+        if (dayDoc != null && dayDoc.contains("bible")) return Boolean.TRUE.equals(dayDoc.getBoolean("bible"));
+        return legacyDoc != null && Boolean.TRUE.equals(legacyDoc.getBoolean(uid));
+    }
+
+    private String noteToday(String uid, DocumentSnapshot dayDoc) {
+        String note = dayDoc != null ? dayDoc.getString("bibleNote") : null;
+        if ((note == null || note.isEmpty()) && legacyDoc != null) note = legacyDoc.getString(uid + "_verse");
+        return note;
+    }
+
+    private void renderMine() {
+        cbRead.setChecked(readToday(currentUserId, myDayDoc));
+        String myVerse = noteToday(currentUserId, myDayDoc);
+        if (myVerse != null && !myVerse.isEmpty() && !etVerse.hasFocus()
+                && etVerse.getText().toString().trim().isEmpty()) {
+            etVerse.setText(myVerse);
+        }
+    }
+
+    private void renderPartner() {
+        if (partnerId == null) return;
+        updatePartnerUI(readToday(partnerId, partnerDayDoc), noteToday(partnerId, partnerDayDoc));
     }
 
     private void updatePartnerUI(boolean hasRead, String partnerVerseText) {
@@ -141,7 +153,7 @@ public class BibleActivity extends AppCompatActivity {
             framePartnerIcon.setBackgroundResource(0);
             if (partnerVerseText != null && !partnerVerseText.trim().isEmpty()) {
                 layoutPartnerVerse.setVisibility(View.VISIBLE);
-                tvPartnerVerse.setText("\u201c" + partnerVerseText.trim() + "\u201d");
+                tvPartnerVerse.setText("“" + partnerVerseText.trim() + "”");
             } else {
                 layoutPartnerVerse.setVisibility(View.GONE);
             }
@@ -160,31 +172,20 @@ public class BibleActivity extends AppCompatActivity {
     private void setupListeners() {
         cbRead.setOnClickListener(view -> {
             boolean isChecked = cbRead.isChecked();
-            String verseText = etVerse.getText().toString();
-            Map<String, Object> updateData = new HashMap<>();
-            updateData.put(currentUserId, isChecked);
-            updateData.put(currentUserId + "_verse", verseText);
-            db.collection("daily_readings").document(todayDate)
-                    .set(updateData, SetOptions.merge())
-                    .addOnSuccessListener(aVoid -> {
-                        if (isChecked) {
-                            Toast.makeText(this, "Marked as Read!", Toast.LENGTH_SHORT).show();
-                            checkIfTeamIsDone();
-                            incrementPartnerUnread("unreadBible");
-                            notifyPartner("Goal Completed! ✅",
-                                    "Your partner just finished their reading for today!", "bible_update");
-                        }
-                    });
+            ActivityLog.setBible(currentUserId, isChecked, etVerse.getText().toString());
+            if (isChecked) {
+                Toast.makeText(this, "Marked as Read!", Toast.LENGTH_SHORT).show();
+                checkIfTeamIsDone();
+                PartnerNotifier.incrementUnread(partnerId, "unreadBible");
+                PartnerNotifier.notifyPartner(partnerId, "Goal Completed! ✅",
+                        myName + " just finished their reading for today!", "bible_update", "",
+                        BuildConfig.PIPEDREAM_URL);
+            }
         });
 
         btnSaveVerse.setOnClickListener(view -> {
-            String verseText = etVerse.getText().toString();
-            Map<String, Object> verseData = new HashMap<>();
-            verseData.put(currentUserId + "_verse", verseText);
-            db.collection("daily_readings").document(todayDate)
-                    .set(verseData, SetOptions.merge())
-                    .addOnSuccessListener(aVoid ->
-                            Toast.makeText(this, "Note Saved!", Toast.LENGTH_SHORT).show());
+            ActivityLog.setBibleNote(currentUserId, etVerse.getText().toString());
+            Toast.makeText(this, "Note Saved!", Toast.LENGTH_SHORT).show();
         });
 
         btnNudge.setOnClickListener(view -> {
@@ -194,71 +195,59 @@ public class BibleActivity extends AppCompatActivity {
                 Toast.makeText(this, "No partner linked yet!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            incrementPartnerUnread("unreadBible");
-            notifyPartner("You've been nudged! ✨",
-                    "Your partner is reminding you to read the Word! 📖", "bible_nudge");
+            PartnerNotifier.incrementUnread(partnerId, "unreadBible");
+            PartnerNotifier.notifyPartner(partnerId, "You've been nudged! ✨",
+                    myName + " is reminding you to read the Word! 📖", "bible_nudge", "",
+                    BuildConfig.PIPEDREAM_URL);
             Toast.makeText(this, "Nudge sent! ✨", Toast.LENGTH_SHORT).show();
         });
     }
 
+    /**
+     * Adds one to the couple's shared score the first time both have read on a given day.
+     * The "awarded" marker is stored per couple, so one couple can't block another's score.
+     */
     private void checkIfTeamIsDone() {
         if (partnerId == null) return;
+        String pairId = currentUserId.compareTo(partnerId) < 0
+                ? currentUserId + "_" + partnerId : partnerId + "_" + currentUserId;
+        DocumentReference awardRef   = db.collection("partnerships").document(pairId)
+                .collection("score_awards").document(todayDate);
+        DocumentReference partnerDay = ActivityLog.dayRef(partnerId, todayDate);
+        DocumentReference meRef      = db.collection("users").document(currentUserId);
+        DocumentReference partnerRef = db.collection("users").document(partnerId);
+        // Snapshot of the legacy doc so a score already awarded by the old app isn't awarded twice.
+        DocumentSnapshot legacy = legacyDoc;
+
         db.runTransaction(transaction -> {
-            DocumentSnapshot daily = transaction.get(
-                    db.collection("daily_readings").document(todayDate));
-            boolean meDone      = Boolean.TRUE.equals(daily.getBoolean(currentUserId));
-            boolean partnerDone = Boolean.TRUE.equals(daily.getBoolean(partnerId));
-            boolean awarded     = Boolean.TRUE.equals(daily.getBoolean("score_awarded"));
-            if (meDone && partnerDone && !awarded) {
-                DocumentSnapshot userSnap = transaction.get(
-                        db.collection("users").document(currentUserId));
-                Long cur = userSnap.getLong("sharedScore");
-                if (cur == null) cur = 0L;
-                Long newScore = cur + 1;
-                transaction.update(db.collection("users").document(currentUserId), "sharedScore", newScore);
-                transaction.update(db.collection("users").document(partnerId), "sharedScore", newScore);
-                transaction.update(db.collection("daily_readings").document(todayDate), "score_awarded", true);
-                return newScore;
-            }
-            return null;
+            DocumentSnapshot award  = transaction.get(awardRef);
+            DocumentSnapshot theirs = transaction.get(partnerDay);
+            DocumentSnapshot me     = transaction.get(meRef);
+            if (award.exists()) return null;
+
+            // I just ticked the box; my own day-log write may still be in flight, so it isn't re-read here.
+            boolean partnerDone = Boolean.TRUE.equals(theirs.getBoolean("bible"))
+                    || (legacy != null && Boolean.TRUE.equals(legacy.getBoolean(partnerId)));
+            boolean legacyAwarded = legacy != null && Boolean.TRUE.equals(legacy.getBoolean("score_awarded"));
+            if (!partnerDone || legacyAwarded) return null;
+
+            Long cur = me.getLong("sharedScore");
+            long newScore = (cur == null ? 0L : cur) + 1;
+            transaction.set(meRef, Collections.singletonMap("sharedScore", newScore), SetOptions.merge());
+            transaction.set(partnerRef, Collections.singletonMap("sharedScore", newScore), SetOptions.merge());
+            transaction.set(awardRef, Collections.singletonMap("awardedBy", currentUserId));
+            return newScore;
         }).addOnSuccessListener(result -> {
             if (result != null)
                 Toast.makeText(this, "Streak Increased! New Score: " + result, Toast.LENGTH_LONG).show();
         });
     }
 
-    private void incrementPartnerUnread(String field) {
-        if (partnerId != null && !partnerId.isEmpty())
-            db.collection("users").document(partnerId).update(field, FieldValue.increment(1));
-    }
-
-    private void notifyPartner(String title, String message, String type) {
-        if (partnerId == null) return;
-        db.collection("users").document(partnerId).get().addOnSuccessListener(doc -> {
-            if (doc.exists() && doc.contains("fcmToken")) {
-                sendNotificationToServer(doc.getString("fcmToken"), title, message, type);
-            }
-        });
-    }
-
-    private void sendNotificationToServer(String targetToken, String title, String messageBody, String type) {
-        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("token", targetToken);
-            json.put("title", title);
-            json.put("body",  messageBody);
-            json.put("type",  type);
-            json.put("docId", "");
-            okhttp3.RequestBody body = okhttp3.RequestBody.create(
-                    json.toString(), okhttp3.MediaType.get("application/json; charset=utf-8"));
-            okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url(BuildConfig.PIPEDREAM_URL).post(body).build();
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override public void onFailure(okhttp3.Call call, java.io.IOException e) {}
-                @Override public void onResponse(okhttp3.Call call, okhttp3.Response r)
-                        throws java.io.IOException { r.close(); }
-            });
-        } catch (Exception e) { e.printStackTrace(); }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (myDayListener      != null) myDayListener.remove();
+        if (partnerDayListener != null) partnerDayListener.remove();
+        if (legacyListener     != null) legacyListener.remove();
     }
 }

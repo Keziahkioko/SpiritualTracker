@@ -49,7 +49,7 @@ public class SharedBoardFragment extends Fragment {
     private String partnerId = null;
     private ListenerRegistration boardListener;
     private ListenerRegistration jointListListener;
-    private String myName = "Your partner";
+    private String myName = UserProfile.FALLBACK_NAME;
 
     public SharedBoardFragment() {}
 
@@ -283,13 +283,14 @@ public class SharedBoardFragment extends Fragment {
     // ─── Firestore ───────────────────────────────────────────────
 
     private void fetchPartnerId() {
+        if (currentUserId == null) return;
         db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
-            if (doc.exists()) {
-                partnerId = doc.getString("partnerId");
-                myName = doc.getString("name");
-                listenToPrayerBoard();
-                listenToJointList();
-            }
+            partnerId = doc.getString("partnerId");
+            if (partnerId != null && partnerId.isEmpty()) partnerId = null;
+            myName = UserProfile.displayName(doc);
+            if (!isAdded()) return;
+            listenToPrayerBoard();
+            listenToJointList();
         });
     }
 
@@ -318,23 +319,29 @@ public class SharedBoardFragment extends Fragment {
     }
 
     private void listenToPrayerBoard() {
-        if (partnerId == null) return;
+        if (currentUserId == null) return;
+        if (boardListener != null) boardListener.remove();
+        // Only ask Firestore for our two authors' requests instead of downloading everyone's
+        // and filtering on the phone. Sorted here so no composite index is needed.
+        List<String> authors = new ArrayList<>();
+        authors.add(currentUserId);
+        if (partnerId != null) authors.add(partnerId);
         boardListener = db.collection("shared_prayers")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .whereIn("authorId", authors)
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null) return;
                     requestList.clear();
                     for (com.google.firebase.firestore.DocumentSnapshot doc : value.getDocuments()) {
                         PrayerRequest request = doc.toObject(PrayerRequest.class);
-                        if (request != null) {
-                            request.setRequestId(doc.getId());
-                            Boolean answered = doc.getBoolean("isAnswered");
-                            String authId = request.getAuthorId();
-                            boolean relevant = authId != null &&
-                                    (authId.equals(currentUserId) || authId.equals(partnerId));
-                            if (answered != null && !answered && relevant) requestList.add(request);
-                        }
+                        if (request == null || Boolean.TRUE.equals(doc.getBoolean("isAnswered"))) continue;
+                        request.setRequestId(doc.getId());
+                        requestList.add(request);
                     }
+                    java.util.Collections.sort(requestList, (a, b) -> {
+                        long ta = a.getTimestamp() != null ? a.getTimestamp().toDate().getTime() : Long.MAX_VALUE;
+                        long tb = b.getTimestamp() != null ? b.getTimestamp().toDate().getTime() : Long.MAX_VALUE;
+                        return Long.compare(tb, ta);
+                    });
                     adapter.notifyDataSetChanged();
                 });
     }
@@ -363,19 +370,22 @@ public class SharedBoardFragment extends Fragment {
         updates.put("isAnswered", true);
         updates.put("answeredComment", comment);
         db.collection("shared_prayers").document(request.getRequestId()).update(updates)
-                .addOnSuccessListener(v -> Toast.makeText(getContext(), "Moved to Vault!", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(v -> {
+                    if (getContext() != null) Toast.makeText(getContext(), "Moved to Vault!", Toast.LENGTH_SHORT).show();
+                });
         incrementPartnerUnread("unreadPrayer");
         notifyPartner("Prayer Answered! 🎉", myName + " marked a prayer as answered", "prayer_update");
     }
 
     private void saveRequestToFirebase(String title, String desc) {
         db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
-            String myName = doc.getString("name");
+            myName = UserProfile.displayName(doc);
             DocumentReference ref = db.collection("shared_prayers").document();
             PrayerRequest pr = new PrayerRequest(ref.getId(), title, desc, currentUserId, myName,
                     new Timestamp(new Date()), false);
-            ref.set(pr).addOnSuccessListener(v ->
-                    Toast.makeText(getContext(), "Request Posted!", Toast.LENGTH_SHORT).show());
+            ref.set(pr).addOnSuccessListener(v -> {
+                if (getContext() != null) Toast.makeText(getContext(), "Request Posted!", Toast.LENGTH_SHORT).show();
+            });
             incrementPartnerUnread("unreadPrayer");
             notifyPartner("New Prayer Request 🙏", myName + " posted a new prayer request", "prayer_update");
         });
@@ -389,39 +399,10 @@ public class SharedBoardFragment extends Fragment {
     }
 
     private void incrementPartnerUnread(String field) {
-        if (partnerId != null && !partnerId.isEmpty()) {
-            db.collection("users").document(partnerId).update(field, FieldValue.increment(1));
-        }
+        PartnerNotifier.incrementUnread(partnerId, field);
     }
 
     private void notifyPartner(String title, String body, String type) {
-        if (partnerId == null || partnerId.isEmpty()) return;
-        db.collection("users").document(partnerId).get().addOnSuccessListener(doc -> {
-            if (doc.exists()) {
-                String token = doc.getString("fcmToken");
-                if (token != null && !token.isEmpty()) sendNotificationToServer(token, title, body, type);
-            }
-        });
-    }
-
-    private void sendNotificationToServer(String token, String title, String body, String type) {
-        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("token", token);
-            json.put("title", title);
-            json.put("body", body);
-            json.put("type", type);
-            json.put("docId", currentUserId);
-            okhttp3.RequestBody requestBody = okhttp3.RequestBody.create(
-                    okhttp3.MediaType.parse("application/json; charset=utf-8"), json.toString());
-            okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url(BuildConfig.PIPEDREAM_URL)
-                    .post(requestBody).build();
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override public void onFailure(okhttp3.Call call, java.io.IOException e) {}
-                @Override public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException { response.close(); }
-            });
-        } catch (Exception e) { e.printStackTrace(); }
+        PartnerNotifier.notifyPartner(partnerId, title, body, type, currentUserId, BuildConfig.PIPEDREAM_URL);
     }
 }

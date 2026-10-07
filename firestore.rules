@@ -1,0 +1,119 @@
+rules_version = '2';
+
+// Security rules for Spiritual Tracker.
+// Each person can read and write their own data; their linked partner can read it
+// (and bump a few shared counters). Nobody else can see anything.
+//
+// Deploy AFTER both phones run the updated app: the old app wrote to the shared
+// daily_readings collection, which these rules make read-only.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function userDoc(uid) { return get(/databases/$(database)/documents/users/$(uid)); }
+
+    // Partners must point at each other, so nobody can gain access to someone
+    // just by writing that person's id into their own partnerId field.
+    function isPartner(uid) {
+      return signedIn() && uid != me()
+          && userDoc(me()).data.get('partnerId', '') == uid
+          && userDoc(uid).data.get('partnerId', '') == me();
+    }
+    function isMeOrPartner(uid) { return signedIn() && (uid == me() || isPartner(uid)); }
+
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // ── Users ────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isMeOrPartner(uid);
+      allow create: if signedIn() && uid == me();
+      allow update: if signedIn() && (
+          uid == me()
+          || (isPartner(uid) && onlyChanges(['unreadBible', 'unreadPrayer', 'unreadJournal', 'sharedScore'])));
+      allow delete: if false;
+
+      match /days/{day} {
+        allow read: if isMeOrPartner(uid);
+        allow write: if signedIn() && uid == me();
+      }
+
+      match /memory_verses/{verseId} {
+        allow read: if isMeOrPartner(uid);
+        allow write: if signedIn() && uid == me();
+      }
+
+      match /personal_prayers/{prayerId} {
+        allow read, write: if signedIn() && uid == me();
+      }
+    }
+
+    // ── Journal ──────────────────────────────────────────────────────────
+    match /journal_entries/{entryId} {
+      allow read: if isMeOrPartner(resource.data.userId);
+      allow create: if signedIn() && request.resource.data.userId == me();
+      allow update: if signedIn() && (
+          (resource.data.userId == me() && request.resource.data.userId == me())
+          || (isPartner(resource.data.userId) && onlyChanges(['readByPartner'])));
+      allow delete: if signedIn() && resource.data.userId == me();
+    }
+
+    function journalOwner(journalId) {
+      return get(/databases/$(database)/documents/journal_entries/$(journalId)).data.userId;
+    }
+
+    match /journals/{journalId}/replies/{replyId} {
+      allow read: if isMeOrPartner(journalOwner(journalId));
+      allow create: if isMeOrPartner(journalOwner(journalId))
+          && request.resource.data.senderId == me();
+      allow update: if isMeOrPartner(journalOwner(journalId)) && (
+          (resource.data.senderId == me() && request.resource.data.senderId == me())
+          || onlyChanges(['status', 'reactions']));
+      allow delete: if signedIn() && resource.data.senderId == me();
+    }
+
+    // ── Prayer ───────────────────────────────────────────────────────────
+    match /prayer_messages/{messageId} {
+      allow read: if signedIn()
+          && (resource.data.senderId == me() || resource.data.receiverId == me());
+      allow create: if signedIn()
+          && request.resource.data.senderId == me()
+          && isPartner(request.resource.data.receiverId);
+      allow update: if signedIn() && (
+          (resource.data.senderId == me()
+              && request.resource.data.senderId == me()
+              && request.resource.data.receiverId == resource.data.receiverId)
+          || (resource.data.receiverId == me() && onlyChanges(['status', 'reactions'])));
+      allow delete: if signedIn() && resource.data.senderId == me();
+    }
+
+    match /shared_prayers/{requestId} {
+      allow read: if isMeOrPartner(resource.data.authorId);
+      allow create: if signedIn() && request.resource.data.authorId == me();
+      allow update: if signedIn() && resource.data.authorId == me()
+          && request.resource.data.authorId == me();
+      allow delete: if signedIn() && resource.data.authorId == me();
+    }
+
+    // Couple-level data (focus list, shared score markers). Pair id is "<uidA>_<uidB>", sorted.
+    function inPair(pairId) {
+      let ids = pairId.split('_');
+      return signedIn() && ids.size() == 2
+          && ((ids[0] == me() && isPartner(ids[1])) || (ids[1] == me() && isPartner(ids[0])));
+    }
+
+    match /partnerships/{pairId}/{document=**} {
+      allow read, write: if inPair(pairId);
+    }
+
+    // ── Legacy ───────────────────────────────────────────────────────────
+    // Old shared Bible-reading docs; kept readable so history goes back to the start.
+    match /daily_readings/{date} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}

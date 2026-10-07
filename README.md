@@ -31,6 +31,7 @@ SpiritualTracker is a native Android app that helps two people — a couple, acc
 ### 🏠 Shared Dashboard
 - A single home screen shows **"Days Together"** (a shared streak score) plus a live progress card with a dot for each partner across four habits: Bible, Prayer, Journal, and Memorize.
 - A 7-day heatmap visualizes how consistently both partners have read the Bible together (full / half / no credit per day).
+- **Our Journey** (tap the progress card, the week card, or "All progress ›") keeps every day permanently: a month calendar for you or your partner showing which disciplines were done each day, tap-a-day details (what was read, journal titles, verses practised), monthly totals, current/best streaks, and 6-month trends.
 - Unread badges surface new activity in Bible, Prayer, and Journal sections, and tapping a push notification deep-links straight into the relevant screen.
 
 ### 📖 Bible
@@ -104,15 +105,17 @@ app/src/main/java/com/keziah/spiritualtracker/
 
 | Collection | Purpose |
 |---|---|
-| `users/{uid}` | Profile, `partnerId`, `fcmToken`, `sharedScore`, daily completion flags, unread counters |
-| `daily_readings/{yyyy-MM-dd}` | Per-day Bible check-in map, keyed by user ID (`{uid}: bool`, `{uid}_verse: string`) |
+| `users/{uid}` | Profile (`name`), `partnerId`, `fcmToken`, `sharedScore`, today's completion dates, unread counters |
+| `users/{uid}/days/{yyyy-MM-dd}` | Permanent daily log: `bible`, `bibleNote`, `prayed`, `prayedForPartner`, `journal` + `journalTitles`, `memorize` + `memorizeRefs`. Drives the dashboard ticks and Our Journey |
+| `daily_readings/{yyyy-MM-dd}` | **Legacy** (read-only): shared Bible check-ins from older builds, still read so history goes back to the start |
 | `journal_entries/{docId}` | Journal entries (title, content, media, author, status) |
 | `journals/{docId}/replies/{replyId}` | Threaded replies on a journal entry |
 | `prayer_messages/{docId}` | Connection-tab chat messages between partners |
 | `shared_prayers/{docId}` | Joint prayer board requests |
-| `personal_prayers/{docId}` | Private prayer requests |
-| `partnerships/{id}/joint_list/{id}` | Shared focus-item list between partners |
-| `memory_verses/{docId}` | Scripture memorization entries with review scheduling |
+| `users/{uid}/personal_prayers/{docId}` | Private prayer requests |
+| `partnerships/{uidA_uidB}/joint_list/{id}` | Shared focus-item list between partners |
+| `partnerships/{uidA_uidB}/score_awards/{date}` | Marks the days the couple's shared score was already awarded |
+| `users/{uid}/memory_verses/{docId}` | Scripture memorization entries with review scheduling |
 
 > **Note:** journal entries are written to `journal_entries`, but replies are nested under a sibling `journals/{docId}/replies` path that uses the same document ID. Double-check this is intentional for your security rules, or normalize it to a single top-level collection.
 
@@ -130,7 +133,7 @@ app/src/main/java/com/keziah/spiritualtracker/
 1. Create a project at the [Firebase Console](https://console.firebase.google.com/).
 2. Add an Android app with package name `com.keziah.spiritualtracker`.
 3. Enable **Authentication → Email/Password**.
-4. Enable **Cloud Firestore** (start in test mode locally, then lock down rules before going live — see security notes below).
+4. Enable **Cloud Firestore**, then publish the rules in [`firestore.rules`](firestore.rules) (Firestore → Rules → paste → Publish). They limit each person's data to themselves and their linked partner. Partners must point at each other (`partnerId`) for sharing to work.
 5. Enable **Cloud Messaging**.
 6. Download the generated `google-services.json` and place it at `app/google-services.json` (replacing the placeholder/old one if present).
 
@@ -178,9 +181,7 @@ This repository's first commit includes `app/google-services.json`, which contai
 |---|---|
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Firebase, Cloudinary, webhook calls |
 | `RECORD_AUDIO` | Voice notes in chat/journal |
-| `READ_MEDIA_IMAGES`, `READ_MEDIA_AUDIO`, `READ_EXTERNAL_STORAGE` | Attaching photos/audio to journal entries and messages |
-| `WRITE_EXTERNAL_STORAGE` (≤ SDK 28) | Legacy media write support |
-| `POST_NOTIFICATIONS` | FCM push notifications (Android 13+) |
+| `POST_NOTIFICATIONS` | Push notifications and the daily verse reminder (requested at startup on Android 13+) |
 
 ## Known Limitations / Roadmap
 

@@ -1,27 +1,42 @@
 package com.keziah.spiritualtracker;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import com.google.firebase.Timestamp;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.keziah.spiritualtracker.databinding.ActivityMainBinding;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
 
     private ActivityMainBinding binding;
     private FirebaseAuth mAuth;
@@ -30,20 +45,17 @@ public class MainActivity extends AppCompatActivity {
     private String currentUserId;
     private String partnerId = null;
     private String todayDate;
-
-    private Timestamp todayStart;
-    private Timestamp todayEnd;
+    private boolean namePromptShown = false;
 
     private ListenerRegistration userListener;
+    private ListenerRegistration myDayListener;
     private ListenerRegistration partnerListener;
-    private ListenerRegistration bibleListener;
-    private ListenerRegistration myJournalListener;
-    private ListenerRegistration partnerJournalListener;
+    private ListenerRegistration partnerDayListener;
+    private ListenerRegistration legacyBibleListener;
 
-    private boolean bibleMe      = false, biblePartner      = false;
-    private boolean prayerMe     = false, prayerPartner     = false;
-    private boolean journalMe    = false, journalPartner    = false;
-    private boolean memorizeMe   = false, memorizePartner   = false;
+    // Each tick combines the day log with the older per-user date fields, so a partner
+    // still on an older build of the app keeps showing up correctly.
+    private DocumentSnapshot myUserDoc, myDayDoc, partnerUserDoc, partnerDayDoc, legacyBibleDoc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,16 +66,20 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db    = FirebaseFirestore.getInstance();
 
-        updateTodayScope();
-
-        if (mAuth.getCurrentUser() != null) {
-            currentUserId = mAuth.getCurrentUser().getUid();
-            setupProgressListeners();
-            handleNotificationIntent(getIntent());
-        } else {
+        if (mAuth.getCurrentUser() == null) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
+            return;
         }
+        currentUserId = mAuth.getCurrentUser().getUid();
+        todayDate = ActivityLog.today();
+
+        saveFcmToken();
+        requestNotificationPermission();
+        DailyVerseReminderWorker.schedule(this);
+
+        setupProgressListeners();
+        handleNotificationIntent(getIntent());
 
         binding.ivLogout.setOnClickListener(v -> {
             mAuth.signOut();
@@ -85,28 +101,96 @@ public class MainActivity extends AppCompatActivity {
         });
         binding.cardMemory.setOnClickListener(v ->
                 startActivity(new Intent(this, MemorizeActivity.class)));
+
+        View.OnClickListener openHistory = v -> startActivity(new Intent(this, HistoryActivity.class));
+        binding.cardWeek.setOnClickListener(openHistory);
+        binding.cardProgress.setOnClickListener(openHistory);
+        binding.tvViewHistory.setOnClickListener(openHistory);
     }
 
-    private void updateTodayScope() {
-        todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        todayStart = new Timestamp(cal.getTime());
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        todayEnd = new Timestamp(cal.getTime());
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentUserId == null) return;
+        // The app can stay open past midnight; move the "today" listeners to the new day.
+        String now = ActivityLog.today();
+        if (!now.equals(todayDate)) {
+            todayDate = now;
+            attachMyDayListeners();
+            setupPartnerListeners();
+        }
+        loadHeatmap();
     }
+
+    // ─── Setup ───────────────────────────────────────────────────────────────
+
+    private void saveFcmToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) return;
+            Map<String, Object> data = new HashMap<>();
+            data.put("fcmToken", task.getResult());
+            db.collection("users").document(currentUserId).set(data, SetOptions.merge());
+        });
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 300);
+        }
+    }
+
+    /** Without a name, partners see "null posted a prayer request" — ask once and store it. */
+    private void promptForNameIfMissing(DocumentSnapshot snap) {
+        if (namePromptShown || UserProfile.hasName(snap) || isFinishing()) return;
+        namePromptShown = true;
+
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.setHint("Your first name");
+        input.setText(UserProfile.suggestedName());
+        input.setSelection(input.getText().length());
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        FrameLayout wrap = new FrameLayout(this);
+        wrap.setPadding(pad, pad / 2, pad, 0);
+        wrap.addView(input);
+
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("What should your partner call you?")
+                .setMessage("Your name appears on prayer requests, journal entries and notifications.")
+                .setView(wrap)
+                .setCancelable(false)
+                .setPositiveButton("Save", (d, w) -> {
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) {
+                        namePromptShown = false;
+                        Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("name", name);
+                    db.collection("users").document(currentUserId).set(data, SetOptions.merge());
+                    if (mAuth.getCurrentUser() != null) {
+                        mAuth.getCurrentUser().updateProfile(
+                                new UserProfileChangeRequest.Builder().setDisplayName(name).build());
+                    }
+                })
+                .show();
+    }
+
+    // ─── Listeners ───────────────────────────────────────────────────────────
 
     private void setupProgressListeners() {
-
-        // 1. My user doc — streak, badges, prayer, memorize
         userListener = db.collection("users").document(currentUserId)
                 .addSnapshotListener((snap, e) -> {
-                    if (e != null || snap == null || !snap.exists()) return;
+                    if (e != null || snap == null) return;
+                    if (!snap.exists()) {
+                        promptForNameIfMissing(snap);
+                        return;
+                    }
+                    myUserDoc = snap;
+                    promptForNameIfMissing(snap);
 
                     Long score = snap.getLong("sharedScore");
                     binding.tvStreak.setText(String.valueOf(score != null ? score : 0));
@@ -115,122 +199,96 @@ public class MainActivity extends AppCompatActivity {
                     updateBadge(binding.badgePrayer,  snap.getLong("unreadPrayer"));
                     updateBadge(binding.badgeJournal, snap.getLong("unreadJournal"));
 
-                    prayerMe   = todayDate.equals(snap.getString("prayedTodayDate"));
-                    memorizeMe = todayDate.equals(snap.getString("memorizedTodayDate"));
-
                     String newPartnerId = snap.getString("partnerId");
+                    if (newPartnerId != null && newPartnerId.isEmpty()) newPartnerId = null;
                     if (newPartnerId != null && !newPartnerId.equals(partnerId)) {
                         partnerId = newPartnerId;
                         setupPartnerListeners();
-                    } else if (newPartnerId == null) {
+                        loadHeatmap();
+                    } else if (newPartnerId == null && partnerId != null) {
                         partnerId = null;
                         stopPartnerListeners();
-                    }
-                    refreshProgressCard();
-                    loadHeatmap();
-                });
-
-        // 2. My journal — FIX: Marks as done IMMEDIATELY when ANY non-draft entry exists today
-        //    Query by userId + date range to check if I have published anything today
-        myJournalListener = db.collection("journal_entries")
-                .whereEqualTo("userId", currentUserId)
-                .whereGreaterThanOrEqualTo("date", todayStart)
-                .whereLessThanOrEqualTo("date", todayEnd)
-                .addSnapshotListener((snap, e) -> {
-                    if (e != null) {
-                        Log.e("MainActivity", "Journal listener error: " + e.getMessage());
-                        return;
-                    }
-                    // Mark as done if ANY entry is published (status != "draft" or status is null/empty)
-                    journalMe = false;
-                    if (snap != null && !snap.isEmpty()) {
-                        for (com.google.firebase.firestore.DocumentSnapshot doc : snap.getDocuments()) {
-                            String status = doc.getString("status");
-                            // Count as done if status is not "draft" (i.e., published, null, or other)
-                            if (!"draft".equals(status)) {
-                                journalMe = true;
-                                break;
-                            }
-                        }
+                        loadHeatmap();
                     }
                     refreshProgressCard();
                 });
 
-        // 3. Bible reading (shared daily doc)
-        bibleListener = db.collection("daily_readings").document(todayDate)
+        attachMyDayListeners();
+    }
+
+    private void attachMyDayListeners() {
+        if (myDayListener != null) myDayListener.remove();
+        if (legacyBibleListener != null) legacyBibleListener.remove();
+        myDayDoc = null;
+        legacyBibleDoc = null;
+
+        myDayListener = ActivityLog.dayRef(currentUserId, todayDate)
                 .addSnapshotListener((snap, e) -> {
-                    if (snap != null && snap.exists()) {
-                        bibleMe = Boolean.TRUE.equals(snap.getBoolean(currentUserId));
-                        if (partnerId != null)
-                            biblePartner = Boolean.TRUE.equals(snap.getBoolean(partnerId));
-                    } else {
-                        bibleMe = false;
-                        biblePartner = false;
-                    }
+                    if (e != null) { Log.w(TAG, "Day log listener failed", e); return; }
+                    myDayDoc = snap;
+                    refreshProgressCard();
+                });
+
+        // Older builds stored Bible reading in one shared doc per date.
+        legacyBibleListener = db.collection("daily_readings").document(todayDate)
+                .addSnapshotListener((snap, e) -> {
+                    legacyBibleDoc = e == null ? snap : null;
                     refreshProgressCard();
                 });
     }
 
     private void setupPartnerListeners() {
-        if (partnerListener        != null) partnerListener.remove();
-        if (partnerJournalListener != null) partnerJournalListener.remove();
-        if (partnerId == null || partnerId.isEmpty()) return;
+        stopPartnerListeners();
+        if (partnerId == null) return;
 
-        // Partner user doc — prayer, memorize
         partnerListener = db.collection("users").document(partnerId)
                 .addSnapshotListener((snap, e) -> {
-                    if (snap != null && snap.exists()) {
-                        prayerPartner   = todayDate.equals(snap.getString("prayedTodayDate"));
-                        memorizePartner = todayDate.equals(snap.getString("memorizedTodayDate"));
-                        refreshProgressCard();
-                    }
+                    partnerUserDoc = e == null ? snap : null;
+                    refreshProgressCard();
                 });
 
-        // Partner journal — same fix: Marks as done IMMEDIATELY when partner posts
-        //    (doesn't wait for me to open it — just needs to exist and be published)
-        partnerJournalListener = db.collection("journal_entries")
-                .whereEqualTo("userId", partnerId)
-                .whereGreaterThanOrEqualTo("date", todayStart)
-                .whereLessThanOrEqualTo("date", todayEnd)
+        partnerDayListener = ActivityLog.dayRef(partnerId, todayDate)
                 .addSnapshotListener((snap, e) -> {
-                    if (e != null) {
-                        Log.e("MainActivity", "Partner journal error: " + e.getMessage());
-                        return;
-                    }
-                    // Mark as done if partner has ANY published entry today
-                    journalPartner = false;
-                    if (snap != null && !snap.isEmpty()) {
-                        for (com.google.firebase.firestore.DocumentSnapshot doc : snap.getDocuments()) {
-                            String status = doc.getString("status");
-                            // Count as done if status is not "draft" (published, null, or other)
-                            if (!"draft".equals(status)) {
-                                journalPartner = true;
-                                break;
-                            }
-                        }
-                    }
+                    partnerDayDoc = e == null ? snap : null;
                     refreshProgressCard();
                 });
     }
 
     private void stopPartnerListeners() {
-        if (partnerListener        != null) partnerListener.remove();
-        if (partnerJournalListener != null) partnerJournalListener.remove();
-        prayerPartner   = false;
-        memorizePartner = false;
-        journalPartner  = false;
-        biblePartner    = false;
+        if (partnerListener    != null) partnerListener.remove();
+        if (partnerDayListener != null) partnerDayListener.remove();
+        partnerListener = null;
+        partnerDayListener = null;
+        partnerUserDoc = null;
+        partnerDayDoc = null;
+        refreshProgressCard();
     }
 
+    // ─── Today's ticks ───────────────────────────────────────────────────────
+
     private void refreshProgressCard() {
-        setDot(binding.progressBibleMe,         bibleMe);
-        setDot(binding.progressBiblePartner,    partnerId != null && biblePartner);
-        setDot(binding.progressPrayerMe,        prayerMe);
-        setDot(binding.progressPrayerPartner,   partnerId != null && prayerPartner);
-        setDot(binding.progressJournalMe,       journalMe);
-        setDot(binding.progressJournalPartner,  partnerId != null && journalPartner);
-        setDot(binding.progressMemorizeMe,      memorizeMe);
-        setDot(binding.progressMemorizePartner, partnerId != null && memorizePartner);
+        boolean hasPartner = partnerId != null;
+        setDot(binding.progressBibleMe,         bibleDone(currentUserId, myDayDoc));
+        setDot(binding.progressBiblePartner,    hasPartner && bibleDone(partnerId, partnerDayDoc));
+        setDot(binding.progressPrayerMe,        dayFlag(myDayDoc, "prayed") || userDate(myUserDoc, "prayedTodayDate"));
+        setDot(binding.progressPrayerPartner,   hasPartner && (dayFlag(partnerDayDoc, "prayed") || userDate(partnerUserDoc, "prayedTodayDate")));
+        setDot(binding.progressJournalMe,       dayFlag(myDayDoc, "journal") || userDate(myUserDoc, "journaledTodayDate"));
+        setDot(binding.progressJournalPartner,  hasPartner && (dayFlag(partnerDayDoc, "journal") || userDate(partnerUserDoc, "journaledTodayDate")));
+        setDot(binding.progressMemorizeMe,      dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate"));
+        setDot(binding.progressMemorizePartner, hasPartner && (dayFlag(partnerDayDoc, "memorize") || userDate(partnerUserDoc, "memorizedTodayDate")));
+    }
+
+    private boolean bibleDone(String uid, DocumentSnapshot dayDoc) {
+        if (dayDoc != null && dayDoc.contains("bible")) return Boolean.TRUE.equals(dayDoc.getBoolean("bible"));
+        return legacyBibleDoc != null && Boolean.TRUE.equals(legacyBibleDoc.getBoolean(uid));
+    }
+
+    private static boolean dayFlag(DocumentSnapshot dayDoc, String field) {
+        return dayDoc != null && Boolean.TRUE.equals(dayDoc.getBoolean(field));
+    }
+
+    private boolean userDate(DocumentSnapshot userDoc, String field) {
+        return userDoc != null && todayDate.equals(userDoc.getString(field));
     }
 
     // ── Dot: circle background + double-tick icon when done ──────────────────
@@ -246,50 +304,67 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // ─── This week (Bible reading together) ──────────────────────────────────
+
     private void loadHeatmap() {
         if (currentUserId == null) return;
         Calendar cal = Calendar.getInstance();
         int dow = cal.get(Calendar.DAY_OF_WEEK);
         int daysFromMon = (dow == Calendar.SUNDAY) ? 6 : dow - Calendar.MONDAY;
         cal.add(Calendar.DAY_OF_YEAR, -daysFromMon);
+        String[] keys = new String[7];
+        for (int i = 0; i < 7; i++) {
+            keys[i] = ActivityLog.dayKey(cal.getTime());
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+        }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        final String requestedPartner = partnerId;
+        HistoryRepository.load(currentUserId, keys[0], keys[6], new HistoryRepository.Callback() {
+            @Override public void onLoaded(TreeMap<String, HistoryRepository.DayRecord> mine) {
+                if (requestedPartner == null) {
+                    paintHeatmap(keys, mine, new TreeMap<>());
+                    return;
+                }
+                HistoryRepository.load(requestedPartner, keys[0], keys[6], new HistoryRepository.Callback() {
+                    @Override public void onLoaded(TreeMap<String, HistoryRepository.DayRecord> theirs) {
+                        paintHeatmap(keys, mine, theirs);
+                    }
+                    @Override public void onError(Exception e) { paintHeatmap(keys, mine, new TreeMap<>()); }
+                });
+            }
+            @Override public void onError(Exception e) { Log.w(TAG, "Heatmap load failed", e); }
+        });
+    }
+
+    private void paintHeatmap(String[] keys,
+                              TreeMap<String, HistoryRepository.DayRecord> mine,
+                              TreeMap<String, HistoryRepository.DayRecord> theirs) {
+        if (isFinishing() || isDestroyed()) return;
         int[] cellIds = {
                 R.id.hmCellMon, R.id.hmCellTue, R.id.hmCellWed,
                 R.id.hmCellThu, R.id.hmCellFri, R.id.hmCellSat, R.id.hmCellSun
         };
-
         for (int i = 0; i < 7; i++) {
-            final int idx  = i;
-            final String date = sdf.format(cal.getTime());
-            cal.add(Calendar.DAY_OF_YEAR, 1);
-
-            db.collection("daily_readings").document(date).get()
-                    .addOnSuccessListener(snap -> {
-                        int level = 0;
-                        if (snap.exists()) {
-                            boolean myDone      = Boolean.TRUE.equals(snap.getBoolean(currentUserId));
-                            boolean partnerDone = partnerId != null &&
-                                    Boolean.TRUE.equals(snap.getBoolean(partnerId));
-                            if (myDone && partnerDone)      level = 2;
-                            else if (myDone || partnerDone) level = 1;
-                        }
-                        TextView cell = findViewById(cellIds[idx]);
-                        if (cell != null) {
-                            if (level == 2) {
-                                cell.setBackgroundResource(R.drawable.hm_full);
-                                cell.setTextColor(Color.WHITE);
-                            } else if (level == 1) {
-                                cell.setBackgroundResource(R.drawable.hm_half);
-                                cell.setTextColor(Color.WHITE);
-                            } else {
-                                cell.setBackgroundResource(R.drawable.hm_none);
-                                cell.setTextColor(Color.parseColor("#B39DDB"));
-                            }
-                        }
-                    });
+            HistoryRepository.DayRecord m = mine.get(keys[i]);
+            HistoryRepository.DayRecord p = theirs.get(keys[i]);
+            boolean myDone = m != null && m.bible;
+            boolean partnerDone = partnerId != null && p != null && p.bible;
+            TextView cell = findViewById(cellIds[i]);
+            if (cell == null) continue;
+            if (myDone && partnerDone) {
+                cell.setBackgroundResource(R.drawable.hm_full);
+                cell.setTextColor(Color.WHITE);
+            } else if (myDone || partnerDone) {
+                cell.setBackgroundResource(R.drawable.hm_half);
+                cell.setTextColor(Color.WHITE);
+            } else {
+                cell.setBackgroundResource(R.drawable.hm_none);
+                cell.setTextColor(Color.parseColor("#B39DDB"));
+            }
         }
     }
+
+    // ─── Badges & notifications ──────────────────────────────────────────────
 
     private void updateBadge(View badgeView, Long count) {
         if (badgeView instanceof TextView) {
@@ -304,8 +379,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetUnreadCount(String field) {
-        if (mAuth.getCurrentUser() != null)
-            db.collection("users").document(mAuth.getCurrentUser().getUid()).update(field, 0);
+        if (mAuth.getCurrentUser() == null) return;
+        Map<String, Object> data = new HashMap<>();
+        data.put(field, 0);
+        db.collection("users").document(mAuth.getCurrentUser().getUid()).set(data, SetOptions.merge());
     }
 
     @Override
@@ -320,6 +397,7 @@ public class MainActivity extends AppCompatActivity {
         String type  = intent.getStringExtra("type");
         String docId = intent.getStringExtra("docId");
         if (type == null) return;
+        intent.removeExtra("type"); // don't re-route on rotation
         switch (type) {
             case "bible_nudge": case "bible_update": case "mark_read":
                 resetUnreadCount("unreadBible");
@@ -328,12 +406,16 @@ public class MainActivity extends AppCompatActivity {
             case "journal_chat": case "journal_new": case "journal":
                 resetUnreadCount("unreadJournal");
                 Intent j = new Intent(this, JournalListActivity.class);
-                j.putExtra("docId", docId);
+                j.putExtra("openFromNotification", true);
+                j.putExtra("targetDocId", docId);
                 startActivity(j);
                 break;
-            case "prayer_nudge": case "prayer_chat": case "prayer_update":
+            case "prayer_nudge": case "prayer_chat": case "prayer_update": case "nudge": case "chat":
                 resetUnreadCount("unreadPrayer");
                 startActivity(new Intent(this, PrayerActivity.class));
+                break;
+            case "verse_reminder":
+                startActivity(new Intent(this, MemorizeActivity.class));
                 break;
         }
     }
@@ -341,10 +423,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (userListener             != null) userListener.remove();
-        if (partnerListener          != null) partnerListener.remove();
-        if (bibleListener            != null) bibleListener.remove();
-        if (myJournalListener        != null) myJournalListener.remove();
-        if (partnerJournalListener   != null) partnerJournalListener.remove();
+        if (userListener        != null) userListener.remove();
+        if (myDayListener       != null) myDayListener.remove();
+        if (legacyBibleListener != null) legacyBibleListener.remove();
+        if (partnerListener     != null) partnerListener.remove();
+        if (partnerDayListener  != null) partnerDayListener.remove();
     }
 }

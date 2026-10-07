@@ -195,7 +195,13 @@ public class JournalDetailActivity extends AppCompatActivity {
         status = getIntent().getStringExtra("status");
         audioDuration = getIntent().getStringExtra("audioDuration");
 
+        if (docId == null || docId.isEmpty() || FirebaseAuth.getInstance().getCurrentUser() == null) {
+            finish();
+            return;
+        }
+
         markJournalAsRead();
+
 
         // 3. Set Text & Styling
         if ("draft".equals(status)) {
@@ -620,7 +626,8 @@ public class JournalDetailActivity extends AppCompatActivity {
         String currentUid = FirebaseAuth.getInstance().getUid();
         if (currentUid != null) {
             FirebaseFirestore.getInstance().collection("users")
-                    .document(currentUid).update("typingIn", journalId);
+                                        .document(currentUid).set(java.util.Collections.singletonMap("typingIn", journalId),
+                            com.google.firebase.firestore.SetOptions.merge());
         }
     }
 
@@ -628,7 +635,8 @@ public class JournalDetailActivity extends AppCompatActivity {
         String currentUid = FirebaseAuth.getInstance().getUid();
         if (currentUid != null) {
             FirebaseFirestore.getInstance().collection("users")
-                    .document(currentUid).update("recordingIn", journalId);
+                                        .document(currentUid).set(java.util.Collections.singletonMap("recordingIn", journalId),
+                            com.google.firebase.firestore.SetOptions.merge());
         }
     }
 
@@ -642,6 +650,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
+                if (position == RecyclerView.NO_POSITION || position >= replyList.size()) return;
                 selectedReplyForQuoting = replyList.get(position);
                 editingReplyId = null; // Clear edit mode if they swipe
 
@@ -954,9 +963,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     }
 
     private void incrementPartnerUnread(String field) {
-        if (partnerId != null && !partnerId.isEmpty()) {
-            FirebaseFirestore.getInstance().collection("users").document(partnerId).update(field, FieldValue.increment(1));
-        }
+        PartnerNotifier.incrementUnread(partnerId, field);
     }
 
     // ==========================================
@@ -1051,6 +1058,8 @@ public class JournalDetailActivity extends AppCompatActivity {
         if (typingListener != null) {
             typingListener.remove();
         }
+        typingHandler.removeCallbacks(typingTimeoutRunnable);
+
 
         if (playbackHandler != null && playbackRunnable != null) {
             playbackHandler.removeCallbacks(playbackRunnable);
@@ -1138,60 +1147,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     }
 
     private void notifyPartner(String title, String message) {
-        if (partnerId == null) return;
-
-        FirebaseFirestore.getInstance().collection("users").document(partnerId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("fcmToken")) {
-                        String partnerToken = documentSnapshot.getString("fcmToken");
-                        sendNotificationToServer(partnerToken, title, message);
-                    }
-                })
-                .addOnFailureListener(e -> android.util.Log.e("Chat_Nudge", "Failed to get partner token", e));
-    }
-
-    private void sendNotificationToServer(String targetToken, String title, String messageBody) {
-        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
-
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("token", targetToken);
-            json.put("title", title);
-            json.put("body", messageBody);
-
-            // ✨ NEW: Tell Pipedream this is a chat, and give it the specific Journal ID! ✨
-            json.put("type", "chat");
-
-            // Note: Make sure "docId" matches the actual variable name you use for the document ID in this file!
-            // (It might be called journalId or entryId depending on how you set it up).
-            json.put("docId", docId);
-
-            okhttp3.RequestBody body = okhttp3.RequestBody.create(
-                    json.toString(),
-                    okhttp3.MediaType.get("application/json; charset=utf-8")
-            );
-
-            okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url(BuildConfig.PIPEDREAM_URL)
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override
-                public void onFailure(@NonNull okhttp3.Call call, @NonNull java.io.IOException e) {
-                    android.util.Log.e("Chat_Nudge", "Failed to send notification request", e);
-                }
-
-                @Override
-                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws java.io.IOException {
-                    if (response.body() != null) {
-                        android.util.Log.d("Chat_Nudge", "Server says: " + response.body().string());
-                    }
-                }
-            });
-        } catch (Exception e) {
-            android.util.Log.e("Chat_Nudge", "Error building JSON", e);
-        }
+        PartnerNotifier.notifyPartner(partnerId, title, message, "journal_chat", docId, BuildConfig.PIPEDREAM_URL);
     }
 
     // ==========================================

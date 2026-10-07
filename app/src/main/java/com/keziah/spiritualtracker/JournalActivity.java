@@ -55,6 +55,7 @@ public class JournalActivity extends AppCompatActivity {
     // --- EDIT MODE VARIABLES ---
     private String existingDocId = null;
     private String existingAudioUrl = null;
+    private String existingStatus = null;
 
     // --- NOTIFICATION VARIABLE ---
     private String partnerId = null;
@@ -86,15 +87,20 @@ public class JournalActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         audioRecorder = new AudioRecorder(this);
 
+        if (auth.getCurrentUser() == null) {
+            finish();
+            return;
+        }
+
         // Fetch partner ID for notifications
         fetchPartnerId();
 
-        initCloudinary();
 
         if (getIntent().hasExtra("docId")) {
             existingDocId = getIntent().getStringExtra("docId");
             existingAudioUrl = getIntent().getStringExtra("audioUrl");
             existingDateStr = getIntent().getStringExtra("originalDate");
+            existingStatus = getIntent().getStringExtra("status");
 
             binding.etTitle.setText(getIntent().getStringExtra("title"));
             binding.etContent.setText(getIntent().getStringExtra("content"));
@@ -151,7 +157,8 @@ public class JournalActivity extends AppCompatActivity {
     private void toggleRecording() {
         if (!isRecording && !isPaused) {
             // STATE 1: START FRESH
-            localAudioPath = getExternalCacheDir().getAbsolutePath() + "/temp_audio_" + System.currentTimeMillis() + ".mp3";
+            File cacheDir = getExternalCacheDir() != null ? getExternalCacheDir() : getCacheDir();
+            localAudioPath = cacheDir.getAbsolutePath() + "/temp_audio_" + System.currentTimeMillis() + ".m4a";
             audioRecorder.startRecording(localAudioPath);
             isRecording = true;
             isPaused = false;
@@ -332,14 +339,14 @@ public class JournalActivity extends AppCompatActivity {
     }
 
     private void saveToFirestore(String title, String content, String audioUrl, String status) {
-        binding.btnSaveJournal.setText("SAVING...");
+        if (auth.getCurrentUser() == null) return;
+        runOnUiThread(() -> binding.btnSaveJournal.setText("SAVING..."));
         String userId = auth.getCurrentUser().getUid();
 
         db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
-            String authorName = documentSnapshot.getString("name");
-            if (authorName == null) authorName = "Partner";
-
+            String authorName = UserProfile.displayName(documentSnapshot);
             String durationToSave = (audioUrl != null) ? currentDuration : null;
+            boolean publishing = "published".equals(status);
 
             if (existingDocId != null) {
                 // UPDATE EXISTING ENTRY
@@ -347,50 +354,54 @@ public class JournalActivity extends AppCompatActivity {
                 updates.put("title", title);
                 updates.put("content", content);
                 updates.put("status", status);
+                updates.put("authorName", authorName);
                 if (audioUrl != null) {
                     updates.put("audioUrl", audioUrl);
                     updates.put("audioDuration", durationToSave);
                 }
+                // A draft becomes a real entry on the day it's published, not the day it was started.
+                boolean publishingDraft = publishing && "draft".equals(existingStatus);
+                if (publishingDraft) updates.put("date", new Timestamp(new Date()));
 
                 db.collection("journal_entries").document(existingDocId)
                         .update(updates)
-                        .addOnSuccessListener(aVoid -> finish());
+                        .addOnSuccessListener(aVoid -> {
+                            if (publishingDraft) onPublished(userId, authorName, title, existingDocId);
+                            finish();
+                        })
+                        .addOnFailureListener(e -> onSaveFailed());
             } else {
                 // CREATE NEW ENTRY
-                JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId, null, authorName, status, durationToSave);
-
-                if (audioUrl != null) {
-                    entry.setAudioUrl(audioUrl);
-                }
-
+                JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId, partnerId, authorName, status, durationToSave);
+                if (audioUrl != null) entry.setAudioUrl(audioUrl);
                 entry.setReadByPartner(false);
 
                 db.collection("journal_entries")
                         .add(entry)
                         .addOnSuccessListener(documentReference -> {
-                            // ✨ FIRE NOTIFICATION ✨ (Only if it's new and published)
-                            if ("published".equals(status)) {
-                                incrementPartnerUnread("unreadJournal");
-                                notifyPartner("New Journal Entry", "Your partner published: " + title);
-                            }
+                            if (publishing) onPublished(userId, authorName, title, documentReference.getId());
                             finish();
-                        });
+                        })
+                        .addOnFailureListener(e -> onSaveFailed());
             }
-        });
+        }).addOnFailureListener(e -> onSaveFailed());
     }
 
-    private void incrementPartnerUnread(String field) {
-        if (partnerId != null && !partnerId.isEmpty()) {
-            db.collection("users").document(partnerId).update(field, FieldValue.increment(1));
-        }
+    /** Ticks today's journal box (for both of us) and lets the partner know. */
+    private void onPublished(String userId, String authorName, String title, String docId) {
+        ActivityLog.addJournal(userId, title);
+        db.collection("users").document(userId)
+                .set(java.util.Collections.singletonMap("journaledTodayDate", ActivityLog.today()),
+                        com.google.firebase.firestore.SetOptions.merge());
+        PartnerNotifier.incrementUnread(partnerId, "unreadJournal");
+        PartnerNotifier.notifyPartner(partnerId, "New Journal Entry",
+                authorName + " published: " + title, "journal_new", docId, BuildConfig.NOTIFY_URL);
     }
 
-    private void initCloudinary() {
-        try {
-            Map config = new HashMap();
-            config.put("cloud_name", CLOUD_NAME);
-            MediaManager.init(this, config);
-        } catch (Exception e) { }
+    private void onSaveFailed() {
+        binding.btnSaveJournal.setEnabled(true);
+        binding.btnSaveJournal.setText(existingDocId != null ? "UPDATE ENTRY" : "SAVE ENTRY");
+        Toast.makeText(this, "Couldn't save. Check your connection and try again.", Toast.LENGTH_LONG).show();
     }
 
     private boolean checkPermissions() {
@@ -401,69 +412,20 @@ public class JournalActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 200);
     }
 
-    // ==========================================
-    // NOTIFICATION & PIPEDREAM LOGIC
-    // ==========================================
-
     private void fetchPartnerId() {
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore.getInstance().collection("users").document(currentUserId)
+        if (auth.getCurrentUser() == null) return;
+        db.collection("users").document(auth.getCurrentUser().getUid())
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("partnerId")) {
-                        partnerId = documentSnapshot.getString("partnerId");
-                    }
+                    String pid = documentSnapshot.getString("partnerId");
+                    if (pid != null && !pid.isEmpty()) partnerId = pid;
                 });
     }
 
-    private void notifyPartner(String title, String message) {
-        if (partnerId == null) return;
-
-        FirebaseFirestore.getInstance().collection("users").document(partnerId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("fcmToken")) {
-                        String partnerToken = documentSnapshot.getString("fcmToken");
-                        sendNotificationToServer(partnerToken, title, message);
-                    }
-                })
-                .addOnFailureListener(e -> android.util.Log.e("Journal_Nudge", "Failed to get partner token", e));
-    }
-
-    private void sendNotificationToServer(String targetToken, String title, String messageBody) {
-        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
-
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("token", targetToken);
-            json.put("title", title);
-            json.put("body", messageBody);
-
-            okhttp3.RequestBody body = okhttp3.RequestBody.create(
-                    json.toString(),
-                    okhttp3.MediaType.get("application/json; charset=utf-8")
-            );
-
-            // Using your exact Pipedream URL
-            okhttp3.Request request = new okhttp3.Request.Builder()
-                    .url(BuildConfig.NOTIFY_URL)
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override
-                public void onFailure(@NonNull okhttp3.Call call, @NonNull java.io.IOException e) {
-                    android.util.Log.e("Journal_Nudge", "Failed to send notification request", e);
-                }
-
-                @Override
-                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws java.io.IOException {
-                    if (response.body() != null) {
-                        android.util.Log.d("Journal_Nudge", "Server says: " + response.body().string());
-                    }
-                }
-            });
-        } catch (Exception e) {
-            android.util.Log.e("Journal_Nudge", "Error building JSON", e);
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        timerHandler.removeCallbacks(timerRunnable);
+        if (isRecording || isPaused) audioRecorder.stopRecording();
     }
 }
