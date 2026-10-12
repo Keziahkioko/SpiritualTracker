@@ -7,34 +7,64 @@
     android:orientation="vertical"
     android:background="#F3F4F9">
 
-    <!-- Clean white header — no gradient -->
+    <!-- Purple header, matching the Prayer screens -->
     <LinearLayout
+        android:id="@+id/journalHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#FFFFFF"
+        android:background="@drawable/bg_header_gradient"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="52dp"
-        android:paddingBottom="0dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="20dp">
+
+        <ImageView
+            android:id="@+id/btnJournalListBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="-10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="10dp"
+            android:src="@drawable/ic_back" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Journal"
-            android:textColor="#1A1A2E"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="14dp"/>
+            android:layout_marginTop="6dp"
+            android:letterSpacing="0.15"
+            android:text="JOURNAL"
+            android:textColor="#D1C4E9"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="serif"
+            android:text="Our Journal"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="16dp"
+            android:text="Words written before God"
+            android:textColor="#E1BEE7"
+            android:textSize="13sp"/>
 
         <!-- Search bar -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="46dp"
-            android:layout_marginBottom="14dp"
-            app:cardCornerRadius="14dp"
+            app:cardCornerRadius="23dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="#F3F4F9">
+            app:cardBackgroundColor="#FFFFFF">
 
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
@@ -50,11 +80,12 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
         android:scrollbars="none"
+        android:clipToPadding="false"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingBottom="12dp">
+        android:paddingTop="14dp"
+        android:paddingBottom="4dp">
 
         <LinearLayout
             android:id="@+id/chipGroup"
@@ -86,7 +117,7 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textSize="13sp"
-                android:textColor="#666666"
+                android:textColor="#7E57C2"
                 android:background="@drawable/chip_inactive"
                 android:layout_marginEnd="8dp"/>
 
@@ -99,7 +130,7 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textSize="13sp"
-                android:textColor="#666666"
+                android:textColor="#7E57C2"
                 android:background="@drawable/chip_inactive"
                 android:layout_marginEnd="8dp"/>
 
@@ -112,7 +143,7 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textSize="13sp"
-                android:textColor="#666666"
+                android:textColor="#7E57C2"
                 android:background="@drawable/chip_inactive"
                 android:layout_marginEnd="8dp"/>
 
@@ -125,17 +156,13 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textSize="13sp"
-                android:textColor="#666666"
+                android:textColor="#7E57C2"
                 android:background="@drawable/chip_inactive"/>
 
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- Thin separator -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#E0E0E0"/>
+
 
     <!-- Entry list — weight fills remaining space so FAB stays at bottom -->
     <FrameLayout
@@ -153,17 +180,20 @@
             android:paddingBottom="100dp"
             android:clipToPadding="false"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="50dp"
-            android:src="@android:drawable/ic_input_add"
-            app:tint="@android:color/white"
-            app:backgroundTint="#673AB7"
-            android:contentDescription="Add Entry"/>
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="24dp"
+            android:text="New Entry"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconTint="#FFFFFF"
+            app:backgroundTint="#7E57C2"
+            android:contentDescription="New journal entry"/>
 
     </FrameLayout>
 

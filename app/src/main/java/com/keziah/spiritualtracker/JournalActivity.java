@@ -114,6 +114,9 @@ public class JournalActivity extends AppCompatActivity {
             }
         });
 
+        binding.tvJournalDate.setText(new java.text.SimpleDateFormat("EEEE, d MMMM yyyy",
+                java.util.Locale.getDefault()).format(new java.util.Date()));
+
         // Same "save draft?" check as the phone's back button, so nothing is lost.
         binding.btnJournalClose.setOnClickListener(v -> checkUnsavedChanges());
 

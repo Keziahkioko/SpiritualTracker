@@ -211,7 +211,10 @@ public class JournalDetailActivity extends AppCompatActivity {
             tvTitle.setText(title);
         }
 
-        tvContent.setText(content);
+        // Opened from a search: keep the words highlighted and jump to the first one.
+        String searchQuery = getIntent().getStringExtra("searchQuery");
+        tvContent.setText(SearchHighlighter.highlight(content, searchQuery));
+        if (!"draft".equals(status)) tvTitle.setText(SearchHighlighter.highlight(title, searchQuery));
         tvDate.setText(date);
 
         // --- Handle Author Display and Edit Permissions ---
@@ -225,8 +228,8 @@ public class JournalDetailActivity extends AppCompatActivity {
             } else {
                 String displayAuthor = (authorName != null) ? authorName : "Partner";
                 tvAuthor.setText("By: " + displayAuthor);
-                tvAuthor.setTextColor(Color.parseColor("#2E7D32"));
-                tvAuthor.setBackgroundColor(Color.parseColor("#E8F5E9"));
+                tvAuthor.setTextColor(Color.parseColor("#166534"));
+                tvAuthor.setBackgroundResource(R.drawable.pill_partner);
                 btnEditEntry.setVisibility(View.GONE);
             }
         }
@@ -374,6 +377,7 @@ public class JournalDetailActivity extends AppCompatActivity {
         // 7. SETUP RECYCLER VIEW
         rvReplies = findViewById(R.id.rvReplies);
         detailScroll = findViewById(R.id.detailScroll);
+        scrollToFirstMatch(getIntent().getStringExtra("content"), getIntent().getStringExtra("searchQuery"));
         findViewById(R.id.btnDetailBack).setOnClickListener(v -> finish());
         rvReplies.setLayoutManager(new LinearLayoutManager(this));
         replyList = new ArrayList<>();
@@ -970,6 +974,20 @@ public class JournalDetailActivity extends AppCompatActivity {
 
     private void incrementPartnerUnread(String field) {
         PartnerNotifier.incrementUnread(partnerId, field);
+    }
+
+    private void scrollToFirstMatch(String content, String query) {
+        int index = SearchHighlighter.firstMatch(content, query);
+        if (index < 0 || detailScroll == null) return;
+        tvContent.post(() -> {
+            android.text.Layout layout = tvContent.getLayout();
+            if (layout == null) return;
+            int line = layout.getLineForOffset(index);
+            android.graphics.Rect r = new android.graphics.Rect(0, layout.getLineTop(line), 0, layout.getLineBottom(line));
+            detailScroll.offsetDescendantRectToMyCoords(tvContent, r);
+            int margin = (int) (120 * getResources().getDisplayMetrics().density);
+            detailScroll.smoothScrollTo(0, Math.max(0, r.top - margin));
+        });
     }
 
     /** Scrolls the whole page so the reply at {@code index} is in view (after the list has laid out). */

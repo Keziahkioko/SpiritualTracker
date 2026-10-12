@@ -58,7 +58,15 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     // Called by Activity whenever data or filters change
+    private String searchQuery = "";
+
     public void setFilteredList(List<JournalEntry> filtered) {
+        setFilteredList(filtered, "");
+    }
+
+    /** Also remembers the search so matches are highlighted in the cards. */
+    public void setFilteredList(List<JournalEntry> filtered, String query) {
+        this.searchQuery = query == null ? "" : query.trim();
         this.sourceList = filtered;
         buildDisplayList();
         notifyDataSetChanged();
@@ -181,16 +189,18 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private void bindEntry(EntryVH h, JournalEntry entry, int position) {
         clearReplyListener(h);
 
-        h.tvTitle.setText(entry.getTitle());
+        h.tvTitle.setText(SearchHighlighter.highlight(entry.getTitle(), searchQuery));
 
         // Time (short h:mm a)
         if (entry.getDate() != null) {
             h.tvTime.setText(DateFormat.format("h:mm a", entry.getDate().toDate()));
-            h.tvDate.setText(DateFormat.format("MMM d, yyyy", entry.getDate().toDate()));
+            h.tvDate.setText(DateFormat.format("MMM d, yyyy", entry.getDate().toDate())
+                    + "  \u00B7  " + DateFormat.format("h:mm a", entry.getDate().toDate()));
         }
 
         // Author pill
         boolean isMe = entry.getUserId() != null && entry.getUserId().equals(currentUid);
+        if (h.stripe != null) h.stripe.setBackgroundColor(isMe ? 0xFF7E57C2 : 0xFF43A047);
         if (isMe) {
             h.tvAuthor.setText("Me");
             h.tvAuthor.setBackgroundResource(R.drawable.pill_me);
@@ -241,7 +251,9 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             h.layoutAudioFooter.setVisibility(View.GONE);
             if (entry.getContent() != null && !entry.getContent().isEmpty()) {
                 h.tvPreview.setVisibility(View.VISIBLE);
-                h.tvPreview.setText(entry.getContent());
+                // When searching, show the part of the entry that matched, highlighted.
+                String preview = SearchHighlighter.snippetAround(entry.getContent(), searchQuery, 80);
+                h.tvPreview.setText(SearchHighlighter.highlight(preview, searchQuery));
             } else {
                 h.tvPreview.setVisibility(View.GONE);
             }
@@ -277,6 +289,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         h.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, JournalDetailActivity.class);
             intent.putExtra("title",         entry.getTitle());
+            intent.putExtra("searchQuery",   searchQuery);
             intent.putExtra("content",       entry.getContent());
             intent.putExtra("audioUrl",      entry.getAudioUrl());
             intent.putExtra("audioDuration", entry.getAudioDuration());
@@ -333,6 +346,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 tvAudioDuration, tvUnreadBadge;
         ImageButton btnPlayAudio;
         LinearLayout layoutAudioFooter;
+        View stripe;
         ListenerRegistration repliesListener;
         String boundDocIdForReplies;
 
@@ -348,6 +362,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvUnreadBadge    = v.findViewById(R.id.tvUnreadBadge);
             btnPlayAudio     = v.findViewById(R.id.btnPlayAudio);
             layoutAudioFooter = v.findViewById(R.id.layoutAudioFooter);
+            stripe           = v.findViewById(R.id.viewJournalStripe);
         }
     }
 }

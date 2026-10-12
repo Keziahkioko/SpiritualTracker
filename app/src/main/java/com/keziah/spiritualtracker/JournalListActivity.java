@@ -56,6 +56,22 @@ public class JournalListActivity extends AppCompatActivity {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerView.setAdapter(adapter);
 
+        binding.btnJournalListBack.setOnClickListener(v -> finish());
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
+        StatusBarUtil.padTop(binding.journalHeader);
+        final int listBottom = binding.recyclerView.getPaddingBottom();
+        final int fabBottom = ((android.view.ViewGroup.MarginLayoutParams) binding.fabAdd.getLayoutParams()).bottomMargin;
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.recyclerView, (v, insets) -> {
+            int nav = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), listBottom + nav);
+            ((android.view.ViewGroup.MarginLayoutParams) binding.fabAdd.getLayoutParams()).bottomMargin = fabBottom + nav;
+            binding.fabAdd.requestLayout();
+            return insets;
+        });
+
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, JournalActivity.class)));
 
@@ -105,7 +121,7 @@ public class JournalListActivity extends AppCompatActivity {
                 chip.setTypeface(null, Typeface.BOLD);
             } else {
                 chip.setBackgroundResource(R.drawable.chip_inactive);
-                chip.setTextColor(0xFF666666);
+                chip.setTextColor(0xFF7E57C2);
                 chip.setTypeface(null, Typeface.NORMAL);
             }
         }
@@ -171,7 +187,7 @@ public class JournalListActivity extends AppCompatActivity {
             result.add(e);
         }
 
-        adapter.setFilteredList(result);
+        adapter.setFilteredList(result, activeSearch);
     }
 
     // ── Swipe to delete ───────────────────────────────────────────────────
