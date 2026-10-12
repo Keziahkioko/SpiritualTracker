@@ -185,6 +185,7 @@ public class ConnectionFragment extends Fragment {
         tvMessagePreviewText = view.findViewById(R.id.tvMessagePreviewText);
         btnClosePreview = view.findViewById(R.id.btnClosePreview);
         tvTypingIndicator = view.findViewById(R.id.tvTypingIndicator);
+        StatusBarUtil.padTop(view.findViewById(R.id.connectionHeader));
 
         if (btnClosePreview != null) btnClosePreview.setOnClickListener(v -> clearReplyPreview());
 
@@ -399,8 +400,16 @@ public class ConnectionFragment extends Fragment {
     }
 
     private void deleteMessage(JournalReply reply) {
-        db.collection("prayer_messages").document(reply.getReplyId()).delete()
-                .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Message deleted", Toast.LENGTH_SHORT).show());
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Delete message?")
+                .setMessage("It will be removed for both of you.")
+                .setPositiveButton("Delete", (d, w) ->
+                        db.collection("prayer_messages").document(reply.getReplyId()).delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    if (getContext() != null) Toast.makeText(getContext(), "Message deleted", Toast.LENGTH_SHORT).show();
+                                }))
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     // ==========================================
@@ -696,7 +705,10 @@ public class ConnectionFragment extends Fragment {
         partnerStatusListener = db.collection("users").document(partnerId).addSnapshotListener((snapshot, error) -> {
             if (error != null || snapshot == null || !snapshot.exists()) return;
 
-            tvPartnerNameStatus.setText(UserProfile.partnerName(snapshot) + "'s Status");
+            String partnerName = UserProfile.partnerName(snapshot);
+            tvPartnerNameStatus.setText(partnerName + "'s Status");
+            TextView title = getView() != null ? getView().findViewById(R.id.tvConnectionTitle) : null;
+            if (title != null) title.setText("Praying with " + partnerName);
 
             String today = ActivityLog.today();
 

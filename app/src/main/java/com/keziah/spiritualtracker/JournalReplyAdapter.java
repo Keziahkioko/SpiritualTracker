@@ -113,6 +113,10 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
         boolean isMine = reply.getSenderId() != null && reply.getSenderId().equals(currentUid);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageBubble.getLayoutParams();
         params.gravity = isMine ? Gravity.END : Gravity.START;
+        // Leave a gap on the other side so long messages still read as "mine" or "theirs".
+        int sideGap = (int) (56 * context.getResources().getDisplayMetrics().density);
+        params.setMarginStart(isMine ? sideGap : 0);
+        params.setMarginEnd(isMine ? 0 : sideGap);
         holder.messageBubble.setLayoutParams(params);
         
         // --- ADAPTIVE PREMIUM COLORS ---

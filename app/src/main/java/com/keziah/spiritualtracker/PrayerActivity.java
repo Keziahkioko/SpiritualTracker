@@ -68,15 +68,21 @@ public class PrayerActivity extends AppCompatActivity {
             }
         });
 
-        // 4. Hide Bottom Navigation when Keyboard Opens
+        // 4. Headers run up behind the status bar. Because the window no longer resizes for the
+        //    keyboard by itself, lift the content above it and hide the bottom nav while typing.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
         final View rootView = findViewById(android.R.id.content);
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
-            if (heightDiff > 200) {
-                bottomNavigation.setVisibility(View.GONE);
-            } else {
-                bottomNavigation.setVisibility(View.VISIBLE);
-            }
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            boolean keyboardOpen = insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime());
+            int imeBottom = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom;
+            int navBottom = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom;
+            bottomNavigation.setVisibility(keyboardOpen ? View.GONE : View.VISIBLE);
+            bottomNavigation.setPadding(0, 0, 0, keyboardOpen ? 0 : navBottom);
+            v.setPadding(0, 0, 0, keyboardOpen ? imeBottom : 0);
+            return insets;
         });
     }
 }

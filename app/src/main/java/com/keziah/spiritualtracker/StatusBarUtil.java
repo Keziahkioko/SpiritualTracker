@@ -15,6 +15,22 @@ public final class StatusBarUtil {
 
     private StatusBarUtil() {}
 
+    /** For headers inside a screen that already draws behind the status bar (e.g. Prayer tabs). */
+    public static void padTop(View header) {
+        final int baseTop = header.getPaddingTop();
+        Runnable apply = () -> {
+            WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(header);
+            int top = insets != null ? insets.getInsets(WindowInsetsCompat.Type.statusBars()).top : 0;
+            header.setPadding(header.getPaddingLeft(), baseTop + top,
+                    header.getPaddingRight(), header.getPaddingBottom());
+        };
+        if (header.isAttachedToWindow()) apply.run();
+        header.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View v) { v.post(apply); }
+            @Override public void onViewDetachedFromWindow(View v) {}
+        });
+    }
+
     /**
      * @param header  background view that should grow by the status-bar height
      * @param content view whose top padding should grow by the status-bar height

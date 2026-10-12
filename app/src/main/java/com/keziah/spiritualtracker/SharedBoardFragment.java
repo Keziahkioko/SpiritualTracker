@@ -72,6 +72,7 @@ public class SharedBoardFragment extends Fragment {
         layoutJointListItems = view.findViewById(R.id.layoutJointListItems);
         btnViewVault         = view.findViewById(R.id.btnViewVault);
         tvJointListTitle     = view.findViewById(R.id.tvJointListTitle);
+        StatusBarUtil.padTop(view.findViewById(R.id.boardHeader));
 
         // Live day label
         String dayOfWeek = new java.text.SimpleDateFormat("EEEE", java.util.Locale.getDefault())
@@ -187,7 +188,7 @@ public class SharedBoardFragment extends Fragment {
 
         // Only show "Mark as Answered" button if user is the author
         if (isAuthor) {
-            builder.setPositiveButton("Mark as Answered ✨", (d, w) -> showAnsweredCommentDialog(request));
+            builder.setPositiveButton("Answered ✨", (d, w) -> showAnsweredCommentDialog(request));
         }
 
         // Only show "Delete" button if user is the author
@@ -195,8 +196,10 @@ public class SharedBoardFragment extends Fragment {
             builder.setNeutralButton("Delete", (d, w) -> showDeleteRequestDialog(request));
         }
 
-        builder.setNegativeButton("Close", null)
-                .show();
+        androidx.appcompat.app.AlertDialog dialog = builder.setNegativeButton("Close", null).create();
+        dialog.show();
+        android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+        if (delete != null) delete.setTextColor(Color.parseColor("#C62828"));
     }
 
     private void showDeleteRequestDialog(PrayerRequest request) {

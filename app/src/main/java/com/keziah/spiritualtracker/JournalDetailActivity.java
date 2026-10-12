@@ -723,12 +723,17 @@ public class JournalDetailActivity extends AppCompatActivity {
     }
 
     private void deleteMessage(JournalReply reply) {
-        FirebaseFirestore.getInstance().collection("journals")
-                .document(docId).collection("replies")
-                .document(reply.getReplyId())
-                .delete()
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Message deleted", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete", Toast.LENGTH_SHORT).show());
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Delete message?")
+                .setMessage("It will be removed for both of you.")
+                .setPositiveButton("Delete", (d, w) -> FirebaseFirestore.getInstance().collection("journals")
+                        .document(docId).collection("replies")
+                        .document(reply.getReplyId())
+                        .delete()
+                        .addOnSuccessListener(aVoid -> Toast.makeText(this, "Message deleted", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete", Toast.LENGTH_SHORT).show()))
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     // ==========================================

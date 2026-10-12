@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9"
-    android:fitsSystemWindows="true">
+    android:background="#F3F4F9">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"

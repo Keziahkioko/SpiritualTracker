@@ -69,6 +69,7 @@ public class MySpaceFragment extends Fragment {
         tvActiveCount     = view.findViewById(R.id.tvActiveCount);
         tvAnsweredCount   = view.findViewById(R.id.tvAnsweredCount);
         fabAddPersonalPrayer = view.findViewById(R.id.fabAddPersonalPrayer);
+        StatusBarUtil.padTop(view.findViewById(R.id.mySpaceHeader));
 
         personalList = new ArrayList<>();
         adapter = new PersonalPrayerAdapter(personalList, this::onPrayerTapped, this::onPrayerLongTapped);
@@ -201,13 +202,16 @@ public class MySpaceFragment extends Fragment {
         String desc = (pr.getDescription() != null && !pr.getDescription().isEmpty())
                 ? pr.getDescription() : "No details added.";
 
-        new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle(pr.getTitle())
                 .setMessage(desc)
-                .setPositiveButton("Mark as Answered ✨", (d, w) -> showMarkAnsweredDialog(pr))
+                .setPositiveButton("Answered ✨", (d, w) -> showMarkAnsweredDialog(pr))
                 .setNeutralButton("Delete", (d, w) -> showDeletePersonalDialog(pr))
                 .setNegativeButton("Close", null)
-                .show();
+                .create();
+        dialog.show();
+        styleDetailButtons(dialog);
     }
 
     private void showMarkAnsweredDialog(PrayerRequest pr) {
@@ -286,6 +290,12 @@ public class MySpaceFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (prayerListener != null) prayerListener.remove();
+    }
+
+    /** Short labels so the three buttons sit on one row; Delete in red like the app's other deletes. */
+    private static void styleDetailButtons(androidx.appcompat.app.AlertDialog dialog) {
+        android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+        if (delete != null) delete.setTextColor(Color.parseColor("#C62828"));
     }
 
     // ───── Inner Adapter ─────
