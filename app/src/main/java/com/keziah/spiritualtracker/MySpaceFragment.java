@@ -269,7 +269,7 @@ public class MySpaceFragment extends Fragment {
         androidx.appcompat.app.AlertDialog dialog =
                 new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                         .setView(dialogView)
-                        .setPositiveButton("Praise God! 🙌", null)
+                        .setPositiveButton("Praise God!", null)
                         .create();
 
         if (btnDelete != null) {
@@ -335,7 +335,7 @@ public class MySpaceFragment extends Fragment {
 
             boolean firstAnswered = pr.isAnswered() && (position == 0 || !list.get(position - 1).isAnswered());
             h.tvSection.setVisibility(firstAnswered ? View.VISIBLE : View.GONE);
-            if (firstAnswered) h.tvSection.setText("ANSWERED  \uD83D\uDE4C  \u00B7  " + answeredCount);
+            if (firstAnswered) h.tvSection.setText("ANSWERED  \u00B7  " + answeredCount);
 
             h.tvTitle.setText(pr.getTitle());
 
