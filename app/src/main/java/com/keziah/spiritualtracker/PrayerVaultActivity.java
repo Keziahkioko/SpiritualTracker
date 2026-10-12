@@ -35,7 +35,6 @@ public class PrayerVaultActivity extends AppCompatActivity {
     private LinearLayout layoutEmptyVault;
 
     private TextView tvStatTotal, tvStatMine, tvStatPartner;
-    private TextView tvGhostNumber;
     private TextView tabAll, tabMine, tabPartner;
     private String   activeTab = "all";
 
@@ -62,10 +61,22 @@ public class PrayerVaultActivity extends AppCompatActivity {
         tvStatTotal      = findViewById(R.id.tvStatTotal);
         tvStatMine       = findViewById(R.id.tvStatMine);
         tvStatPartner    = findViewById(R.id.tvStatPartner);
-        tvGhostNumber    = findViewById(R.id.tvGhostNumber);
         tabAll           = findViewById(R.id.tabAll);
         tabMine          = findViewById(R.id.tabMine);
         tabPartner       = findViewById(R.id.tabPartner);
+
+        findViewById(R.id.btnVaultBack).setOnClickListener(v -> finish());
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
+        StatusBarUtil.padTop(findViewById(R.id.vaultHeader));
+        final int listBottom = rvVault.getPaddingBottom();
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rvVault, (v, insets) -> {
+            int nav = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), listBottom + nav);
+            return insets;
+        });
 
         adapter = new VaultAdapter(this, filteredList,
                 this::showTestimonyDialog,
@@ -106,8 +117,8 @@ public class PrayerVaultActivity extends AppCompatActivity {
         for (int i = 0; i < tabs.length; i++) {
             boolean active = keys[i].equals(activeTab);
             tabs[i].setBackgroundResource(
-                    active ? R.drawable.tab_underline_active : android.R.color.transparent);
-            tabs[i].setTextColor(active ? 0xFF1A1A2E : 0xFFAAAAAA);
+                    active ? R.drawable.bg_vault_tab_active : android.R.color.transparent);
+            tabs[i].setTextColor(active ? 0xFFFFFFFF : 0xFF7E57C2);
             tabs[i].setTypeface(null, active ? Typeface.BOLD : Typeface.NORMAL);
         }
     }
@@ -133,8 +144,6 @@ public class PrayerVaultActivity extends AppCompatActivity {
         if (tvStatMine    != null) tvStatMine   .setText(String.valueOf(mineCount));
         if (tvStatPartner != null) tvStatPartner.setText(String.valueOf(partnerCount));
 
-        // Ghost number always reflects total
-        if (tvGhostNumber != null) tvGhostNumber.setText(String.valueOf(total));
 
         adapter.updateList(filteredList);
         layoutEmptyVault.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);

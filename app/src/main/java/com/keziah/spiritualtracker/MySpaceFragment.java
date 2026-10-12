@@ -105,6 +105,12 @@ public class MySpaceFragment extends Fragment {
                         }
                     }
 
+                    java.util.List<PrayerRequest> ordered = new ArrayList<>();
+                    for (PrayerRequest p : personalList) if (!p.isAnswered()) ordered.add(p);
+                    for (PrayerRequest p : personalList) if (p.isAnswered()) ordered.add(p);
+                    personalList.clear();
+                    personalList.addAll(ordered);
+                    adapter.setAnsweredCount(answered);
                     adapter.notifyDataSetChanged();
 
                     if (tvActiveCount   != null) tvActiveCount.setText(String.valueOf(active));
@@ -327,6 +333,10 @@ public class MySpaceFragment extends Fragment {
         public void onBindViewHolder(@NonNull VH h, int position) {
             PrayerRequest pr = list.get(position);
 
+            boolean firstAnswered = pr.isAnswered() && (position == 0 || !list.get(position - 1).isAnswered());
+            h.tvSection.setVisibility(firstAnswered ? View.VISIBLE : View.GONE);
+            if (firstAnswered) h.tvSection.setText("ANSWERED  \uD83D\uDE4C  \u00B7  " + answeredCount);
+
             h.tvTitle.setText(pr.getTitle());
 
             String desc = pr.getDescription();
@@ -343,35 +353,63 @@ public class MySpaceFragment extends Fragment {
                 h.tvDate.setText("Added " + date);
             }
 
-            // Answered state: dim the stripe, hide the badge (answered prayers show testimony on tap)
+            // Answered prayers are celebrated, not faded: keep the title strong, show God's answer.
+            h.tvTitle.setTextColor(Color.parseColor("#1A1A1A"));
+            h.answeredBadge.setVisibility(View.VISIBLE);
             if (pr.isAnswered()) {
-                h.stripeView.setBackgroundColor(Color.parseColor("#B39DDB")); // muted purple
-                h.answeredBadge.setVisibility(View.GONE);
-                h.tvTitle.setTextColor(Color.parseColor("#9575CD"));
+                h.stripeView.setBackgroundColor(Color.parseColor("#9575CD"));
+                h.answeredLabel.setText("\u2713 Answered");
+                // Solid gradient pill so answered prayers stand out from "Mark answered".
+                h.answeredBadge.setBackgroundResource(R.drawable.bg_vault_tab_active);
+                h.answeredLabel.setTextColor(Color.WHITE);
+                if (h.answeredIcon != null) h.answeredIcon.setColorFilter(Color.WHITE);
+                h.answeredBadge.setOnClickListener(null);
+                h.answeredBadge.setClickable(false);
+                String testimony = pr.getAnsweredComment();
+                boolean hasTestimony = testimony != null && !testimony.trim().isEmpty();
+                h.testimonyBox.setVisibility(hasTestimony ? View.VISIBLE : View.GONE);
+                if (hasTestimony) {
+                    h.tvTestimony.setText("\u201c" + testimony.trim() + "\u201d");
+                    h.tvDescription.setVisibility(View.GONE);
+                }
             } else {
                 h.stripeView.setBackgroundColor(Color.parseColor("#7E57C2")); // vivid purple
-                h.answeredBadge.setVisibility(View.VISIBLE);
-                h.tvTitle.setTextColor(Color.parseColor("#1A1A1A"));
+                h.answeredLabel.setText("Mark answered");
+                h.answeredBadge.setBackgroundResource(R.drawable.bg_answered_pill);
+                h.answeredLabel.setTextColor(Color.parseColor("#7E57C2"));
+                if (h.answeredIcon != null) h.answeredIcon.setColorFilter(Color.parseColor("#7E57C2"));
+                h.answeredBadge.setClickable(true);
+                h.testimonyBox.setVisibility(View.GONE);
                 h.answeredBadge.setOnClickListener(v ->
                         h.answeredBadge.animate().scaleX(0.9f).scaleY(0.9f).setDuration(80)
                                 .withEndAction(() -> h.answeredBadge.animate().scaleX(1f).scaleY(1f)
                                         .setDuration(80).withEndAction(() -> onTap.onAction(pr))));
             }
 
-            h.itemView.setOnClickListener(v -> onTap.onAction(pr));
-            h.itemView.setOnLongClickListener(v -> { onLongTap.onAction(pr); return true; });
+            h.card.setOnClickListener(v -> onTap.onAction(pr));
+            h.card.setOnLongClickListener(v -> { onLongTap.onAction(pr); return true; });
         }
 
         @Override
         public int getItemCount() { return list.size(); }
 
+        private int answeredCount = 0;
+
+        void setAnsweredCount(int count) { answeredCount = count; }
+
         static class VH extends RecyclerView.ViewHolder {
-            TextView tvTitle, tvDescription, tvDate;
-            View stripeView;
-            View answeredBadge;
+            TextView tvTitle, tvDescription, tvDate, tvSection, tvTestimony, answeredLabel;
+            View stripeView, answeredBadge, testimonyBox, card;
+            android.widget.ImageView answeredIcon;
 
             VH(@NonNull View v) {
                 super(v);
+                tvSection    = v.findViewById(R.id.tvAnsweredSection);
+                tvTestimony  = v.findViewById(R.id.tvPersonalTestimony);
+                testimonyBox = v.findViewById(R.id.layoutPersonalTestimony);
+                answeredLabel = v.findViewById(R.id.tvPersonalAnsweredLabel);
+                card         = v.findViewById(R.id.cardPersonal);
+                answeredIcon = v.findViewById(R.id.ivPersonalAnsweredIcon);
                 tvTitle      = v.findViewById(R.id.tvPersonalTitle);
                 tvDescription = v.findViewById(R.id.tvPersonalDescription);
                 tvDate       = v.findViewById(R.id.tvPersonalDate);

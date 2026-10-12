@@ -54,30 +54,35 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         PrayerRequest r = list.get(position);
 
-        // Row number e.g. "01", "02"
-        h.tvRowNumber.setText(String.format(Locale.getDefault(), "%02d", position + 1));
-
         // Title
         h.tvTitle.setText(r.getTitle());
 
-        // Meta: "Me · Apr 2, 2026" or "Partner · Apr 2, 2026"
+        // Meta: "Prayed by me · Apr 2, 2026" or "Prayed by Brian · Apr 2, 2026"
         boolean isMe = currentUid.equals(r.getAuthorId());
-        String author = isMe ? "Me"
+        String author = isMe ? "me"
                 : (r.getAuthorName() != null && !r.getAuthorName().isEmpty()
                         ? r.getAuthorName() : "Partner");
         String date = r.getTimestamp() != null
                 ? new SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
                         .format(r.getTimestamp().toDate())
                 : "";
-        h.tvMeta.setText(author + (date.isEmpty() ? "" : " · " + date));
+        h.tvMeta.setText("Prayed by " + author + (date.isEmpty() ? "" : "  ·  " + date));
 
-        // Description preview
+        // God's answer is the heart of the Vault, so show it; fall back to the request itself.
+        String testimony = r.getAnsweredComment();
         String desc = r.getDescription();
-        if (desc != null && !desc.isEmpty()) {
-            h.tvDescription.setVisibility(View.VISIBLE);
-            h.tvDescription.setText(desc);
-        } else {
+        if (testimony != null && !testimony.trim().isEmpty()) {
+            h.layoutTestimony.setVisibility(View.VISIBLE);
+            h.tvTestimony.setText("\u201c" + testimony.trim() + "\u201d");
             h.tvDescription.setVisibility(View.GONE);
+        } else {
+            h.layoutTestimony.setVisibility(View.GONE);
+            if (desc != null && !desc.isEmpty()) {
+                h.tvDescription.setVisibility(View.VISIBLE);
+                h.tvDescription.setText(desc);
+            } else {
+                h.tvDescription.setVisibility(View.GONE);
+            }
         }
 
         // Divider — hide on last item
@@ -88,11 +93,13 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VH> {
     @Override public int getItemCount() { return list.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvRowNumber, tvTitle, tvMeta, tvDescription;
+        TextView tvTitle, tvMeta, tvDescription, tvTestimony;
+        View layoutTestimony;
 
         VH(@NonNull View v) {
             super(v);
-            tvRowNumber  = v.findViewById(R.id.tvRowNumber);
+            tvTestimony     = v.findViewById(R.id.tvTestimonyPreview);
+            layoutTestimony = v.findViewById(R.id.layoutTestimony);
             tvTitle      = v.findViewById(R.id.tvRequestTitle);
             tvMeta       = v.findViewById(R.id.tvRequestMeta);
             tvDescription = v.findViewById(R.id.tvRequestDescription);

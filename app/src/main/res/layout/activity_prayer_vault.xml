@@ -1,212 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F4F3FF">
+    android:background="#F3F4F9">
 
-    <!-- HEADER -->
-    <FrameLayout
+    <!-- ===== PURPLE HEADER (matches Board and My Space) ===== -->
+    <LinearLayout
+        android:id="@+id/vaultHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F4F3FF"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="52dp"
-        android:paddingBottom="20dp">
+        android:background="@drawable/bg_header_gradient"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="22dp">
+
+        <ImageView
+            android:id="@+id/btnVaultBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="-10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="10dp"
+            android:src="@drawable/ic_back" />
 
         <TextView
-            android:id="@+id/tvGhostNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="-8dp"
-            android:text="0"
-            android:textColor="#1A1A2E"
-            android:alpha="0.05"
-            android:textSize="120sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-black"
-            android:includeFontPadding="false" />
+            android:layout_marginTop="6dp"
+            android:letterSpacing="0.15"
+            android:text="PRAYER VAULT"
+            android:textColor="#D1C4E9"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:orientation="vertical">
+            android:layout_marginTop="2dp"
+            android:fontFamily="serif"
+            android:text="Testimonies"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PRAYER VAULT"
-                android:textColor="#9E8FC4"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.15"
-                android:layout_marginBottom="6dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Answered prayers, remembered forever"
+            android:textColor="#E1BEE7"
+            android:textSize="13sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Testimonies"
-                android:textColor="#1A1A2E"
-                android:textSize="34sp"
-                android:fontFamily="serif" />
-
-        </LinearLayout>
-    </FrameLayout>
-
-    <!-- STATS CHIPS -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="20dp"
-        android:background="#F4F3FF">
-
+        <!-- Counts as soft glass chips -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/stat_chip_bg">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/tvStatTotal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="#1A1A2E"
-                android:textSize="26sp"
-                android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_vault_stat"
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TOTAL"
-                android:textColor="#9E8FC4"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1"
-                android:layout_marginTop="2dp" />
+                <TextView
+                    android:id="@+id/tvStatTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="TOTAL"
+                    android:textColor="#E1BEE7"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_vault_stat"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvStatMine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="MINE"
+                    android:textColor="#E1BEE7"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_vault_stat"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvStatPartner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="PARTNER"
+                    android:textColor="#E1BEE7"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/stat_chip_bg">
-
-            <TextView
-                android:id="@+id/tvStatMine"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="#1A1A2E"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="MINE"
-                android:textColor="#9E8FC4"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="72dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/stat_chip_bg">
-
-            <TextView
-                android:id="@+id/tvStatPartner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="#1A1A2E"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PARTNER"
-                android:textColor="#9E8FC4"
-                android:textSize="9sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
     </LinearLayout>
 
-    <!-- TABS -->
+    <!-- ===== FILTER PILLS ===== -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_vault_tabs"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:background="#F4F3FF">
+        android:padding="4dp">
 
         <TextView
             android:id="@+id/tabAll"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="All"
+            android:layout_height="34dp"
+            android:background="@drawable/bg_vault_tab_active"
             android:gravity="center"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A2E"
-            android:paddingEnd="0dp"
-            android:layout_marginEnd="24dp"
-            android:background="@drawable/tab_underline_active" />
+            android:paddingHorizontal="18dp"
+            android:text="All"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tabMine"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Mine"
+            android:layout_height="34dp"
             android:gravity="center"
-            android:textSize="14sp"
-            android:textColor="#AAAAAA"
-            android:paddingEnd="0dp"
-            android:layout_marginEnd="24dp"
-            android:background="@android:color/transparent" />
+            android:paddingHorizontal="18dp"
+            android:text="Mine"
+            android:textColor="#7E57C2"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tabPartner"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Partner"
+            android:layout_height="34dp"
             android:gravity="center"
-            android:textSize="14sp"
-            android:textColor="#AAAAAA"
-            android:background="@android:color/transparent" />
-
+            android:paddingHorizontal="18dp"
+            android:text="Partner"
+            android:textColor="#7E57C2"
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#DDD8F5" />
-
-    <!-- LIST -->
+    <!-- ===== LIST ===== -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -216,11 +203,11 @@
             android:id="@+id/rvVault"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
             android:paddingStart="16dp"
+            android:paddingTop="10dp"
             android:paddingEnd="16dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="32dp"
-            android:clipToPadding="false" />
+            android:paddingBottom="32dp" />
 
         <LinearLayout
             android:id="@+id/layoutEmptyVault"
@@ -229,30 +216,36 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical"
-            android:visibility="gone"
             android:paddingStart="48dp"
             android:paddingEnd="48dp"
-            android:paddingBottom="80dp">
+            android:paddingBottom="80dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="🙌"
+                android:textSize="40sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="serif"
                 android:text="Nothing here yet"
                 android:textColor="#1A1A2E"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="When God answers your prayers, they will be preserved here as testimonies."
-                android:textColor="#9E9E9E"
-                android:textSize="13sp"
                 android:gravity="center"
-                android:lineSpacingMultiplier="1.5" />
+                android:lineSpacingMultiplier="1.5"
+                android:text="When God answers your prayers, they will be kept here as testimonies."
+                android:textColor="#9E9E9E"
+                android:textSize="13sp" />
         </LinearLayout>
-
     </FrameLayout>
-
 </LinearLayout>
