@@ -104,6 +104,7 @@ public class JournalActivity extends AppCompatActivity {
             binding.etContent.setText(getIntent().getStringExtra("content"));
 
             binding.btnSaveJournal.setText("UPDATE ENTRY");
+            binding.tvJournalHeading.setText("Edit Entry");
         }
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -112,6 +113,9 @@ public class JournalActivity extends AppCompatActivity {
                 checkUnsavedChanges();
             }
         });
+
+        // Same "save draft?" check as the phone's back button, so nothing is lost.
+        binding.btnJournalClose.setOnClickListener(v -> checkUnsavedChanges());
 
         binding.btnRecord.setOnClickListener(v -> {
             if (checkPermissions()) {

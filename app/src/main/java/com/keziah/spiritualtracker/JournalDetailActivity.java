@@ -99,6 +99,7 @@ public class JournalDetailActivity extends AppCompatActivity {
 
     // --- RECYCLER VIEW VARIABLES ---
     private RecyclerView rvReplies;
+    private androidx.core.widget.NestedScrollView detailScroll;
     private JournalReplyAdapter replyAdapter;
     private List<JournalReply> replyList;
 
@@ -372,6 +373,8 @@ public class JournalDetailActivity extends AppCompatActivity {
 
         // 7. SETUP RECYCLER VIEW
         rvReplies = findViewById(R.id.rvReplies);
+        detailScroll = findViewById(R.id.detailScroll);
+        findViewById(R.id.btnDetailBack).setOnClickListener(v -> finish());
         rvReplies.setLayoutManager(new LinearLayoutManager(this));
         replyList = new ArrayList<>();
 
@@ -399,7 +402,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             for (int i = 0; i < replyList.size(); i++) {
                 if (replyList.get(i).getReplyId() != null && replyList.get(i).getReplyId().equals(quotedMessageId)) {
                     // 1. Scroll smoothly to the original message
-                    rvReplies.smoothScrollToPosition(i);
+                    scrollToReply(i, true);
 
                     // 2. Trigger the brief highlight effect
                     replyAdapter.setHighlightedMessage(quotedMessageId);
@@ -909,12 +912,11 @@ public class JournalDetailActivity extends AppCompatActivity {
                     if (error != null) return;
 
                     if (value != null) {
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) rvReplies.getLayoutManager();
-                        if (layoutManager == null) return;
-                        int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
                         int totalItemsBefore = replyList.size();
-
-                        boolean wasAtBottom = (lastVisiblePosition >= totalItemsBefore - 2);
+                        // "At the bottom" now means the page itself is scrolled (nearly) to the end.
+                        boolean wasAtBottom = detailScroll == null || !detailScroll.canScrollVertically(1)
+                                || detailScroll.getChildAt(0).getBottom() - (detailScroll.getHeight() + detailScroll.getScrollY())
+                                   < (int) (120 * getResources().getDisplayMetrics().density);
 
                         replyList.clear();
                         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -951,14 +953,14 @@ public class JournalDetailActivity extends AppCompatActivity {
                             // --- SCROLLING LOGIC ---
                             if (targetScrollIndex != -1 && !hasScrolledToUnread) {
                                 // SCROLL TO THE UNREAD DIVIDER! (Only happens once when you open the chat)
-                                rvReplies.scrollToPosition(targetScrollIndex);
+                                scrollToReply(targetScrollIndex, false);
                                 hasScrolledToUnread = true;
                             }
                             else if (replyList.size() > totalItemsBefore) {
                                 // NORMAL SCROLLING (If someone sends a new message while you're in the chat)
                                 JournalReply lastMessage = replyList.get(replyList.size() - 1);
                                 if (lastMessage.getSenderId() != null && lastMessage.getSenderId().equals(currentUid) || wasAtBottom) {
-                                    rvReplies.scrollToPosition(replyList.size() - 1);
+                                    scrollToReply(replyList.size() - 1, false);
                                 }
                             }
                         }
@@ -968,6 +970,19 @@ public class JournalDetailActivity extends AppCompatActivity {
 
     private void incrementPartnerUnread(String field) {
         PartnerNotifier.incrementUnread(partnerId, field);
+    }
+
+    /** Scrolls the whole page so the reply at {@code index} is in view (after the list has laid out). */
+    private void scrollToReply(int index, boolean smooth) {
+        if (detailScroll == null || index < 0) return;
+        rvReplies.post(() -> {
+            RecyclerView.LayoutManager lm = rvReplies.getLayoutManager();
+            View child = lm != null ? lm.findViewByPosition(index) : null;
+            int y = rvReplies.getTop() + (child != null ? child.getTop() : rvReplies.getHeight());
+            int target = Math.max(0, y - (int) (24 * getResources().getDisplayMetrics().density));
+            if (smooth) detailScroll.smoothScrollTo(0, target);
+            else detailScroll.scrollTo(0, target);
+        });
     }
 
     // ==========================================

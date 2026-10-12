@@ -98,7 +98,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private String getGroupLabel(JournalEntry e) {
-        if (e.getDate() == null) return "Earlier";
+        if (e.getDate() == null) return "Undated";
         Calendar entryDay = Calendar.getInstance();
         entryDay.setTime(e.getDate().toDate());
 
@@ -113,7 +113,9 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         weekAgo.add(Calendar.DAY_OF_YEAR, -7);
         if (entryDay.after(weekAgo)) return "This week";
 
-        return "Earlier";
+        // Older entries are grouped by month so a long history is easy to browse.
+        return new java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault())
+                .format(e.getDate().toDate());
     }
 
     private boolean isSameDay(Calendar a, Calendar b) {
