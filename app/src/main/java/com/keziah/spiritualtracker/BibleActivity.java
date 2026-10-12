@@ -40,6 +40,7 @@ public class BibleActivity extends AppCompatActivity {
     private String currentUserId;
     private String partnerId = null;
     private String myName = UserProfile.FALLBACK_NAME;
+    private String partnerName = "your partner";
     private String todayDate;
 
     private ListenerRegistration myDayListener, partnerDayListener, legacyListener;
@@ -73,6 +74,11 @@ public class BibleActivity extends AppCompatActivity {
         layoutPartnerVerse  = findViewById(R.id.layoutPartnerVerse);
         framePartnerIcon    = findViewById(R.id.framePartnerIcon);
 
+        StatusBarUtil.drawBehind(this, findViewById(R.id.bibleHeader), findViewById(R.id.bibleContent));
+        findViewById(R.id.btnBibleBack).setOnClickListener(v -> finish());
+        ((TextView) findViewById(R.id.tvBibleDate)).setText(
+                new java.text.SimpleDateFormat("EEEE, d MMMM", java.util.Locale.getDefault()).format(new java.util.Date()));
+
         listenToMyDay();
         fetchPartnerId();
         setupListeners();
@@ -86,6 +92,10 @@ public class BibleActivity extends AppCompatActivity {
                     if (pid != null && !pid.isEmpty()) {
                         partnerId = pid;
                         listenToPartnerDay();
+                        db.collection("users").document(pid).get().addOnSuccessListener(p -> {
+                            partnerName = UserProfile.partnerName(p);
+                            renderPartner();
+                        });
                     } else {
                         tvPartnerStatus.setText("No Partner Linked");
                     }
@@ -129,11 +139,24 @@ public class BibleActivity extends AppCompatActivity {
     }
 
     private void renderMine() {
-        cbRead.setChecked(readToday(currentUserId, myDayDoc));
+        setReadButton(readToday(currentUserId, myDayDoc));
         String myVerse = noteToday(currentUserId, myDayDoc);
         if (myVerse != null && !myVerse.isEmpty() && !etVerse.hasFocus()
                 && etVerse.getText().toString().trim().isEmpty()) {
             etVerse.setText(myVerse);
+        }
+    }
+
+    /** The big read button fills purple and changes its wording once today's reading is done. */
+    private void setReadButton(boolean read) {
+        cbRead.setChecked(read);
+        cbRead.setText(read ? "Read today  \u2713" : "I have read today");
+        // A soft purple glow under the button once it's done.
+        float density = getResources().getDisplayMetrics().density;
+        cbRead.setElevation(read ? 8 * density : 0);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            cbRead.setOutlineSpotShadowColor(Color.parseColor("#8E24AA"));
+            cbRead.setOutlineAmbientShadowColor(Color.parseColor("#8E24AA"));
         }
     }
 
@@ -144,7 +167,7 @@ public class BibleActivity extends AppCompatActivity {
 
     private void updatePartnerUI(boolean hasRead, String partnerVerseText) {
         if (hasRead) {
-            tvPartnerStatus.setText("Your partner completed today's reading!");
+            tvPartnerStatus.setText(partnerName + " finished today's reading!");
             tvPartnerStatus.setTextColor(Color.parseColor("#212121"));
             tvPartnerStatusIcon.setVisibility(View.GONE);
             imgPartnerStatusIcon.setVisibility(View.VISIBLE);
@@ -158,7 +181,7 @@ public class BibleActivity extends AppCompatActivity {
                 layoutPartnerVerse.setVisibility(View.GONE);
             }
         } else {
-            tvPartnerStatus.setText("Waiting for partner...");
+            tvPartnerStatus.setText("Waiting for " + partnerName + "\u2026");
             tvPartnerStatus.setTextColor(Color.parseColor("#616161"));
             imgPartnerStatusIcon.setVisibility(View.GONE);
             tvPartnerStatusIcon.setVisibility(View.VISIBLE);
@@ -172,6 +195,7 @@ public class BibleActivity extends AppCompatActivity {
     private void setupListeners() {
         cbRead.setOnClickListener(view -> {
             boolean isChecked = cbRead.isChecked();
+            setReadButton(isChecked);
             ActivityLog.setBible(currentUserId, isChecked, etVerse.getText().toString());
             if (isChecked) {
                 Toast.makeText(this, "Marked as Read!", Toast.LENGTH_SHORT).show();

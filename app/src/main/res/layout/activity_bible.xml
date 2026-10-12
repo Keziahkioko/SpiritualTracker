@@ -8,6 +8,7 @@
     tools:context=".BibleActivity">
 
     <View
+        android:id="@+id/bibleHeader"
         android:layout_width="match_parent"
         android:layout_height="240dp"
         android:background="@drawable/bg_header_gradient" />
@@ -19,10 +20,32 @@
         android:paddingBottom="40dp">
 
         <LinearLayout
+            android:id="@+id/bibleContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
+
+            <ImageView
+                android:id="@+id/btnBibleBack"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="-10dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:padding="10dp"
+                android:src="@drawable/ic_back" />
+
+            <TextView
+                android:id="@+id/tvBibleDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="TODAY"
+                android:textAllCaps="true"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                android:letterSpacing="0.15"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -31,7 +54,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="34sp"
                 android:textStyle="bold"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginBottom="4dp"/>
 
             <TextView
@@ -40,14 +63,15 @@
                 android:text="Keep the streak alive together."
                 android:textColor="#E1BEE7"
                 android:textSize="16sp"
-                android:layout_marginBottom="32dp"/>
+                android:layout_marginBottom="28dp"/>
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="12dp"
-                app:cardMaxElevation="12dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#EDE7F6"
+                app:strokeWidth="1dp"
                 app:cardBackgroundColor="#FFFFFF"
                 android:layout_marginBottom="28dp">
 
@@ -82,13 +106,14 @@
                     <CheckBox
                         android:id="@+id/cbRead"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="58dp"
+                        android:background="@drawable/bg_read_button"
+                        android:button="@null"
+                        android:gravity="center"
                         android:text="I have read today"
-                        android:textSize="18sp"
+                        android:textColor="@color/read_button_text"
+                        android:textSize="17sp"
                         android:textStyle="bold"
-                        android:textColor="#424242"
-                        android:buttonTint="#8E24AA"
-                        android:paddingStart="12dp"
                         android:layout_marginBottom="24dp"/>
 
                     <View
@@ -100,7 +125,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Portion of scripture read:"
+                        android:text="What did you read?"
                         android:textSize="13sp"
                         android:textStyle="bold"
                         android:textColor="#757575"
@@ -145,7 +170,7 @@
                         android:elevation="0dp"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -159,11 +184,13 @@
                 android:letterSpacing="0.05"
                 android:textAllCaps="true"/>
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="8dp"
+                app:cardElevation="4dp"
+                app:strokeColor="#EDE7F6"
+                app:strokeWidth="1dp"
                 app:cardBackgroundColor="#FFFFFF"
                 android:layout_marginBottom="24dp">
 
@@ -213,11 +240,11 @@
                                 android:id="@+id/tvPartnerStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Waiting for partner..."
+                                android:text="Waiting for your partner…"
                                 android:textSize="16sp"
-                                android:textStyle="normal"
-                                android:fontFamily="serif"
-                                android:textColor="#000000"/>
+                                android:fontFamily="sans-serif-medium"
+                                android:lineSpacingExtra="2dp"
+                                android:textColor="#212121"/>
 
                         </LinearLayout>
 
@@ -277,7 +304,7 @@
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
