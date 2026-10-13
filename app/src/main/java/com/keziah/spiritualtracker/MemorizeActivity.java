@@ -111,13 +111,32 @@ public class MemorizeActivity extends AppCompatActivity {
 
         // WindowInsets — push header below status bar precisely
         View headerLayout = findViewById(R.id.headerLayout);
+        findViewById(R.id.btnMemorizeBack).setOnClickListener(v -> finish());
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
+        final int headerBaseTop = headerLayout.getPaddingTop();
+        View statusScrim = findViewById(R.id.memorizeStatusScrim);
+        final int listBottom = rvVerses.getPaddingBottom();
+        final int fabBottom = ((android.view.ViewGroup.MarginLayoutParams) fabAddVerse.getLayoutParams()).bottomMargin;
+        ViewCompat.setOnApplyWindowInsetsListener(statusScrim, (v, insets) -> {
+            androidx.core.graphics.Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.getLayoutParams().height = bars.top;
+            v.requestLayout();
+            rvVerses.setPadding(rvVerses.getPaddingLeft(), rvVerses.getPaddingTop(),
+                    rvVerses.getPaddingRight(), listBottom + bars.bottom);
+            ((android.view.ViewGroup.MarginLayoutParams) fabAddVerse.getLayoutParams()).bottomMargin = fabBottom + bars.bottom;
+            fabAddVerse.requestLayout();
+            return insets;
+        });
         ViewCompat.setOnApplyWindowInsetsListener(headerLayout, (v, insets) -> {
             int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
             int extraPadding    = getResources()
                     .getDimensionPixelSize(R.dimen.header_top_padding);
             v.setPadding(
                     v.getPaddingLeft(),
-                    statusBarHeight + extraPadding,
+                    statusBarHeight + extraPadding + headerBaseTop,
                     v.getPaddingRight(),
                     v.getPaddingBottom());
             return insets;
@@ -151,8 +170,7 @@ public class MemorizeActivity extends AppCompatActivity {
                         // Show partner pill with pulse animation
                         if (btnTogglePartner != null) {
                             btnTogglePartner.setVisibility(View.VISIBLE);
-                            Animation pulse = AnimationUtils.loadAnimation(this, R.anim.pulse);
-                            btnTogglePartner.startAnimation(pulse);
+
                         }
 
                         db.collection("users").document(partnerId).get()
@@ -256,7 +274,18 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void rebuildMyDisplayList() {
         displayList.clear();
-        displayList.addAll(activeList);
+        java.util.LinkedHashMap<String, LockedGroup> locked = new java.util.LinkedHashMap<>();
+        for (MemoryVerse v : activeList) {
+            if (!isLocked(v)) { displayList.add(v); continue; }
+            String key = v.getPassageId() != null ? v.getPassageId() : v.getReference();
+            LockedGroup g = locked.get(key);
+            if (g == null) locked.put(key, g = new LockedGroup(key, v));
+            g.count++;
+        }
+        if (!locked.isEmpty()) {
+            displayList.add("UP NEXT  \u00B7  unlock as you go");
+            displayList.addAll(locked.values());
+        }
         if (!masteredList.isEmpty()) {
             displayList.add("MASTERED");
             displayList.addAll(masteredList);
@@ -780,12 +809,24 @@ public class MemorizeActivity extends AppCompatActivity {
         if (partnerVerseListener != null) partnerVerseListener.remove();
     }
 
+    /** The still-locked parts of one passage, shown as a single row. */
+    static class LockedGroup {
+        final String title;
+        final MemoryVerse firstPart;
+        int count;
+        LockedGroup(String title, MemoryVerse firstPart) {
+            this.title = title;
+            this.firstPart = firstPart;
+        }
+    }
+
     // ─── Adapter ─────────────────────────────────────────────────────────────
 
     static class VerseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private static final int   TYPE_VERSE  = 0;
         private static final int   TYPE_HEADER = 1;
+        private static final int   TYPE_LOCKED = 2;
         private static final int[] INTERVALS   = {1, 2, 4, 7, 30};
 
         private final List<Object>                              list;
@@ -800,7 +841,10 @@ public class MemorizeActivity extends AppCompatActivity {
         }
 
         @Override public int getItemViewType(int pos) {
-            return list.get(pos) instanceof String ? TYPE_HEADER : TYPE_VERSE;
+            Object item = list.get(pos);
+            if (item instanceof String) return TYPE_HEADER;
+            if (item instanceof LockedGroup) return TYPE_LOCKED;
+            return MemorizeActivity.isLocked((MemoryVerse) item) ? TYPE_LOCKED : TYPE_VERSE;
         }
 
         @NonNull @Override
@@ -808,6 +852,8 @@ public class MemorizeActivity extends AppCompatActivity {
             LayoutInflater inf = LayoutInflater.from(parent.getContext());
             if (vt == TYPE_HEADER)
                 return new HeaderVH(inf.inflate(R.layout.item_section_header, parent, false));
+            if (vt == TYPE_LOCKED)
+                return new LockedVH(inf.inflate(R.layout.item_verse_locked, parent, false));
             return new VerseVH(inf.inflate(R.layout.item_memory_verse, parent, false));
         }
 
@@ -819,6 +865,25 @@ public class MemorizeActivity extends AppCompatActivity {
                         "NO_SHARED".equals(header)
                                 ? "Partner hasn't shared any verses yet"
                                 : header);
+                return;
+            }
+
+            if (holder instanceof LockedVH) {
+                Object item = list.get(pos);
+                MemoryVerse lv;
+                LockedVH lh = (LockedVH) holder;
+                if (item instanceof LockedGroup) {
+                    LockedGroup g = (LockedGroup) item;
+                    lv = g.firstPart;
+                    lh.tvReference.setText(g.title);
+                    lh.tvCount.setText(g.count == 1 ? "1 part to unlock" : g.count + " parts to unlock");
+                } else {
+                    lv = (MemoryVerse) item;
+                    lh.tvReference.setText(lv.getReference());
+                    lh.tvCount.setText("Locked");
+                }
+                holder.itemView.setOnClickListener(view -> onTap.accept(lv));
+                holder.itemView.setOnLongClickListener(view -> { onLong.accept(lv); return true; });
                 return;
             }
 
@@ -852,7 +917,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     h.tvDuePill.setText("Review now");
                 }
             } else if (MemorizeActivity.isLocked(v)) {
-                h.tvStage.setText("Locked 🔒");
+                h.tvStage.setText("Locked");
                 h.tvStage.setTextColor(0xFF9E9E9E);
                 h.viewStripe.setBackgroundColor(0xFFE0E0E0);
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
@@ -886,6 +951,15 @@ public class MemorizeActivity extends AppCompatActivity {
                 tvProgress  = v.findViewById(R.id.tvVerseProgress);
                 tvShared    = v.findViewById(R.id.tvVerseShared);
                 viewStripe  = v.findViewById(R.id.viewVerseStripe);
+            }
+        }
+
+        static class LockedVH extends RecyclerView.ViewHolder {
+            TextView tvReference, tvCount;
+            LockedVH(@NonNull View v) {
+                super(v);
+                tvReference = v.findViewById(R.id.tvLockedReference);
+                tvCount     = v.findViewById(R.id.tvLockedCount);
             }
         }
 

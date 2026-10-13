@@ -4,13 +4,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9"
-    android:fitsSystemWindows="true">
+    android:background="#F3F4F9">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#F3F4F9"
+        app:elevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_scrollFlags="scroll">
 
         <!-- HEADER -->
         <LinearLayout
@@ -19,29 +25,42 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_header_gradient"
             android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="36dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="28dp"
             android:paddingStart="20dp"
             android:paddingEnd="20dp">
 
-            <!-- Top row: just the partner pill, right-aligned -->
+            <!-- Top row: back arrow, and the partner's verses pill -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="end"
-                android:layout_marginBottom="16dp">
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/btnMemorizeBack"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="-10dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Back"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_back" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
 
                 <FrameLayout
                     android:id="@+id/btnTogglePartner"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_partner_toggle"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:paddingHorizontal="16dp"
                     android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="160dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/partner_pill_bg"/>
 
                     <TextView
                         android:id="@+id/tvTogglePartnerLabel"
@@ -50,7 +69,7 @@
                         android:layout_gravity="center"
                         android:text="Partner's verses"
                         android:textColor="#7E57C2"
-                        android:textSize="12sp"
+                        android:textSize="13sp"
                         android:textStyle="bold"/>
                 </FrameLayout>
             </LinearLayout>
@@ -182,13 +201,19 @@
                     android:textSize="13sp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- Empty state -->
         <LinearLayout
             android:id="@+id/layoutMemorizeEmpty"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="32dp"
@@ -224,8 +249,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvVerses"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
             android:clipToPadding="false"
             android:paddingTop="12dp"
             android:paddingStart="12dp"
@@ -233,7 +257,15 @@
             android:paddingBottom="100dp"
             android:visibility="gone"/>
 
-    </LinearLayout>
+    </FrameLayout>
+
+    <!-- Purple strip behind the status bar once the header has scrolled away -->
+    <View
+        android:id="@+id/memorizeStatusScrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_header_gradient" />
 
     <!-- FAB -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -242,7 +274,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/btn_add_verse"
         android:textColor="#FFFFFF"
         app:icon="@android:drawable/ic_input_add"
