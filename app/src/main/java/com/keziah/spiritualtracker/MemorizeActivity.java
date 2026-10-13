@@ -333,7 +333,9 @@ public class MemorizeActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(q -> {
                     if (layoutPartnerPanel != null) layoutPartnerPanel.setVisibility(View.VISIBLE);
+                    partnerMasteredTotal = q.size();
                     if (tvPartnerMastered != null) tvPartnerMastered.setText(q.size() + " mastered");
+                    if (viewingPartner) showStatsFor(true);
                 })
                 .addOnFailureListener(e -> {
                     if (layoutPartnerPanel != null) layoutPartnerPanel.setVisibility(View.GONE);
@@ -341,6 +343,7 @@ public class MemorizeActivity extends AppCompatActivity {
     }
 
     private int myDueCount = 0;
+    private int partnerMasteredTotal = 0;
 
     /** Header counts for whichever person's verses are on screen. */
     private void showStatsFor(boolean partner) {
@@ -353,7 +356,8 @@ public class MemorizeActivity extends AppCompatActivity {
             if ("mastered".equals(v.getStage())) mastered++;
             else if (isDue(v)) due++;
         }
-        updateStats(due, mastered);
+        // Use the partner's true total (includes verses they haven't shared) when we have it.
+        updateStats(due, Math.max(mastered, partnerMasteredTotal));
     }
 
     private void updateStats(int due, int mastered) {
