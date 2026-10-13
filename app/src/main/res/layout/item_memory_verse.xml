@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
-                    android:textColor="#B39DDB"
+                    android:textColor="#6A4FB0"
                     android:layout_marginEnd="8dp"/>
 
                 <TextView

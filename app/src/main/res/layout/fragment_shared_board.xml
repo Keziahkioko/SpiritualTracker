@@ -32,7 +32,7 @@
                 android:text="MONDAY"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#B39DDB"
+                android:textColor="#EDE7F6"
                 android:letterSpacing="0.15"
                 android:layout_marginBottom="6dp"/>
 
@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Shared space with your partner"
-                android:textColor="#D1C4E9"
+                android:textColor="#EDE7F6"
                 android:textSize="12sp"/>
         </LinearLayout>
 
@@ -115,7 +115,7 @@
                                 android:text="Clear all"
                                 android:textAllCaps="false"
                                 android:textSize="12sp"
-                                android:textColor="#8E8E93"
+                                android:textColor="#5F5F64"
                                 android:paddingEnd="0dp"/>
                         </RelativeLayout>
 
@@ -163,7 +163,7 @@
                         android:text="ACTIVE REQUESTS"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:textColor="#8E8E93"
+                        android:textColor="#5F5F64"
                         android:letterSpacing="0.1"
                         android:layout_centerVertical="true"/>
 

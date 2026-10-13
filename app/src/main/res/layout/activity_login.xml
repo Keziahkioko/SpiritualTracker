@@ -43,7 +43,7 @@
         android:elevation="2dp"
         android:layout_marginBottom="16dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"/>
+        android:textColorHint="#6E6E73"/>
 
     <EditText
         android:id="@+id/etPassword"
@@ -57,7 +57,7 @@
         android:elevation="2dp"
         android:layout_marginBottom="24dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"/>
+        android:textColorHint="#6E6E73"/>
 
     <Button
         android:id="@+id/btnLogin"

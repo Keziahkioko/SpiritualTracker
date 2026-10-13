@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="Every day you have shown up"
-                android:textColor="#E1D5F5"
+                android:textColor="#EDE7F6"
                 android:textSize="13sp" />
 
             <!-- Me / Partner toggle -->
@@ -191,7 +191,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="Tap a day to see what was read, prayed, written and memorized"
-                    android:textColor="#9E9E9E"
+                    android:textColor="#5F5F64"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -234,7 +234,7 @@
                 android:layout_marginEnd="24dp"
                 android:gravity="center"
                 android:text="Bible readings and journal entries go back to the start. Prayer and memorize days were only recorded from this update onward, so some older days may be missing."
-                android:textColor="#9E9E9E"
+                android:textColor="#5F5F64"
                 android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>

@@ -151,10 +151,10 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
             holder.layoutQuotedMessage.setVisibility(View.VISIBLE);
             holder.tvQuotedText.setText(reply.getQuotedMessageText());
             String quotedSenderId = reply.getQuotedMessageSenderId();
-            holder.tvQuotedSender.setText(quotedSenderId != null && quotedSenderId.equals(currentUid) ? "You" : "Partner");
+            holder.tvQuotedSender.setText(quotedSenderId != null && quotedSenderId.equals(currentUid) ? "You" : PartnerName.get(holder.itemView.getContext()));
 
             if (isMine) {
-                holder.tvQuotedSender.setTextColor(Color.parseColor("#D1C4E9")); // Light Lavender
+                holder.tvQuotedSender.setTextColor(Color.parseColor("#EDE7F6")); // Light Lavender
                 holder.tvQuotedText.setTextColor(Color.parseColor("#F5F5F5"));
             } else {
                 holder.tvQuotedSender.setTextColor(accentColor);

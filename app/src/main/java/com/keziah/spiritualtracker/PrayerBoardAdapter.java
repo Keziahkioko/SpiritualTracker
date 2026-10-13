@@ -52,7 +52,9 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
         holder.tvDescription.setText(request.getDescription());
 
         boolean isMyPost = currentUserId != null && currentUserId.equals(request.getAuthorId());
-        String displayName = isMyPost ? "Me" : (request.getAuthorName() != null ? request.getAuthorName() : "Partner");
+        android.content.Context ctx = holder.itemView.getContext();
+        String displayName = isMyPost ? "Me" : (PartnerName.isKnown(ctx) ? PartnerName.get(ctx)
+                : (request.getAuthorName() != null ? request.getAuthorName() : "Partner"));
         String authorLine = "By " + displayName;
 
         if (request.getTimestamp() != null) {

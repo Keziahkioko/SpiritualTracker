@@ -50,6 +50,7 @@ public class PrayerVaultActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prayer_vault);
+        PartnerName.apply(findViewById(android.R.id.content));
 
         db = FirebaseFirestore.getInstance();
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
@@ -182,6 +183,7 @@ public class PrayerVaultActivity extends AppCompatActivity {
 
     private void showTestimonyDialog(PrayerRequest request) {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_view_testimony, null);
+        PartnerName.apply(v);
 
         TextView tvTitle     = v.findViewById(R.id.tvDialogTitle);
         TextView tvAuthor    = v.findViewById(R.id.tvDialogAuthor);
@@ -194,7 +196,8 @@ public class PrayerVaultActivity extends AppCompatActivity {
         if (tvAuthor != null) {
             boolean isMe = currentUserId != null && currentUserId.equals(request.getAuthorId());
             String name = isMe ? "Me"
-                    : (request.getAuthorName() != null ? request.getAuthorName() : "Partner");
+                    : (PartnerName.isKnown(this) ? PartnerName.get(this)
+                    : (request.getAuthorName() != null ? request.getAuthorName() : "Partner"));
             String line = "By " + name;
             if (request.getTimestamp() != null)
                 line += " · " + new SimpleDateFormat("MMM yyyy", Locale.getDefault())

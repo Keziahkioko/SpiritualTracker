@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="You'll be reviewed daily using spaced repetition."
-        android:textColor="#9E9E9E"
+        android:textColor="#5F5F64"
         android:textSize="13sp"
         android:layout_marginBottom="20dp"/>
 
@@ -39,6 +39,7 @@
         app:boxStrokeWidthFocused="2dp"
         app:hintTextColor="#7E57C2"
         app:boxBackgroundColor="#F8F5FF"
+        android:textColorHint="#6E6880"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -68,6 +69,7 @@
         app:boxStrokeWidthFocused="2dp"
         app:hintTextColor="#7E57C2"
         app:boxBackgroundColor="#F8F5FF"
+        android:textColorHint="#6E6880"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText

@@ -46,7 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Prayer title"
-            android:textColor="#D1C4E9"
+            android:textColor="#EDE7F6"
             android:textSize="12sp"
             android:paddingHorizontal="16dp"
             android:gravity="center"

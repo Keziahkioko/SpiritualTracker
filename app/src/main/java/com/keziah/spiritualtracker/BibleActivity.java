@@ -50,6 +50,7 @@ public class BibleActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bible);
+        PartnerName.apply(findViewById(android.R.id.content));
 
         auth = FirebaseAuth.getInstance();
         db   = FirebaseFirestore.getInstance();

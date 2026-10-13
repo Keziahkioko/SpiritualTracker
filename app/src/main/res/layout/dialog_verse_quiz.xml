@@ -55,7 +55,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Can you recall this verse?"
-                android:textColor="#9E9E9E"
+                android:textColor="#5F5F64"
                 android:textSize="13sp"
                 android:layout_marginBottom="12dp"/>
 
@@ -64,7 +64,7 @@
                 android:id="@+id/tvQuizHint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#B39DDB"
+                android:textColor="#6A4FB0"
                 android:textSize="15sp"
                 android:fontFamily="monospace"
                 android:lineSpacingMultiplier="1.5"
@@ -92,8 +92,9 @@
         android:layout_height="wrap_content"
         android:text="Show first letters"
         android:textSize="13sp"
+        android:textColor="#5E35B1"
         android:layout_marginBottom="8dp"
-        app:strokeColor="#B39DDB"
+        app:strokeColor="#9575CD"
         app:strokeWidth="1dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="20dp"/>

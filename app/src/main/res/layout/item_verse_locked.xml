@@ -30,6 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:textColor="#9E8FC4"
+        android:textColor="#6A4FB0"
         android:textSize="12sp" />
 </LinearLayout>

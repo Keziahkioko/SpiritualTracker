@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        PartnerName.apply(binding.getRoot());
         drawPhotoBehindStatusBar();
 
         mAuth = FirebaseAuth.getInstance();
@@ -85,11 +86,8 @@ public class MainActivity extends AppCompatActivity {
         setupProgressListeners();
         handleNotificationIntent(getIntent());
 
-        binding.ivLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-        });
+        binding.ivLogout.setContentDescription("Account");
+        binding.ivLogout.setOnClickListener(v -> showAccountMenu());
 
         binding.cardJournal.setOnClickListener(v -> {
             resetUnreadCount("unreadJournal");
@@ -111,6 +109,61 @@ public class MainActivity extends AppCompatActivity {
         binding.cardProgress.setOnClickListener(openHistory);
         binding.tvViewHistory.setOnClickListener(openHistory);
         binding.tvLinkPartner.setOnClickListener(v -> showLinkPartnerDialog());
+    }
+
+    private void showAccountMenu() {
+        android.widget.PopupMenu menu = new android.widget.PopupMenu(this, binding.ivLogout);
+        menu.getMenu().add(0, 1, 0, "Change my name");
+        menu.getMenu().add(0, 2, 1, "Sign out");
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) showChangeNameDialog();
+            else signOut();
+            return true;
+        });
+        menu.show();
+    }
+
+    private void signOut() {
+        PartnerName.save(this, null);
+        mAuth.signOut();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
+    }
+
+    /** Lets someone fix or change the name their partner sees. */
+    private void showChangeNameDialog() {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.setHint("Your first name");
+        String current = myUserDoc != null ? myUserDoc.getString("name") : null;
+        input.setText(current != null ? current : UserProfile.suggestedName());
+        input.setSelection(input.getText().length());
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        FrameLayout wrap = new FrameLayout(this);
+        wrap.setPadding(pad, pad / 2, pad, 0);
+        wrap.addView(input);
+
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Change your name")
+                .setMessage("This is the name your partner sees on prayers, journal entries and notifications.")
+                .setView(wrap)
+                .setPositiveButton("Save", (d, w) -> {
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) {
+                        Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("name", name);
+                    db.collection("users").document(currentUserId).set(data, SetOptions.merge())
+                            .addOnSuccessListener(x -> Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show());
+                    if (mAuth.getCurrentUser() != null) {
+                        mAuth.getCurrentUser().updateProfile(
+                                new UserProfileChangeRequest.Builder().setDisplayName(name).build());
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override
@@ -289,6 +342,10 @@ public class MainActivity extends AppCompatActivity {
         partnerListener = db.collection("users").document(partnerId)
                 .addSnapshotListener((snap, e) -> {
                     partnerUserDoc = e == null ? snap : null;
+                    if (snap != null && snap.exists()) {
+                        PartnerName.save(this, UserProfile.partnerName(snap));
+                        PartnerName.apply(binding.getRoot());
+                    }
                     refreshProgressCard();
                 });
 
@@ -404,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
                 cell.setTextColor(Color.WHITE);
             } else {
                 cell.setBackgroundResource(R.drawable.hm_none);
-                cell.setTextColor(Color.parseColor("#B39DDB"));
+                cell.setTextColor(Color.parseColor("#6A4FB0"));
             }
         }
     }

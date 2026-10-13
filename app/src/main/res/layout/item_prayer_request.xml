@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="By Partner · Apr 08, 2026"
-                android:textColor="#AEAEB2"
+                android:textColor="#5F5F64"
                 android:textSize="11sp"/>
 
         </LinearLayout>

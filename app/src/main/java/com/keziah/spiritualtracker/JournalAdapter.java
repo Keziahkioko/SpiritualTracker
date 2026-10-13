@@ -206,7 +206,8 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             h.tvAuthor.setBackgroundResource(R.drawable.pill_me);
             h.tvAuthor.setTextColor(0xFF5B21B6);
         } else {
-            String name = entry.getAuthorName() != null ? entry.getAuthorName() : "Partner";
+            String name = PartnerName.isKnown(context) ? PartnerName.get(context)
+                    : (entry.getAuthorName() != null ? entry.getAuthorName() : "Partner");
             h.tvAuthor.setText(name);
             h.tvAuthor.setBackgroundResource(R.drawable.pill_partner);
             h.tvAuthor.setTextColor(0xFF166534);
@@ -217,7 +218,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             h.tvStatus.setVisibility(View.VISIBLE);
             h.tvStatus.setText("Draft");
             h.tvStatus.setBackgroundResource(R.drawable.pill_draft);
-            h.tvStatus.setTextColor(0xFFBF6000);
+            h.tvStatus.setTextColor(0xFFA65300);
         } else if (!entry.isReadByPartner() && !isMe) {
             h.tvStatus.setVisibility(View.VISIBLE);
             h.tvStatus.setText("New");

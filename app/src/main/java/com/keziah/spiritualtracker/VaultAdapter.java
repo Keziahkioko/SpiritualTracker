@@ -62,6 +62,7 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VH> {
         String author = isMe ? "me"
                 : (r.getAuthorName() != null && !r.getAuthorName().isEmpty()
                         ? r.getAuthorName() : "Partner");
+        if (!isMe && PartnerName.isKnown(context)) author = PartnerName.get(context);
         String date = r.getTimestamp() != null
                 ? new SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
                         .format(r.getTimestamp().toDate())

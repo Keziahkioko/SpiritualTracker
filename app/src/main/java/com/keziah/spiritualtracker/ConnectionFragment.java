@@ -160,6 +160,7 @@ public class ConnectionFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        PartnerName.apply(view);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -329,10 +330,10 @@ public class ConnectionFragment extends Fragment {
             String recordingIn = doc.getString("recordingInPrayer");
 
             if (recordingIn != null && recordingIn.equals("prayer_chat")) {
-                tvTypingIndicator.setText("Partner is recording audio...");
+                tvTypingIndicator.setText(PartnerName.get(getContext()) + " is recording audio...");
                 tvTypingIndicator.setVisibility(View.VISIBLE);
             } else if (typingIn != null && typingIn.equals("prayer_chat")) {
-                tvTypingIndicator.setText("Partner is typing...");
+                tvTypingIndicator.setText(PartnerName.get(getContext()) + " is typing...");
                 tvTypingIndicator.setVisibility(View.VISIBLE);
             } else {
                 tvTypingIndicator.setVisibility(View.GONE);
@@ -354,7 +355,7 @@ public class ConnectionFragment extends Fragment {
                 if (layoutMessagePreview != null) {
                     layoutMessagePreview.setVisibility(View.VISIBLE);
                     boolean isMyMessage = (selectedReplyForQuoting.getSenderId() != null && selectedReplyForQuoting.getSenderId().equals(currentUserId));
-                    tvMessagePreviewName.setText(isMyMessage ? "You" : "Partner");
+                    tvMessagePreviewName.setText(isMyMessage ? "You" : PartnerName.get(getContext()));
 
                     if ("audio".equals(selectedReplyForQuoting.getType())) {
                         tvMessagePreviewText.setText("🎤 Voice Note (" + selectedReplyForQuoting.getDuration() + ")");

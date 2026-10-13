@@ -98,7 +98,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="Feb 18, 2026"
                                         android:textSize="13sp"
-                                        android:textColor="#9E8FC4"
+                                        android:textColor="#6A4FB0"
                                         android:layout_marginStart="12dp"/>
                                 </LinearLayout>
                             </LinearLayout>
@@ -323,7 +323,7 @@
                     android:paddingVertical="12dp"
                     android:textSize="16sp"
                     android:textColor="#1A1A1A"
-                    android:textColorHint="#9E9E9E"
+                    android:textColorHint="#6E6E73"
                     android:maxLines="5"
                     android:inputType="textMultiLine|textCapSentences"/>
 

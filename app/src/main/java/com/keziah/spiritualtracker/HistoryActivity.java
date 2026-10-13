@@ -51,6 +51,7 @@ public class HistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+        PartnerName.apply(findViewById(android.R.id.content));
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             finish();
@@ -322,9 +323,9 @@ public class HistoryActivity extends AppCompatActivity {
         box.addView(detailLine(r.bible ? COLORS[0] : 0xFFBDBDBD, bible));
 
         String prayer;
-        if (r.prayed && r.prayedForPartner) prayer = "Prayed, and prayed for partner";
+        if (r.prayed && r.prayedForPartner) prayer = "Prayed, and prayed for " + partnerName;
         else if (r.prayed)                  prayer = "Prayed";
-        else if (r.prayedForPartner)        prayer = "Prayed for partner";
+        else if (r.prayedForPartner)        prayer = "Prayed for " + partnerName;
         else                                prayer = "Didn't mark prayer";
         box.addView(detailLine(r.prayed || r.prayedForPartner ? COLORS[1] : 0xFFBDBDBD, prayer));
 

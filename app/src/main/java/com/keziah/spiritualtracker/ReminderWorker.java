@@ -108,7 +108,8 @@ public class ReminderWorker extends Worker {
                 : String.join(", ", left.subList(0, left.size() - 1)) + " and " + left.get(left.size() - 1);
         MyFirebaseMessagingService.showNotification(getApplicationContext(),
                 "Still to do today: " + list + " 🌙",
-                "A few quiet minutes before bed? Your partner is cheering you on.",
+                "A few quiet minutes before bed? " + (PartnerName.isKnown(getApplicationContext())
+                        ? PartnerName.get(getApplicationContext()) : "Your partner") + " is cheering you on.",
                 "reminder", "");
     }
 

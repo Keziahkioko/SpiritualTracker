@@ -35,7 +35,7 @@
             android:layout_marginTop="6dp"
             android:letterSpacing="0.15"
             android:text="PRAYER VAULT"
-            android:textColor="#D1C4E9"
+            android:textColor="#EDE7F6"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Answered prayers, remembered forever"
-            android:textColor="#E1BEE7"
+            android:textColor="#EDE7F6"
             android:textSize="13sp" />
 
         <!-- Counts as soft glass chips -->
@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.1"
                     android:text="TOTAL"
-                    android:textColor="#E1BEE7"
+                    android:textColor="#EDE7F6"
                     android:textSize="9sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -115,7 +115,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.1"
                     android:text="MINE"
-                    android:textColor="#E1BEE7"
+                    android:textColor="#EDE7F6"
                     android:textSize="9sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -142,7 +142,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.1"
                     android:text="PARTNER"
-                    android:textColor="#E1BEE7"
+                    android:textColor="#EDE7F6"
                     android:textSize="9sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -245,7 +245,7 @@
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.5"
                 android:text="When God answers your prayers, they will be kept here as testimonies."
-                android:textColor="#9E9E9E"
+                android:textColor="#5F5F64"
                 android:textSize="13sp" />
         </LinearLayout>
     </FrameLayout>

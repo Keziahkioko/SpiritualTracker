@@ -28,7 +28,7 @@
                 android:text="MY SPACE"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="#B39DDB"
+                android:textColor="#EDE7F6"
                 android:letterSpacing="0.15"
                 android:layout_marginBottom="6dp"/>
 
@@ -46,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Private to you — your heart before God"
-                android:textColor="#D1C4E9"
+                android:textColor="#EDE7F6"
                 android:textSize="12sp"/>
         </LinearLayout>
 
@@ -105,7 +105,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Active"
-                                android:textColor="#9575CD"
+                                android:textColor="#6A4FB0"
                                 android:textSize="12sp"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
@@ -143,7 +143,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Answered"
-                                android:textColor="#9575CD"
+                                android:textColor="#6A4FB0"
                                 android:textSize="12sp"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
@@ -157,7 +157,7 @@
                     android:text="MY PRAYERS"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:textColor="#8E8E93"
+                    android:textColor="#5F5F64"
                     android:letterSpacing="0.1"
                     android:layout_marginStart="20dp"
                     android:layout_marginBottom="10dp"/>
@@ -202,7 +202,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Add your personal prayers here. Only you can see them."
-                        android:textColor="#8E8E93"
+                        android:textColor="#5F5F64"
                         android:textSize="14sp"
                         android:gravity="center"
                         android:lineSpacingExtra="4dp"/>

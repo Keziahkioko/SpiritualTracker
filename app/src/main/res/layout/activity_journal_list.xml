@@ -35,7 +35,7 @@
             android:layout_marginTop="6dp"
             android:letterSpacing="0.15"
             android:text="JOURNAL"
-            android:textColor="#D1C4E9"
+            android:textColor="#EDE7F6"
             android:textSize="11sp"
             android:textStyle="bold"/>
 
@@ -55,7 +55,7 @@
             android:layout_marginTop="2dp"
             android:layout_marginBottom="16dp"
             android:text="Words written before God"
-            android:textColor="#E1BEE7"
+            android:textColor="#EDE7F6"
             android:textSize="13sp"/>
 
         <!-- Search bar -->

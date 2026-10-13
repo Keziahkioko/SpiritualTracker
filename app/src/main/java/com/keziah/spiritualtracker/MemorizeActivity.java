@@ -87,6 +87,7 @@ public class MemorizeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memorize);
+        PartnerName.apply(findViewById(android.R.id.content));
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -205,6 +206,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     for (DocumentSnapshot doc : value.getDocuments()) {
                         MemoryVerse v = doc.toObject(MemoryVerse.class);
                         if (v == null) continue;
+                        // (due is tallied below; myDueCount is set once the loop finishes)
                         v.setId(doc.getId());
                         if ("mastered".equals(v.getStage())) {
                             masteredList.add(v);
@@ -214,6 +216,7 @@ public class MemorizeActivity extends AppCompatActivity {
                         }
                     }
 
+                    myDueCount = due;
                     if (!viewingPartner) {
                         rebuildMyDisplayList();
                         updateStats(due, masteredList.size());
@@ -248,7 +251,10 @@ public class MemorizeActivity extends AppCompatActivity {
                         long tb = b.getNextReviewDate() != null ? b.getNextReviewDate().toDate().getTime() : Long.MAX_VALUE;
                         return Long.compare(ta, tb);
                     });
-                    if (viewingPartner) rebuildPartnerDisplayList();
+                    if (viewingPartner) {
+                        rebuildPartnerDisplayList();
+                        showStatsFor(true);
+                    }
                 });
     }
 
@@ -257,18 +263,22 @@ public class MemorizeActivity extends AppCompatActivity {
     private void togglePartnerView() {
         viewingPartner = !viewingPartner;
         if (viewingPartner) {
-            tvHeaderTitle.setText("Partner's Verses");
+            tvHeaderTitle.setText(PartnerName.get(this) + "'s Verses");
             if (tvTogglePartnerLabel != null) tvTogglePartnerLabel.setText("My verses");
             // Stop pulse when tapped — it served its purpose
             btnTogglePartner.clearAnimation();
             fabAddVerse.setVisibility(View.GONE);
+            adapter.setPartnerMode(true);
             rebuildPartnerDisplayList();
+            showStatsFor(true);
         } else {
             tvHeaderTitle.setText(getString(R.string.your_verses));
             // Restore partner name on the label
-            if (tvTogglePartnerLabel != null) tvTogglePartnerLabel.setText("Partner's verses");
+            if (tvTogglePartnerLabel != null) tvTogglePartnerLabel.setText(PartnerName.get(this) + "'s verses");
             fabAddVerse.setVisibility(View.VISIBLE);
+            adapter.setPartnerMode(false);
             rebuildMyDisplayList();
+            showStatsFor(false);
         }
     }
 
@@ -330,6 +340,22 @@ public class MemorizeActivity extends AppCompatActivity {
                 });
     }
 
+    private int myDueCount = 0;
+
+    /** Header counts for whichever person's verses are on screen. */
+    private void showStatsFor(boolean partner) {
+        if (!partner) {
+            updateStats(myDueCount, masteredList.size());
+            return;
+        }
+        int due = 0, mastered = 0;
+        for (MemoryVerse v : partnerSharedList) {
+            if ("mastered".equals(v.getStage())) mastered++;
+            else if (isDue(v)) due++;
+        }
+        updateStats(due, mastered);
+    }
+
     private void updateStats(int due, int mastered) {
         tvDueCount.setText(String.valueOf(due));
         tvMasteredCount.setText(String.valueOf(mastered));
@@ -352,6 +378,7 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void showAddVerseDialog() {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_add_verse, null);
+        PartnerName.apply(v);
         TextInputEditText etRef   = v.findViewById(R.id.etVerseReference);
         TextInputEditText etText  = v.findViewById(R.id.etVerseText);
         CheckBox          cbShare = v.findViewById(R.id.cbSharedVerse);
@@ -374,6 +401,7 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void showAddPassageDialog() {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_add_passage, null);
+        PartnerName.apply(v);
         TextInputEditText etRef   = v.findViewById(R.id.etPassageReference);
         TextInputEditText etText  = v.findViewById(R.id.etPassageText);
         CheckBox          cbShare = v.findViewById(R.id.cbPassageShared);
@@ -720,21 +748,28 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void showVerseDetailDialog(MemoryVerse verse) {
         int    idx  = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
-        String next = isLocked(verse) ? "after the previous part advances"
-                : verse.getNextReviewDate() != null
-                ? android.text.format.DateFormat.getDateFormat(this)
-                .format(verse.getNextReviewDate().toDate()) : "—";
+        String reviewLine;
+        if ("mastered".equals(verse.getStage())) reviewLine = "";
+        else if (isLocked(verse)) reviewLine = "\nNext review: after the previous part advances";
+        else if (verse.getNextReviewDate() == null) reviewLine = "";
+        else if (isDue(verse)) reviewLine = "\nNext review: today";
+        else reviewLine = "\nNext review: " + new java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault())
+                .format(verse.getNextReviewDate().toDate());
 
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle(verse.getReference())
                 .setMessage(verse.getText()
                         + "\n\nDay " + (idx + 1) + " of " + INTERVALS.length
                         + "\nStage: " + getStageLabel(verse)
-                        + "\nNext review: " + next)
+                        + reviewLine)
                 .setPositiveButton("Close", null)
                 .setNeutralButton(viewingPartner ? null : "Delete",
                         viewingPartner ? null : (d, w) -> onVerseLongTapped(verse))
-                .show();
+                .create();
+        dialog.show();
+        android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+        if (delete != null) delete.setTextColor(android.graphics.Color.parseColor("#C62828"));
     }
 
     // ─── Hint builders ───────────────────────────────────────────────────────
@@ -831,6 +866,10 @@ public class MemorizeActivity extends AppCompatActivity {
 
         private final List<Object>                              list;
         private final java.util.function.Consumer<MemoryVerse> onTap, onLong;
+        private boolean partnerMode = false;
+
+        /** Partner's verses are read-only: no "Review now", and "Shared" goes without saying. */
+        void setPartnerMode(boolean on) { partnerMode = on; }
 
         VerseAdapter(List<Object> list,
                      java.util.function.Consumer<MemoryVerse> onTap,
@@ -863,7 +902,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 String header = (String) list.get(pos);
                 ((HeaderVH) holder).tvHeader.setText(
                         "NO_SHARED".equals(header)
-                                ? "Partner hasn't shared any verses yet"
+                                ? PartnerName.get(holder.itemView.getContext()) + " hasn't shared any verses yet"
                                 : header);
                 return;
             }
@@ -898,7 +937,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 h.tvProgress.setText("Day " + (idx + 1) + " / " + INTERVALS.length);
 
             if (h.tvShared != null)
-                h.tvShared.setVisibility(v.isShared() ? View.VISIBLE : View.GONE);
+                h.tvShared.setVisibility(v.isShared() && !partnerMode ? View.VISIBLE : View.GONE);
 
             boolean isDue  = MemorizeActivity.isDue(v);
             boolean isMast = "mastered".equals(v.getStage());
@@ -909,16 +948,18 @@ public class MemorizeActivity extends AppCompatActivity {
                 h.viewStripe.setBackgroundColor(0xFF43A047);
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
             } else if (isDue) {
-                h.tvStage.setText("Due for review");
+                h.tvStage.setText(partnerMode ? "Reviewing today" : "Due for review");
                 h.tvStage.setTextColor(0xFF6A1B9A);
                 h.viewStripe.setBackgroundColor(0xFF7E57C2);
-                if (h.tvDuePill != null) {
+                if (h.tvDuePill != null && partnerMode) {
+                    h.tvDuePill.setVisibility(View.GONE);
+                } else if (h.tvDuePill != null) {
                     h.tvDuePill.setVisibility(View.VISIBLE);
                     h.tvDuePill.setText("Review now");
                 }
             } else if (MemorizeActivity.isLocked(v)) {
                 h.tvStage.setText("Locked");
-                h.tvStage.setTextColor(0xFF9E9E9E);
+                h.tvStage.setTextColor(0xFF5F5F64);
                 h.viewStripe.setBackgroundColor(0xFFE0E0E0);
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
             } else {

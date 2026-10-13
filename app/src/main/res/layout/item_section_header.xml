@@ -20,7 +20,7 @@
         android:id="@+id/tvSectionHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#B39DDB"
+        android:textColor="#6A4FB0"
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.12"/>

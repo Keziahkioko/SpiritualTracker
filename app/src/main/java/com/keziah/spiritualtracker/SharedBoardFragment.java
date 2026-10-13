@@ -61,6 +61,7 @@ public class SharedBoardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        PartnerName.apply(view);
 
         db = FirebaseFirestore.getInstance();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -123,6 +124,7 @@ public class SharedBoardFragment extends Fragment {
     private void showAddRequestDialog() {
         View dialogView = LayoutInflater.from(requireActivity())
                 .inflate(R.layout.dialog_add_prayer_request, null);
+        PartnerName.apply(dialogView);
         TextInputEditText etTitle = dialogView.findViewById(R.id.etRequestTitle);
         TextInputEditText etDesc  = dialogView.findViewById(R.id.etRequestDescription);
 

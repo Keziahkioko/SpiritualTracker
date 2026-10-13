@@ -24,7 +24,7 @@
             android:layout_marginBottom="4dp"
             android:letterSpacing="0.15"
             android:text="CONNECTION"
-            android:textColor="#B39DDB"
+            android:textColor="#EDE7F6"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -272,7 +272,7 @@
                     android:paddingHorizontal="20dp"
                     android:paddingVertical="12dp"
                     android:textColor="#1A1A1A"
-                    android:textColorHint="#9E9E9E"
+                    android:textColorHint="#6E6E73"
                     android:textSize="16sp" />
 
                 <LinearLayout

@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Paste the full passage. The app will split it into chunks and unlock them one by one as you master each part."
-            android:textColor="#9E9E9E"
+            android:textColor="#5F5F64"
             android:textSize="13sp"
             android:lineSpacingMultiplier="1.4"
             android:layout_marginBottom="20dp"/>
@@ -44,6 +44,7 @@
             app:boxStrokeWidthFocused="2dp"
             app:hintTextColor="#1A1A2E"
             app:boxBackgroundColor="#F8F5FF"
+        android:textColorHint="#6E6880"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -73,6 +74,7 @@
             app:boxStrokeWidthFocused="2dp"
             app:hintTextColor="#1A1A2E"
             app:boxBackgroundColor="#F8F5FF"
+        android:textColorHint="#6E6880"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText

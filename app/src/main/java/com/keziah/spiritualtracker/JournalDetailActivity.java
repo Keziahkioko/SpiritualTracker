@@ -158,6 +158,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journal_detail);
+        PartnerName.apply(findViewById(android.R.id.content));
 
         // Fetch partner ID for notifications
         fetchPartnerId();
@@ -206,7 +207,7 @@ public class JournalDetailActivity extends AppCompatActivity {
         // 3. Set Text & Styling
         if ("draft".equals(status)) {
             tvTitle.setText(title + " (Draft)");
-            tvTitle.setTextColor(Color.parseColor("#EF6C00"));
+            tvTitle.setTextColor(Color.parseColor("#C25100"));
         } else {
             tvTitle.setText(title);
         }
@@ -226,7 +227,8 @@ public class JournalDetailActivity extends AppCompatActivity {
                 tvAuthor.setTextColor(Color.parseColor("#673AB7"));
                 btnEditEntry.setVisibility(View.VISIBLE);
             } else {
-                String displayAuthor = (authorName != null) ? authorName : "Partner";
+                String displayAuthor = PartnerName.isKnown(this) ? PartnerName.get(this)
+                        : (authorName != null ? authorName : "Partner");
                 tvAuthor.setText("By: " + displayAuthor);
                 tvAuthor.setTextColor(Color.parseColor("#166534"));
                 tvAuthor.setBackgroundResource(R.drawable.pill_partner);
@@ -612,12 +614,12 @@ public class JournalDetailActivity extends AppCompatActivity {
 
                     // 1. Check if they are recording first (Audio takes priority!)
                     if (recordingIn != null && recordingIn.equals(docId)) {
-                        tvTypingIndicator.setText("Partner is recording audio...");
+                        tvTypingIndicator.setText(PartnerName.get(this) + " is recording audio...");
                         tvTypingIndicator.setVisibility(android.view.View.VISIBLE);
                     }
                     // 2. If not recording, check if they are typing
                     else if (typingIn != null && typingIn.equals(docId)) {
-                        tvTypingIndicator.setText("Partner is typing...");
+                        tvTypingIndicator.setText(PartnerName.get(this) + " is typing...");
                         tvTypingIndicator.setVisibility(android.view.View.VISIBLE);
                     }
                     // 3. If neither, hide it!
@@ -669,7 +671,7 @@ public class JournalDetailActivity extends AppCompatActivity {
 
                     // BUG FIX: Added a null check and explicitly ensured the strings match perfectly
                     boolean isMyMessage = (senderId != null && senderId.trim().equals(currentUid.trim()));
-                    tvReplyPreviewName.setText(isMyMessage ? "You" : "Partner");
+                    tvReplyPreviewName.setText(isMyMessage ? "You" : PartnerName.get(JournalDetailActivity.this));
 
                     // Check if quoting audio or text
                     if ("audio".equals(selectedReplyForQuoting.getType())) {

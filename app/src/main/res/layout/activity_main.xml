@@ -348,19 +348,23 @@
                         android:gravity="center">
 
                         <TextView
-                            android:layout_width="38dp"
+                            android:layout_width="64dp"
                             android:layout_height="wrap_content"
                             android:gravity="center"
+                            android:maxLines="1"
+                            android:ellipsize="end"
                             android:text="You"
-                            android:textColor="#B39DDB"
+                            android:textColor="#6A4FB0"
                             android:textSize="11sp" />
 
                         <TextView
-                            android:layout_width="38dp"
+                            android:layout_width="64dp"
                             android:layout_height="wrap_content"
                             android:gravity="center"
+                            android:maxLines="1"
+                            android:ellipsize="end"
                             android:text="Partner"
-                            android:textColor="#B39DDB"
+                            android:textColor="#6A4FB0"
                             android:textSize="11sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -388,22 +392,33 @@
                         android:textColor="#3D3459"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/progressBibleMe"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="14dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/progressBiblePartner"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                        <ImageView
+                            android:id="@+id/progressBibleMe"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/progressBiblePartner"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- Prayer row -->
@@ -429,22 +444,33 @@
                         android:textColor="#3D3459"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/progressPrayerMe"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="14dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/progressPrayerPartner"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                        <ImageView
+                            android:id="@+id/progressPrayerMe"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/progressPrayerPartner"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- Journal row -->
@@ -470,22 +496,33 @@
                         android:textColor="#3D3459"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/progressJournalMe"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="14dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/progressJournalPartner"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                        <ImageView
+                            android:id="@+id/progressJournalMe"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/progressJournalPartner"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- Memorize row -->
@@ -510,22 +547,33 @@
                         android:textColor="#3D3459"
                         android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/progressMemorizeMe"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginEnd="14dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/progressMemorizePartner"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:padding="3dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_progress_todo" />
+                        <ImageView
+                            android:id="@+id/progressMemorizeMe"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/progressMemorizePartner"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:padding="3dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_progress_todo" />
+                    </FrameLayout>
                 </LinearLayout>
 
             </LinearLayout>
@@ -590,37 +638,37 @@
 
                     <LinearLayout android:id="@+id/hmMon" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellMon" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="M" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mon" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mon" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmTue" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellTue" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="T" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tue" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tue" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmWed" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellWed" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="W" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Wed" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Wed" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmThu" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellThu" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="T" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thu" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thu" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmFri" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellFri" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="F" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fri" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fri" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmSat" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellSat" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="S" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sat" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sat" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmSun" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellSun" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="S" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sun" android:textSize="10sp" android:textColor="#B39DDB" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sun" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -634,13 +682,13 @@
                     android:layout_marginTop="14dp">
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_full" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Both done" android:textSize="11sp" android:textColor="#9E9E9E" android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Both done" android:textSize="11sp" android:textColor="#5F5F64" android:layout_marginEnd="14dp" />
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_half" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial" android:textSize="11sp" android:textColor="#9E9E9E" android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial" android:textSize="11sp" android:textColor="#5F5F64" android:layout_marginEnd="14dp" />
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_none" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Missed" android:textSize="11sp" android:textColor="#9E9E9E" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Missed" android:textSize="11sp" android:textColor="#5F5F64" />
 
                 </LinearLayout>
 

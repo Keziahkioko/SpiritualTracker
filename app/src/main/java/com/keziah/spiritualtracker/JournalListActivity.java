@@ -48,6 +48,7 @@ public class JournalListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityJournalListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        PartnerName.apply(findViewById(android.R.id.content));
 
         db   = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
@@ -139,7 +140,7 @@ public class JournalListActivity extends AppCompatActivity {
                 .findViewById(androidx.appcompat.R.id.search_close_btn);
 
         et.setTextColor(0xFF1A1A2E);
-        et.setHintTextColor(0xFF9E9E9E);
+        et.setHintTextColor(0xFF6E6E73);
         if (searchIcon != null) searchIcon.setColorFilter(0xFF9E9E9E);
         if (closeIcon  != null) closeIcon .setColorFilter(0xFF9E9E9E);
 

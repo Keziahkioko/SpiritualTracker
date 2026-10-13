@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="12sp"
-                android:textColor="#9E8FC4"
+                android:textColor="#6A4FB0"
                 tools:text="Apr 18, 2026  ·  6:22 AM"/>
 
             <TextView
@@ -93,7 +93,7 @@
                 android:paddingBottom="3dp"
                 android:layout_marginEnd="6dp"
                 android:background="@drawable/pill_draft"
-                android:textColor="#BF6000"
+                android:textColor="#A65300"
                 android:visibility="gone"
                 tools:text="Draft"
                 tools:visibility="visible"/>
