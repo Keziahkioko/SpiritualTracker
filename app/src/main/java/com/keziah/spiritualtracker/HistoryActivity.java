@@ -30,6 +30,8 @@ public class HistoryActivity extends AppCompatActivity {
 
     private static final String[] LABELS = ProgressMath.LABELS;
     private static final int[]    COLORS = {0xFF7E57C2, 0xFF26A69A, 0xFFFFA726, 0xFFEC407A};
+    /** Same hues, dark enough to read as text on white (all >= 4.5:1). */
+    private static final int[]    TEXT_COLORS = {0xFF5E35B1, 0xFF00796B, 0xFFB45309, 0xFFC2185B};
     private static final String   HISTORY_START = "2000-01-01";
 
     private TextView tabMe, tabPartner, tvMonthTitle, btnPrev, btnNext;
@@ -74,6 +76,21 @@ public class HistoryActivity extends AppCompatActivity {
         progress        = findViewById(R.id.pbHistory);
 
         findViewById(R.id.btnHistoryBack).setOnClickListener(v -> finish());
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(false);
+        StatusBarUtil.padTop(findViewById(R.id.historyHeader));
+        View scrollContent = ((android.view.ViewGroup) findViewById(R.id.historyHeader)).getParent() instanceof View
+                ? (View) findViewById(R.id.historyHeader).getParent() : null;
+        if (scrollContent != null) {
+            final int bottom = scrollContent.getPaddingBottom();
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(scrollContent, (v, insets) -> {
+                int nav = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom;
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom + nav);
+                return insets;
+            });
+        }
 
         btnPrev.setOnClickListener(v -> { month.add(Calendar.MONTH, -1); render(); });
         btnNext.setOnClickListener(v -> { month.add(Calendar.MONTH, 1); render(); });
@@ -202,7 +219,7 @@ public class HistoryActivity extends AppCompatActivity {
             count.setPadding(0, dp(4), 0, 0);
             col.addView(count);
             col.addView(text(LABELS[i], 11, 0xFF757575, false));
-            col.addView(text(elapsed == 0 ? "–" : Math.round(done * 100f / elapsed) + "%", 11, COLORS[i], true));
+            col.addView(text(elapsed == 0 ? "–" : Math.round(done * 100f / elapsed) + "%", 12, TEXT_COLORS[i], true));
 
             monthSummary.addView(col);
         }
@@ -279,8 +296,8 @@ public class HistoryActivity extends AppCompatActivity {
         dots.setGravity(Gravity.CENTER);
         dots.setPadding(0, dp(3), 0, 0);
         for (int i = 0; i < LABELS.length; i++) {
-            int color = future ? Color.TRANSPARENT : (r != null && isDone(r, i) ? COLORS[i] : 0xFFE6E0EE);
-            View dot = dot(color, 5);
+            int color = future ? Color.TRANSPARENT : (r != null && isDone(r, i) ? COLORS[i] : 0xFFD3C9E3);
+            View dot = dot(color, 6);
             ((LinearLayout.LayoutParams) dot.getLayoutParams()).setMargins(dp(1), 0, dp(1), 0);
             dots.addView(dot);
         }
@@ -426,14 +443,14 @@ public class HistoryActivity extends AppCompatActivity {
         col.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         col.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-        int maxHeight = dp(36);
+        int maxHeight = dp(56);
         View bar = new View(this);
         GradientDrawable bg = new GradientDrawable();
         bg.setCornerRadius(dp(4));
         bg.setColor(pct <= 0 ? 0xFFEDE7F6 : color);
         bar.setBackground(bg);
         int h = pct <= 0 ? dp(3) : Math.max(dp(3), maxHeight * pct / 100);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(16), h);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(18), h);
         lp.topMargin = maxHeight - h;
         bar.setLayoutParams(lp);
         col.addView(bar);
