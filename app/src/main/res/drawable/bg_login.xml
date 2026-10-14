@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Soft lavender wash: matches the app's purple without competing with the white fields. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#E4DAF5"
+        android:centerColor="#F1ECFA"
+        android:endColor="#FAF8FD" />
+</shape>

@@ -39,6 +39,13 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Let the lavender run behind the status bar; keep the bottom bar in the same soft shade.
+        getWindow().setStatusBarColor(Color.parseColor("#E4DAF5"));
+        getWindow().setNavigationBarColor(Color.parseColor("#FAF8FD"));
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightStatusBars(true);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightNavigationBars(true);
 
         mAuth = FirebaseAuth.getInstance();
 
