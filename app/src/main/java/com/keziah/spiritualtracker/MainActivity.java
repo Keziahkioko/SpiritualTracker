@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Save", (d, w) -> {
                     String nick = input.getText().toString().trim();
                     PartnerName.setNickname(this, nick.isEmpty() ? (ownKnown ? ownName : "Partner") : nick);
+                    PartnerName.backup(partnerId);
                     recreate(); // refresh every label that shows the name
                 })
                 .setNegativeButton(firstTime ? null : "Cancel", null)
@@ -349,7 +350,11 @@ public class MainActivity extends AppCompatActivity {
                         // First time this phone sees the partner: ask what to call them.
                         if (!PartnerName.hasNickname(this) && !namePartnerAsked) {
                             namePartnerAsked = true;
-                            showNamePartnerDialog(true);
+                            // Signed in again? Bring back the name already chosen before asking.
+                            PartnerName.restore(this, partnerId, restored -> {
+                                if (restored) { recreate(); return; }
+                                if (!isFinishing()) showNamePartnerDialog(true);
+                            });
                         }
                         PartnerName.apply(binding.getRoot());
                     }

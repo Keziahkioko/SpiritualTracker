@@ -71,6 +71,7 @@ public class JournalDetailActivity extends AppCompatActivity {
     private boolean isPlaying = false;
     private boolean isPaused = false;
     private String audioUrl;
+    private java.util.ArrayList<String> photos;
     private String docId;
     private String status;
     private String audioDuration;
@@ -217,6 +218,8 @@ public class JournalDetailActivity extends AppCompatActivity {
         tvContent.setText(SearchHighlighter.highlight(content, searchQuery));
         if (!"draft".equals(status)) tvTitle.setText(SearchHighlighter.highlight(title, searchQuery));
         tvDate.setText(date);
+        photos = getIntent().getStringArrayListExtra("imageUrls");
+        showPhotos();
 
         // --- Handle Author Display and Edit Permissions ---
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -287,6 +290,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             intent.putExtra("title", title);
             intent.putExtra("content", content);
             intent.putExtra("audioUrl", audioUrl);
+            intent.putStringArrayListExtra("imageUrls", photos);
             intent.putExtra("originalDate", date);
             intent.putExtra("status", status);
             intent.putExtra("audioDuration", audioDuration);
@@ -1206,6 +1210,28 @@ public class JournalDetailActivity extends AppCompatActivity {
                     .document(currentDocId)
                     .update("readByPartner", true)
                     .addOnFailureListener(e -> android.util.Log.e("JournalDetail", "Failed to mark as read", e));
+        }
+    }
+
+    /** One photo fills the width; two to four sit side by side. Tap to open full screen. */
+    private void showPhotos() {
+        android.widget.LinearLayout row = findViewById(R.id.detailPhotos);
+        row.removeAllViews();
+        if (photos == null || photos.isEmpty()) { row.setVisibility(View.GONE); return; }
+        row.setVisibility(View.VISIBLE);
+        float d = getResources().getDisplayMetrics().density;
+        int height = (int) ((photos.size() == 1 ? 220 : photos.size() == 2 ? 150 : 100) * d);
+        for (int i = 0; i < photos.size(); i++) {
+            final int index = i;
+            com.google.android.material.imageview.ShapeableImageView iv = new com.google.android.material.imageview.ShapeableImageView(this);
+            iv.setShapeAppearanceModel(iv.getShapeAppearanceModel().toBuilder().setAllCornerSizes(14 * d).build());
+            iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            iv.setContentDescription("Photo " + (i + 1) + " of " + photos.size());
+            iv.setOnClickListener(v -> JournalPhotos.open(this, photos, index));
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(0, height, 1f);
+            if (i > 0) lp.setMarginStart((int) (8 * d));
+            row.addView(iv, lp);
+            JournalPhotos.load(iv, photos.get(i), photos.size() == 1 ? 900 : 480);
         }
     }
 }

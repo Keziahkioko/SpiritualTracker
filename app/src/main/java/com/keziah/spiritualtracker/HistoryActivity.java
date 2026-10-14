@@ -112,6 +112,7 @@ public class HistoryActivity extends AppCompatActivity {
     // ─── Loading ─────────────────────────────────────────────────────────────
 
     private void loadEverything() {
+        partnerName = PartnerName.get(this); // until their profile loads
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users").document(myId).get()
                 .addOnSuccessListener(me -> {
@@ -195,6 +196,7 @@ public class HistoryActivity extends AppCompatActivity {
         renderCalendar(days);
         renderStreaks(days);
         renderTrends(days);
+        renderRings();
     }
 
     private void setEnabled(TextView v, boolean enabled) {
@@ -393,72 +395,170 @@ public class HistoryActivity extends AppCompatActivity {
         }
     }
 
-    private void renderTrends(TreeMap<String, HistoryRepository.DayRecord> days) {
+    /** Last 8 weeks, my bar next to my partner's: share of all four practices done that week. */
+    private void renderTrends(TreeMap<String, HistoryRepository.DayRecord> ignored) {
         trendContainer.removeAllViews();
-        final int months = 6;
-        Calendar[] cols = new Calendar[months];
-        for (int m = 0; m < months; m++) {
-            Calendar c = (Calendar) month.clone();
-            c.add(Calendar.MONTH, m - (months - 1));
-            cols[m] = c;
-        }
+        final int weeks = 8;
+        boolean both = partnerId != null && !partnerDays.isEmpty();
+        int maxHeight = dp(96);
 
-        for (int i = 0; i < LABELS.length; i++) {
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setGravity(Gravity.BOTTOM);
-            row.setPadding(0, dp(6), 0, dp(6));
-
-            TextView label = text(LABELS[i], 12, 0xFF424242, true);
-            label.setLayoutParams(new LinearLayout.LayoutParams(dp(68), LinearLayout.LayoutParams.WRAP_CONTENT));
-            label.setPadding(0, 0, 0, dp(14));
-            row.addView(label);
-
-            for (Calendar c : cols) {
-                int elapsed = elapsedDays(c);
-                int pct = elapsed == 0 ? -1 : Math.round(countInMonth(days, c, i) * 100f / elapsed);
-                row.addView(trendBar(pct, COLORS[i]));
-            }
-            trendContainer.addView(row);
-        }
-
+        LinearLayout bars = new LinearLayout(this);
+        bars.setOrientation(LinearLayout.HORIZONTAL);
+        bars.setGravity(Gravity.BOTTOM);
         LinearLayout labels = new LinearLayout(this);
         labels.setOrientation(LinearLayout.HORIZONTAL);
-        View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(dp(68), 1));
-        labels.addView(spacer);
-        SimpleDateFormat mf = new SimpleDateFormat("MMM", Locale.getDefault());
-        for (Calendar c : cols) {
-            TextView tv = text(mf.format(c.getTime()), 11, 0xFF9E9E9E, false);
+        SimpleDateFormat df = new SimpleDateFormat("d MMM", Locale.getDefault());
+
+        int lastMine = 0, lastTheirs = 0;
+        for (int w = weeks - 1; w >= 0; w--) {
+            Calendar end = Calendar.getInstance();
+            end.add(Calendar.DAY_OF_YEAR, -7 * w);
+            Calendar start = (Calendar) end.clone();
+            start.add(Calendar.DAY_OF_YEAR, -6);
+            String from = ActivityLog.dayKey(start.getTime()), to = ActivityLog.dayKey(end.getTime());
+
+            int mine = weekPercent(myDays, from, to);
+            int theirs = both ? weekPercent(partnerDays, from, to) : -1;
+            if (w == 0) { lastMine = mine; lastTheirs = theirs; }
+
+            LinearLayout pair = new LinearLayout(this);
+            pair.setOrientation(LinearLayout.HORIZONTAL);
+            pair.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+            pair.setLayoutParams(new LinearLayout.LayoutParams(0, maxHeight, 1f));
+            pair.addView(weekBar(mine, PairedRingView.ME, maxHeight));
+            if (both) {
+                View gap = new View(this);
+                gap.setLayoutParams(new LinearLayout.LayoutParams(dp(3), 1));
+                pair.addView(gap);
+                pair.addView(weekBar(theirs, PairedRingView.PARTNER, maxHeight));
+            }
+            String who = "Week from " + df.format(start.getTime()) + ": you " + mine + "%"
+                    + (both ? ", " + partnerName + " " + theirs + "%" : "");
+            pair.setContentDescription(who);
+            pair.setOnClickListener(v -> Toast.makeText(this, who, Toast.LENGTH_SHORT).show());
+            bars.addView(pair);
+
+            TextView tv = text(w == 0 ? "This wk" : df.format(start.getTime()), 10,
+                    w == 0 ? 0xFF4527A0 : 0xFF5F5F64, w == 0);
             tv.setGravity(Gravity.CENTER);
             tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            tv.setPadding(0, dp(6), 0, 0);
             labels.addView(tv);
         }
+
+        // Faint guide line at 100% so heights read as "share of a full week".
+        TextView top = text("100%", 10, 0xFF6E6E73, false);
+        top.setPadding(0, 0, 0, dp(4));
+        trendContainer.addView(top);
+        trendContainer.addView(bars);
+        View base = new View(this);
+        base.setBackgroundColor(0xFFE0D9EC);
+        base.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
+        trendContainer.addView(base);
         trendContainer.addView(labels);
+
+        TextView summary = text("", 13, 0xFF1A1A2E, false);
+        android.text.SpannableStringBuilder sb = new android.text.SpannableStringBuilder("This week  ");
+        appendColored(sb, "You " + lastMine + "%", 0xFF5E35B1);
+        if (both) {
+            sb.append("   ");
+            appendColored(sb, partnerName + " " + lastTheirs + "%", 0xFF2E7D32);
+        }
+        summary.setText(sb);
+        summary.setGravity(Gravity.CENTER);
+        summary.setPadding(0, dp(12), 0, 0);
+        trendContainer.addView(summary);
+
+        TextView hint = text("Each bar is the share of all four practices done that week. Tap a week for details.",
+                11, 0xFF5F5F64, false);
+        hint.setGravity(Gravity.CENTER);
+        hint.setPadding(0, dp(4), 0, 0);
+        trendContainer.addView(hint);
     }
 
-    private View trendBar(int pct, int color) {
-        LinearLayout col = new LinearLayout(this);
-        col.setOrientation(LinearLayout.VERTICAL);
-        col.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-        col.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+    private static void appendColored(android.text.SpannableStringBuilder sb, String part, int color) {
+        int at = sb.length();
+        sb.append(part);
+        sb.setSpan(new android.text.style.ForegroundColorSpan(color), at, sb.length(), 0);
+        sb.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), at, sb.length(), 0);
+    }
 
-        int maxHeight = dp(56);
+    private View weekBar(int pct, int color, int maxHeight) {
         View bar = new View(this);
         GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(dp(4));
+        bg.setCornerRadii(new float[]{dp(5), dp(5), dp(5), dp(5), 0, 0, 0, 0});
         bg.setColor(pct <= 0 ? 0xFFEDE7F6 : color);
         bar.setBackground(bg);
-        int h = pct <= 0 ? dp(3) : Math.max(dp(3), maxHeight * pct / 100);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(18), h);
-        lp.topMargin = maxHeight - h;
-        bar.setLayoutParams(lp);
-        col.addView(bar);
+        int h = pct <= 0 ? dp(3) : Math.max(dp(4), maxHeight * pct / 100);
+        bar.setLayoutParams(new LinearLayout.LayoutParams(dp(11), h));
+        return bar;
+    }
 
-        TextView tv = text(pct < 0 ? "–" : pct + "%", 10, 0xFF757575, false);
-        tv.setPadding(0, dp(2), 0, 0);
-        col.addView(tv);
-        return col;
+    private static int weekPercent(TreeMap<String, HistoryRepository.DayRecord> days, String from, String to) {
+        int done = 0;
+        for (int i = 0; i < LABELS.length; i++) done += ProgressMath.countBetween(days, from, to, i);
+        return Math.round(done * 100f / (7 * LABELS.length));
+    }
+
+    /** One paired ring per practice for the last 7 days: outer ring me, inner ring my partner. */
+    private void renderRings() {
+        LinearLayout row = findViewById(R.id.ringsRow);
+        LinearLayout legend = findViewById(R.id.ringsLegend);
+        row.removeAllViews();
+        legend.removeAllViews();
+        findViewById(R.id.ringsCard).setVisibility(View.VISIBLE);
+        findViewById(R.id.tvRingsTitle).setVisibility(View.VISIBLE);
+
+        boolean both = partnerId != null && !partnerDays.isEmpty();
+        Calendar c = Calendar.getInstance();
+        String to = ActivityLog.dayKey(c.getTime());
+        c.add(Calendar.DAY_OF_YEAR, -6);
+        String from = ActivityLog.dayKey(c.getTime());
+
+        for (int i = 0; i < LABELS.length; i++) {
+            int mine = ProgressMath.countBetween(myDays, from, to, i);
+            int theirs = both ? ProgressMath.countBetween(partnerDays, from, to, i) : -1;
+
+            LinearLayout col = new LinearLayout(this);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setGravity(Gravity.CENTER_HORIZONTAL);
+            col.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+            PairedRingView ring = new PairedRingView(this);
+            ring.setLayoutParams(new LinearLayout.LayoutParams(dp(62), dp(62)));
+            ring.setValues(mine / 7f, both ? theirs / 7f : -1f);
+            col.addView(ring);
+
+            TextView name = text(LABELS[i], 13, TEXT_COLORS[i], true);
+            name.setPadding(0, dp(8), 0, dp(2));
+            col.addView(name);
+
+            android.text.SpannableStringBuilder sb = new android.text.SpannableStringBuilder();
+            appendColored(sb, mine + "/7", 0xFF5E35B1);
+            if (both) {
+                sb.append("  ");
+                appendColored(sb, theirs + "/7", 0xFF2E7D32);
+            }
+            TextView counts = text("", 12, 0xFF1A1A2E, false);
+            counts.setText(sb);
+            col.addView(counts);
+            row.addView(col);
+        }
+
+        legend.addView(legendItem("You", PairedRingView.ME, "outer"));
+        if (both) legend.addView(legendItem(partnerName, PairedRingView.PARTNER, "inner"));
+    }
+
+    private View legendItem(String who, int color, String where) {
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.HORIZONTAL);
+        item.setGravity(Gravity.CENTER_VERTICAL);
+        item.setPadding(dp(10), 0, dp(10), 0);
+        item.addView(dot(color, 10));
+        TextView tv = text(who + " · " + where + " ring", 12, 0xFF424242, false);
+        tv.setPadding(dp(6), 0, 0, 0);
+        item.addView(tv);
+        return item;
     }
 
     // ─── Calculations ────────────────────────────────────────────────────────

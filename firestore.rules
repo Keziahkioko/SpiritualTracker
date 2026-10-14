@@ -49,6 +49,11 @@ service cloud.firestore {
       match /personal_prayers/{prayerId} {
         allow read, write: if signedIn() && uid == me();
       }
+
+      // What I call my partner on my phone; only I can see it.
+      match /private/{docId} {
+        allow read, write: if signedIn() && uid == me();
+      }
     }
 
     // ── Journal ──────────────────────────────────────────────────────────

@@ -53,6 +53,10 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize"/>
         <activity
+            android:name=".PhotoViewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SpiritualTracker" />
+        <activity
             android:name=".HistoryActivity"
             android:exported="false" />
 

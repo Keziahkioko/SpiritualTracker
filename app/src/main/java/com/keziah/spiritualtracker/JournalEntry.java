@@ -13,6 +13,7 @@ public class JournalEntry {
     private String audioDuration;
 
     private String imageUrl;
+    private java.util.List<String> imageUrls;
     private String audioUrl;
     private String docId;
     private boolean readByPartner;
@@ -39,6 +40,9 @@ public class JournalEntry {
     public String getPartnerId() { return partnerId; }
     public String getAuthorName() { return authorName; }
     public String getImageUrl() { return imageUrl; }
+    public java.util.List<String> getImageUrls() { return imageUrls; }
+    /** Every photo on this entry (also covers the older single-photo field). */
+    public java.util.ArrayList<String> photos() { return JournalPhotos.from(imageUrls, imageUrl); }
     public String getAudioUrl() { return audioUrl; }
     public String getDocId() { return docId; }
     public String getStatus() { return status; }
@@ -50,6 +54,7 @@ public class JournalEntry {
     public void setDate(Timestamp date) { this.date = date; }
     public void setUserId(String userId) { this.userId = userId; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageUrls(java.util.List<String> imageUrls) { this.imageUrls = imageUrls; }
     public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
     public void setDocId(String docId) { this.docId = docId; }
     public void setPartnerId(String partnerId) { this.partnerId = partnerId; }

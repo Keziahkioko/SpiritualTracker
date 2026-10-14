@@ -195,5 +195,40 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <!-- First photo of the entry, with "+n" when there are more. -->
+    <FrameLayout
+        android:id="@+id/photoThumbBox"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="14dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivPhotoThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            app:shapeAppearance="@style/PhotoThumbShape" />
+
+        <TextView
+            android:id="@+id/tvPhotoCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="4dp"
+            android:background="@drawable/bg_photo_close"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="+2"
+            tools:visibility="visible" />
+    </FrameLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

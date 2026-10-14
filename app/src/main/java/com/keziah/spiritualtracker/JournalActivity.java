@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,13 @@ public class JournalActivity extends AppCompatActivity {
     private String existingDocId = null;
     private String existingAudioUrl = null;
     private String existingStatus = null;
+
+    // --- PHOTOS: uploaded URLs and/or local files waiting to upload ---
+    private final ArrayList<String> photos = new ArrayList<>();
+    private final ArrayList<String> originalPhotos = new ArrayList<>();
+    private final androidx.activity.result.ActivityResultLauncher<androidx.activity.result.PickVisualMediaRequest> pickPhotos =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia(JournalPhotos.MAX),
+                    this::onPhotosPicked);
 
     // --- NOTIFICATION VARIABLE ---
     private String partnerId = null;
@@ -103,6 +111,9 @@ public class JournalActivity extends AppCompatActivity {
             binding.etTitle.setText(getIntent().getStringExtra("title"));
             binding.etContent.setText(getIntent().getStringExtra("content"));
 
+            ArrayList<String> existing = getIntent().getStringArrayListExtra("imageUrls");
+            if (existing != null) { photos.addAll(existing); originalPhotos.addAll(existing); }
+
             binding.btnSaveJournal.setText("UPDATE ENTRY");
             binding.tvJournalHeading.setText("Edit Entry");
         }
@@ -128,6 +139,14 @@ public class JournalActivity extends AppCompatActivity {
             }
         });
 
+        binding.btnAddPhoto.setOnClickListener(v -> {
+            if (photos.size() >= JournalPhotos.MAX) return;
+            pickPhotos.launch(new androidx.activity.result.PickVisualMediaRequest.Builder()
+                    .setMediaType(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
+        });
+        renderPhotos();
+
         binding.btnSaveJournal.setOnClickListener(v -> {
             saveJournalEntry("published");
         });
@@ -146,7 +165,8 @@ public class JournalActivity extends AppCompatActivity {
         String title = binding.etTitle.getText().toString().trim();
         String content = binding.etContent.getText().toString().trim();
 
-        if (localAudioPath != null || isRecording || !TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)) {
+        if (localAudioPath != null || isRecording || !TextUtils.isEmpty(title) || !TextUtils.isEmpty(content)
+                || !photos.equals(originalPhotos)) {
             new AlertDialog.Builder(this)
                     .setTitle("Save Draft?")
                     .setMessage("You have unsaved changes. Would you like to save this as a draft?")
@@ -297,11 +317,101 @@ public class JournalActivity extends AppCompatActivity {
         binding.btnSaveJournal.setEnabled(false);
         binding.btnSaveJournal.setText(status.equals("draft") ? "SAVING DRAFT..." : "PROCESSING...");
 
-        if (localAudioPath != null) {
-            uploadAudioToCloudinary(title, content, status);
-        } else {
-            saveToFirestore(title, content, existingAudioUrl, status);
+        final String finalTitle = title;
+        uploadPhotosThen(() -> {
+            if (localAudioPath != null) {
+                uploadAudioToCloudinary(finalTitle, content, status);
+            } else {
+                saveToFirestore(finalTitle, content, existingAudioUrl, status);
+            }
+        });
+    }
+
+    // ── Photos ────────────────────────────────────────────────────────────
+
+    private void onPhotosPicked(java.util.List<android.net.Uri> uris) {
+        if (uris == null || uris.isEmpty()) return;
+        int room = JournalPhotos.MAX - photos.size();
+        if (uris.size() > room) {
+            Toast.makeText(this, "Up to " + JournalPhotos.MAX + " photos per entry", Toast.LENGTH_SHORT).show();
         }
+        for (int i = 0; i < Math.min(room, uris.size()); i++) {
+            JournalPhotos.shrink(this, uris.get(i), path -> {
+                if (isFinishing()) return;
+                if (path == null) {
+                    Toast.makeText(this, "Couldn't add that photo", Toast.LENGTH_SHORT).show();
+                } else if (photos.size() < JournalPhotos.MAX) {
+                    photos.add(path);
+                    renderPhotos();
+                }
+            });
+        }
+    }
+
+    /** Rebuilds the strip: the "Add photo" tile stays first, the photos follow. */
+    private void renderPhotos() {
+        android.widget.LinearLayout strip = binding.photoStrip;
+        while (strip.getChildCount() > 1) strip.removeViewAt(1);
+        float d = getResources().getDisplayMetrics().density;
+        int size = (int) (76 * d);
+        for (int i = 0; i < photos.size(); i++) {
+            final int index = i;
+            android.widget.FrameLayout tile = new android.widget.FrameLayout(this);
+            android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(size, size);
+            lp.setMarginStart((int) (10 * d));
+            tile.setLayoutParams(lp);
+
+            com.google.android.material.imageview.ShapeableImageView iv = new com.google.android.material.imageview.ShapeableImageView(this);
+            iv.setShapeAppearanceModel(iv.getShapeAppearanceModel().toBuilder().setAllCornerSizes(14 * d).build());
+            iv.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            iv.setContentDescription("Photo " + (i + 1));
+            iv.setOnClickListener(v -> JournalPhotos.open(this, photos, index));
+            tile.addView(iv, new android.widget.FrameLayout.LayoutParams(-1, -1));
+            JournalPhotos.load(iv, photos.get(i), 240);
+
+            android.widget.ImageView remove = new android.widget.ImageView(this);
+            remove.setImageResource(R.drawable.ic_close_small);
+            remove.setBackgroundResource(R.drawable.bg_photo_remove);
+            int pad = (int) (3 * d);
+            remove.setPadding(pad, pad, pad, pad);
+            remove.setContentDescription("Remove photo");
+            remove.setOnClickListener(v -> { photos.remove(index); renderPhotos(); });
+            android.widget.FrameLayout.LayoutParams rlp = new android.widget.FrameLayout.LayoutParams((int) (22 * d), (int) (22 * d),
+                    android.view.Gravity.TOP | android.view.Gravity.END);
+            rlp.setMargins(0, (int) (4 * d), (int) (4 * d), 0);
+            tile.addView(remove, rlp);
+
+            strip.addView(tile);
+        }
+        boolean full = photos.size() >= JournalPhotos.MAX;
+        binding.btnAddPhoto.setAlpha(full ? 0.45f : 1f);
+        binding.btnAddPhoto.setEnabled(!full);
+        binding.tvAddPhoto.setText(full ? "4 of 4" : photos.isEmpty() ? "Add photo" : "Add more");
+    }
+
+    private void uploadPhotosThen(Runnable next) {
+        boolean anyLocal = false;
+        for (String p : photos) if (!p.startsWith("http")) anyLocal = true;
+        if (!anyLocal) { next.run(); return; }
+        JournalPhotos.uploadAll(photos, new JournalPhotos.Uploaded() {
+            @Override public void progress(int done, int total) {
+                binding.btnSaveJournal.setText(total == 1 ? "UPLOADING PHOTO..."
+                        : "UPLOADING PHOTO " + (done + 1) + " OF " + total + "...");
+            }
+            @Override public void finished(ArrayList<String> urls) {
+                if (isFinishing()) return;
+                if (urls == null) {
+                    binding.btnSaveJournal.setEnabled(true);
+                    binding.btnSaveJournal.setText(existingDocId != null ? "UPDATE ENTRY" : "SAVE ENTRY");
+                    Toast.makeText(JournalActivity.this,
+                            "Couldn't upload the photos. Check your connection and try again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                photos.clear();
+                photos.addAll(urls);
+                next.run();
+            }
+        });
     }
 
     private void uploadAudioToCloudinary(String title, String content, String status) {
@@ -360,6 +470,7 @@ public class JournalActivity extends AppCompatActivity {
                 updates.put("content", content);
                 updates.put("status", status);
                 updates.put("authorName", authorName);
+                updates.put("imageUrls", new ArrayList<>(photos));
                 if (audioUrl != null) {
                     updates.put("audioUrl", audioUrl);
                     updates.put("audioDuration", durationToSave);
@@ -379,6 +490,7 @@ public class JournalActivity extends AppCompatActivity {
                 // CREATE NEW ENTRY
                 JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId, partnerId, authorName, status, durationToSave);
                 if (audioUrl != null) entry.setAudioUrl(audioUrl);
+                if (!photos.isEmpty()) entry.setImageUrls(new ArrayList<>(photos));
                 entry.setReadByPartner(false);
 
                 db.collection("journal_entries")

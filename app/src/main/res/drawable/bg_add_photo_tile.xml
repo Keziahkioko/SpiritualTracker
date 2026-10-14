@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Add photo" tile on the writing screen: dashed lavender outline. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#F8F5FD" />
+    <stroke android:width="1.5dp" android:color="#9F86D6" android:dashWidth="6dp" android:dashGap="4dp" />
+    <corners android:radius="14dp" />
+</shape>

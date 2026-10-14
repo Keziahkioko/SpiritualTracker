@@ -26,6 +26,11 @@
         <item name="android:elevation">2dp</item>
     </style>
 
+    <style name="PhotoThumbShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
     <style name="Theme.SpiritualTracker" parent="Base.Theme.SpiritualTracker" />
 
     <style name="PrayerBottomNavTheme">

@@ -93,6 +93,42 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Last 7 days: one paired ring per practice (outer me, inner partner). -->
+        <TextView
+            android:id="@+id/tvRingsTitle"
+            style="@style/HistorySectionTitle"
+            android:text="LAST 7 DAYS"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/ringsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_history_card"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/ringsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+            <LinearLayout
+                android:id="@+id/ringsLegend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:orientation="horizontal" />
+        </LinearLayout>
+
         <!-- Month navigation -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -223,7 +259,7 @@
             <!-- Trends -->
             <TextView
                 style="@style/HistorySectionTitle"
-                android:text="LAST 6 MONTHS" />
+                android:text="WEEK BY WEEK" />
 
             <LinearLayout
                 android:id="@+id/trendContainer"

@@ -23,6 +23,8 @@ public final class PartnerName {
     private static final String GENERIC = "Partner";
     private static final Pattern WORD = Pattern.compile("\\b(?:(?:[Yy]our|[Mm]y) partner|PARTNER|[Pp]artner)\\b");
 
+    private static String lastNickname;
+
     private PartnerName() {}
 
     /** What to call the partner: your nickname if you set one, else their own name, else "Partner". */
@@ -54,7 +56,48 @@ public final class PartnerName {
         SharedPreferences.Editor e = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
         if (nickname == null || nickname.trim().isEmpty()) e.remove(NICKNAME);
         else e.putString(NICKNAME, nickname.trim());
+        lastNickname = nickname == null ? null : nickname.trim();
         e.apply();
+    }
+
+    /** Private copy of the nickname under my account, so signing out and back in keeps it. */
+    private static com.google.firebase.firestore.DocumentReference cloudRef() {
+        com.google.firebase.auth.FirebaseUser u = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+        if (u == null) return null;
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("users").document(u.getUid()).collection("private").document("contacts");
+    }
+
+    /** Saves the current nickname to my account, tied to this partner. */
+    public static void backup(String partnerId) {
+        com.google.firebase.firestore.DocumentReference ref = cloudRef();
+        if (ref == null || partnerId == null) return;
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("partnerId", partnerId);
+        data.put("partnerNickname", lastNickname);
+        ref.set(data).addOnFailureListener(e -> android.util.Log.w("PartnerName", "Nickname backup failed", e));
+    }
+
+    public interface Restored { void done(boolean restored); }
+
+    /** Brings back a nickname saved under my account for this same partner. */
+    public static void restore(Context context, String partnerId, Restored callback) {
+        com.google.firebase.firestore.DocumentReference ref = cloudRef();
+        if (ref == null || partnerId == null) { callback.done(false); return; }
+        Context app = context.getApplicationContext();
+        ref.get().addOnCompleteListener(task -> {
+            String nick = null;
+            if (task.isSuccessful() && task.getResult() != null
+                    && partnerId.equals(task.getResult().getString("partnerId"))) {
+                nick = task.getResult().getString("partnerNickname");
+            }
+            if (nick != null && !nick.trim().isEmpty()) {
+                setNickname(app, nick);
+                callback.done(true);
+            } else {
+                callback.done(false);
+            }
+        });
     }
 
     /** Name for a partner profile just loaded from the database, respecting your nickname. */

@@ -72,6 +72,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     
     implementation("com.cloudinary:cloudinary-android:2.3.1")
+    // Loads and caches journal photos.
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.google.firebase:firebase-messaging:23.4.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.guava:guava:31.1-android")

@@ -202,7 +202,16 @@
                             android:textSize="17sp"
                             android:textColor="#424242"
                             android:lineSpacingExtra="6dp"
-                            android:paddingBottom="8dp"/> </LinearLayout>
+                            android:paddingBottom="8dp"/>
+
+                        <!-- Photos attached to the entry; filled in code. -->
+                        <LinearLayout
+                            android:id="@+id/detailPhotos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal"
+                            android:visibility="gone" /> </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView

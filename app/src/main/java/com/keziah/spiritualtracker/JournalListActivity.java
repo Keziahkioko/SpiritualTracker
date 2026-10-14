@@ -310,6 +310,8 @@ public class JournalListActivity extends AppCompatActivity {
                     detail.putExtra("authorName",    doc.getString("authorName"));
                     detail.putExtra("authorId",      doc.getString("userId"));
                     detail.putExtra("audioUrl",      doc.getString("audioUrl"));
+                    detail.putStringArrayListExtra("imageUrls",
+                            JournalPhotos.from(doc.get("imageUrls"), doc.getString("imageUrl")));
                     detail.putExtra("docId",         targetDocId);
                     detail.putExtra("status",        doc.getString("status"));
                     detail.putExtra("audioDuration", doc.getString("audioDuration"));

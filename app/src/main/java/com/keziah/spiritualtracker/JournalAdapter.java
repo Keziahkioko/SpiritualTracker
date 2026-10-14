@@ -228,6 +228,17 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             h.tvStatus.setVisibility(View.GONE);
         }
 
+        // Photo thumbnail
+        java.util.ArrayList<String> pics = entry.photos();
+        if (pics.isEmpty()) {
+            h.photoThumbBox.setVisibility(View.GONE);
+        } else {
+            h.photoThumbBox.setVisibility(View.VISIBLE);
+            JournalPhotos.load(h.ivPhotoThumb, pics.get(0), 200);
+            h.tvPhotoCount.setVisibility(pics.size() > 1 ? View.VISIBLE : View.GONE);
+            h.tvPhotoCount.setText("+" + (pics.size() - 1));
+        }
+
         // Text preview vs audio footer
         String audioUrl = entry.getAudioUrl();
         boolean hasAudio = audioUrl != null && !audioUrl.isEmpty();
@@ -293,6 +304,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             intent.putExtra("searchQuery",   searchQuery);
             intent.putExtra("content",       entry.getContent());
             intent.putExtra("audioUrl",      entry.getAudioUrl());
+            intent.putStringArrayListExtra("imageUrls", entry.photos());
             intent.putExtra("audioDuration", entry.getAudioDuration());
             intent.putExtra("docId",         entry.getDocId());
             intent.putExtra("status",        entry.getStatus());
@@ -343,6 +355,9 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class EntryVH extends RecyclerView.ViewHolder {
+        android.widget.FrameLayout photoThumbBox;
+        android.widget.ImageView ivPhotoThumb;
+        TextView tvPhotoCount;
         TextView    tvTitle, tvDate, tvTime, tvPreview, tvAuthor, tvStatus,
                 tvAudioDuration, tvUnreadBadge;
         ImageButton btnPlayAudio;
@@ -364,6 +379,9 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             btnPlayAudio     = v.findViewById(R.id.btnPlayAudio);
             layoutAudioFooter = v.findViewById(R.id.layoutAudioFooter);
             stripe           = v.findViewById(R.id.viewJournalStripe);
+            photoThumbBox    = v.findViewById(R.id.photoThumbBox);
+            ivPhotoThumb     = v.findViewById(R.id.ivPhotoThumb);
+            tvPhotoCount     = v.findViewById(R.id.tvPhotoCount);
         }
     }
 }
