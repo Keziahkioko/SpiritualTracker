@@ -10,6 +10,22 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
+    <!-- Login fields: white rounded cards like the original, label floats inside, no underline. -->
+    <style name="LoginField" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">#FFFFFF</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="hintTextColor">#6A4FB0</item>
+        <item name="android:textColorHint">#6E6E73</item>
+        <item name="errorTextColor">#C62828</item>
+        <item name="helperTextTextColor">#5F5F64</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+
     <style name="Theme.SpiritualTracker" parent="Base.Theme.SpiritualTracker" />
 
     <style name="PrayerBottomNavTheme">
