@@ -46,9 +46,12 @@ public class HistoryActivity extends AppCompatActivity {
     private boolean showingPartner = false;
     /** The "Us" tab: both partners together. */
     private boolean showingUs = false;
-    /** Last month of the six shown on the Us tab. */
-    private final Calendar usEnd = firstOfMonth(Calendar.getInstance());
-    private static final int US_MONTHS = 6;
+    // "Over time" chart: which practice, months or years, and which year's months.
+    private int otDiscipline = 0;
+    private boolean otYears = false;
+    private int otYear = Calendar.getInstance().get(Calendar.YEAR);
+    /** What each practice means in a sentence: "days you ___ each month". */
+    private static final String[] VERBS = {"read the Bible", "prayed", "wrote in the journal", "practised memory verses"};
     private int pendingLoads = 0;
 
     /** First day (midnight) of the month being shown. */
@@ -116,8 +119,7 @@ public class HistoryActivity extends AppCompatActivity {
             }
             selectTab(2);
         });
-        findViewById(R.id.btnUsPrev).setOnClickListener(v -> { usEnd.add(Calendar.MONTH, -US_MONTHS); render(); });
-        findViewById(R.id.btnUsNext).setOnClickListener(v -> { usEnd.add(Calendar.MONTH, US_MONTHS); render(); });
+
 
         buildWeekdayHeader();
         buildLegend();
@@ -204,12 +206,13 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void render() {
         findViewById(R.id.monthNav).setVisibility(showingUs ? View.GONE : View.VISIBLE);
+        findViewById(R.id.personRings).setVisibility(showingUs ? View.GONE : View.VISIBLE);
         findViewById(R.id.personContent).setVisibility(showingUs ? View.GONE : View.VISIBLE);
         findViewById(R.id.usContent).setVisibility(showingUs ? View.VISIBLE : View.GONE);
         if (showingUs) {
             renderRings();
             renderUsStreaks();
-            renderUsMonths();
+            renderOverTime(trendContainer, true);
             return;
         }
 
@@ -220,9 +223,11 @@ public class HistoryActivity extends AppCompatActivity {
         setEnabled(btnPrev, shown > monthIndex(earliestDay()));
 
         TreeMap<String, HistoryRepository.DayRecord> days = currentDays();
+        renderPersonRings(days);
         renderSummary(days);
         renderCalendar(days);
         renderStreaks(days);
+        renderOverTime(findViewById(R.id.personTrendContainer), false);
     }
 
     private void setEnabled(TextView v, boolean enabled) {
@@ -243,11 +248,16 @@ public class HistoryActivity extends AppCompatActivity {
 
             col.addView(dot(COLORS[i], 8));
 
-            TextView count = text(done + "/" + elapsed, 18, 0xFF1A1A2E, true);
+            TextView count = text(String.valueOf(done), 22, TEXT_COLORS[i], true);
+            count.setGravity(Gravity.CENTER);
             count.setPadding(0, dp(4), 0, 0);
             col.addView(count);
-            col.addView(text(LABELS[i], 11, 0xFF757575, false));
-            col.addView(text(elapsed == 0 ? "–" : Math.round(done * 100f / elapsed) + "%", 12, TEXT_COLORS[i], true));
+            TextView name = text(LABELS[i], 12, 0xFF1A1A2E, true);
+            name.setGravity(Gravity.CENTER);
+            col.addView(name);
+            TextView of = text("of " + elapsed + " days", 11, 0xFF5F5F64, false);
+            of.setGravity(Gravity.CENTER);
+            col.addView(of);
 
             monthSummary.addView(col);
         }
@@ -414,8 +424,8 @@ public class HistoryActivity extends AppCompatActivity {
             label.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             row.addView(label);
 
-            row.addView(text("Now " + s[0] + "d", 13, 0xFF1A1A2E, true));
-            TextView best = text("  ·  Best " + s[1] + "d", 13, 0xFF5F5F64, false);
+            row.addView(text(s[0] + (s[0] == 1 ? " day" : " days"), 13, 0xFF1A1A2E, true));
+            TextView best = text("  ·  best " + s[1], 13, 0xFF5F5F64, false);
             row.addView(best);
             streakContainer.addView(row);
         }
@@ -482,104 +492,188 @@ public class HistoryActivity extends AppCompatActivity {
         return col;
     }
 
-    /** Six months for each practice: my bar beside my partner's, as a share of that month's days. */
-    private void renderUsMonths() {
-        trendContainer.removeAllViews();
-        Calendar now = firstOfMonth(Calendar.getInstance());
-        if (monthIndex(usEnd) > monthIndex(now)) usEnd.setTime(now.getTime());
-        Calendar[] cols = new Calendar[US_MONTHS];
-        for (int m = 0; m < US_MONTHS; m++) {
-            Calendar c = (Calendar) usEnd.clone();
-            c.add(Calendar.MONTH, m - (US_MONTHS - 1));
-            cols[m] = c;
+    /**
+     * Days a practice was done, as plain counts: one row per month of a chosen year, or one row
+     * per year. On the Us tab each row has my bar and my partner's bar.
+     */
+    private void renderOverTime(LinearLayout box, boolean both) {
+        box.removeAllViews();
+        int i = otDiscipline;
+        Calendar now = Calendar.getInstance();
+        int firstYear = earliestDay().get(Calendar.YEAR);
+        int thisYear = now.get(Calendar.YEAR);
+        otYear = Math.max(firstYear, Math.min(thisYear, otYear));
+
+        // Practice picker.
+        LinearLayout chips = new LinearLayout(this);
+        chips.setOrientation(LinearLayout.HORIZONTAL);
+        for (int d = 0; d < LABELS.length; d++) {
+            final int pick = d;
+            TextView chip = text(LABELS[d], 12, d == i ? Color.WHITE : 0xFF424242, d == i);
+            chip.setGravity(Gravity.CENTER);
+            chip.setPadding(0, dp(7), 0, dp(7));
+            GradientDrawable g = new GradientDrawable();
+            g.setCornerRadius(dp(16));
+            if (d == i) g.setColor(TEXT_COLORS[d]); else { g.setColor(Color.WHITE); g.setStroke(dp(1), 0xFFDDD5EA); }
+            chip.setBackground(g);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            if (d > 0) lp.setMarginStart(dp(6));
+            chip.setLayoutParams(lp);
+            chip.setOnClickListener(v -> { otDiscipline = pick; render(); });
+            chips.addView(chip);
+        }
+        box.addView(chips);
+
+        // Months / Years switch, and the year arrows for months.
+        LinearLayout controls = new LinearLayout(this);
+        controls.setOrientation(LinearLayout.HORIZONTAL);
+        controls.setGravity(Gravity.CENTER_VERTICAL);
+        controls.setPadding(0, dp(12), 0, 0);
+        LinearLayout toggle = new LinearLayout(this);
+        toggle.setBackgroundResource(R.drawable.bg_tab_group);
+        toggle.setPadding(dp(3), dp(3), dp(3), dp(3));
+        toggle.addView(toggleTab("Months", !otYears, () -> { otYears = false; render(); }));
+        toggle.addView(toggleTab("Years", otYears, () -> { otYears = true; render(); }));
+        controls.addView(toggle);
+        View spacer = new View(this);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(0, 1, 1f));
+        controls.addView(spacer);
+        if (!otYears) {
+            TextView prev = arrow("‹", "Earlier year", otYear > firstYear, () -> { otYear--; render(); });
+            TextView year = text(String.valueOf(otYear), 16, 0xFF1A1A2E, true);
+            year.setPadding(dp(4), 0, dp(4), 0);
+            TextView next = arrow("›", "Later year", otYear < thisYear, () -> { otYear++; render(); });
+            controls.addView(prev);
+            controls.addView(year);
+            controls.addView(next);
+        }
+        box.addView(controls);
+
+        // What the bars mean, in words.
+        String who = both ? "you each" : showingPartner ? partnerName : "you";
+        TextView title = text("Days " + who + " " + VERBS[i] + (otYears ? ", each year" : ", each month"),
+                14, 0xFF1A1A2E, true);
+        title.setPadding(0, dp(14), 0, dp(8));
+        box.addView(title);
+
+        TreeMap<String, HistoryRepository.DayRecord> mine = both ? myDays : currentDays();
+        java.util.List<Calendar[]> periods = new java.util.ArrayList<>();
+        java.util.List<String> names = new java.util.ArrayList<>();
+        SimpleDateFormat mf = new SimpleDateFormat("MMM", Locale.getDefault());
+        if (otYears) {
+            for (int y = firstYear; y <= thisYear; y++) {
+                Calendar from = Calendar.getInstance();
+                from.set(y, Calendar.JANUARY, 1);
+                Calendar to = Calendar.getInstance();
+                to.set(y, Calendar.DECEMBER, 31);
+                periods.add(new Calendar[]{from, to});
+                names.add(String.valueOf(y));
+            }
+        } else {
+            Calendar first = earliestDay();
+            for (int m = 0; m < 12; m++) {
+                Calendar from = Calendar.getInstance();
+                from.set(otYear, m, 1);
+                if (monthIndex(from) > monthIndex(now)) break;
+                if (monthIndex(from) < monthIndex(first)) continue;
+                Calendar to = (Calendar) from.clone();
+                to.set(Calendar.DAY_OF_MONTH, to.getActualMaximum(Calendar.DAY_OF_MONTH));
+                periods.add(new Calendar[]{from, to});
+                names.add(mf.format(from.getTime()));
+            }
         }
 
-        SimpleDateFormat mf = new SimpleDateFormat("MMM", Locale.getDefault());
-        SimpleDateFormat yf = new SimpleDateFormat("MMM yyyy", Locale.getDefault());
-        TextView range = findViewById(R.id.tvUsRange);
-        boolean sameYear = cols[0].get(Calendar.YEAR) == cols[US_MONTHS - 1].get(Calendar.YEAR);
-        range.setText((sameYear ? mf : yf).format(cols[0].getTime()) + " – " + yf.format(cols[US_MONTHS - 1].getTime()));
-        setEnabled(findViewById(R.id.btnUsNext), monthIndex(usEnd) < monthIndex(now));
-        setEnabled(findViewById(R.id.btnUsPrev), monthIndex(cols[0]) > monthIndex(earliestDay()));
+        for (int p = 0; p < periods.size(); p++) {
+            Calendar from = periods.get(p)[0], to = periods.get(p)[1];
+            int length = otYears ? to.getActualMaximum(Calendar.DAY_OF_YEAR) : to.getActualMaximum(Calendar.DAY_OF_MONTH);
+            String fromKey = ActivityLog.dayKey(from.getTime()), toKey = ActivityLog.dayKey(to.getTime());
+            int a1 = ProgressMath.countBetween(mine, fromKey, toKey, i);
 
-        int maxHeight = dp(48);
-        for (int i = 0; i < LABELS.length; i++) {
-            LinearLayout title = new LinearLayout(this);
-            title.setOrientation(LinearLayout.HORIZONTAL);
-            title.setGravity(Gravity.CENTER_VERTICAL);
-            title.setPadding(0, i == 0 ? 0 : dp(14), 0, dp(6));
-            title.addView(dot(COLORS[i], 8));
-            TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
-            name.setPadding(dp(6), 0, 0, 0);
-            title.addView(name);
-            trendContainer.addView(title);
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(0, dp(5), 0, dp(5));
+            TextView label = text(names.get(p), 13, 0xFF1A1A2E, false);
+            label.setLayoutParams(new LinearLayout.LayoutParams(dp(otYears ? 46 : 38), LinearLayout.LayoutParams.WRAP_CONTENT));
+            row.addView(label);
 
             LinearLayout bars = new LinearLayout(this);
-            bars.setOrientation(LinearLayout.HORIZONTAL);
-            bars.setGravity(Gravity.BOTTOM);
-            for (Calendar c : cols) {
-                int elapsed = elapsedDays(c);
-                int mine = elapsed == 0 ? -1 : Math.round(countInMonth(myDays, c, i) * 100f / elapsed);
-                int theirs = elapsed == 0 ? -1 : Math.round(countInMonth(partnerDays, c, i) * 100f / elapsed);
-
-                LinearLayout pair = new LinearLayout(this);
-                pair.setOrientation(LinearLayout.HORIZONTAL);
-                pair.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-                pair.setLayoutParams(new LinearLayout.LayoutParams(0, maxHeight, 1f));
-                pair.addView(monthBar(mine, PairedRingView.ME, maxHeight));
+            bars.setOrientation(LinearLayout.VERTICAL);
+            bars.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            bars.addView(countBar(a1, length, both ? PairedRingView.ME : COLORS[i], both ? 0xFF5E35B1 : TEXT_COLORS[i]));
+            if (both) {
+                int a2 = ProgressMath.countBetween(partnerDays, fromKey, toKey, i);
                 View gap = new View(this);
-                gap.setLayoutParams(new LinearLayout.LayoutParams(dp(3), 1));
-                pair.addView(gap);
-                pair.addView(monthBar(theirs, PairedRingView.PARTNER, maxHeight));
-
-                String detail = elapsed == 0 ? yf.format(c.getTime()) + " hasn't started yet"
-                        : LABELS[i] + ", " + yf.format(c.getTime()) + ": you " + mine + "%, " + partnerName + " " + theirs + "%";
-                pair.setContentDescription(detail);
-                pair.setOnClickListener(v -> Toast.makeText(this, detail, Toast.LENGTH_SHORT).show());
-                bars.addView(pair);
+                gap.setLayoutParams(new LinearLayout.LayoutParams(1, dp(3)));
+                bars.addView(gap);
+                bars.addView(countBar(a2, length, PairedRingView.PARTNER, 0xFF2E7D32));
             }
-            trendContainer.addView(bars);
-            View line = new View(this);
-            line.setBackgroundColor(0xFFE0D9EC);
-            line.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
-            trendContainer.addView(line);
+            row.addView(bars);
+            box.addView(row);
         }
 
-        LinearLayout labels = new LinearLayout(this);
-        labels.setOrientation(LinearLayout.HORIZONTAL);
-        labels.setPadding(0, dp(6), 0, 0);
-        for (Calendar c : cols) {
-            boolean current = monthIndex(c) == monthIndex(now);
-            TextView tv = text(mf.format(c.getTime()), 11, current ? 0xFF4527A0 : 0xFF5F5F64, current);
-            tv.setGravity(Gravity.CENTER);
-            tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            labels.addView(tv);
+        if (both) {
+            LinearLayout legend = new LinearLayout(this);
+            legend.setGravity(Gravity.CENTER);
+            legend.setPadding(0, dp(10), 0, 0);
+            legend.addView(legendItem("You", PairedRingView.ME, null));
+            legend.addView(legendItem(partnerName, PairedRingView.PARTNER, null));
+            box.addView(legend);
         }
-        trendContainer.addView(labels);
-
-        LinearLayout legend = new LinearLayout(this);
-        legend.setGravity(Gravity.CENTER);
-        legend.setPadding(0, dp(12), 0, 0);
-        legend.addView(legendItem("You", PairedRingView.ME, null));
-        legend.addView(legendItem(partnerName, PairedRingView.PARTNER, null));
-        trendContainer.addView(legend);
-
-        TextView hint = text("Bar height is the share of days in that month. Tap a month for the numbers.",
+        TextView hint = text(otYears ? "A full bar means every day of the year." : "A full bar means every day of the month.",
                 11, 0xFF5F5F64, false);
         hint.setGravity(Gravity.CENTER);
-        hint.setPadding(0, dp(6), 0, 0);
-        trendContainer.addView(hint);
+        hint.setPadding(0, dp(8), 0, 0);
+        box.addView(hint);
     }
 
-    private View monthBar(int pct, int color, int maxHeight) {
-        View bar = new View(this);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadii(new float[]{dp(4), dp(4), dp(4), dp(4), 0, 0, 0, 0});
-        bg.setColor(pct <= 0 ? 0xFFEDE7F6 : color);
-        bar.setBackground(bg);
-        int h = pct <= 0 ? dp(3) : Math.max(dp(4), maxHeight * pct / 100);
-        bar.setLayoutParams(new LinearLayout.LayoutParams(dp(10), h));
-        return bar;
+    /** A bar filled in proportion to days done, with the count written after it. */
+    private View countBar(int done, int length, int color, int textColor) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+
+        LinearLayout track = new LinearLayout(this);
+        GradientDrawable t = new GradientDrawable();
+        t.setCornerRadius(dp(5));
+        t.setColor(0xFFF1EDF7);
+        track.setBackground(t);
+        track.setWeightSum(length);
+        track.setLayoutParams(new LinearLayout.LayoutParams(0, dp(10), 1f));
+        if (done > 0) {
+            View fill = new View(this);
+            GradientDrawable f = new GradientDrawable();
+            f.setCornerRadius(dp(5));
+            f.setColor(color);
+            fill.setBackground(f);
+            fill.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, Math.max(done, length / 40f)));
+            track.addView(fill);
+        }
+        row.addView(track);
+
+        TextView count = text(done + (done == 1 ? " day" : " days"), 12, done == 0 ? 0xFF6E6E73 : textColor, done > 0);
+        count.setGravity(Gravity.END);
+        count.setLayoutParams(new LinearLayout.LayoutParams(dp(62), LinearLayout.LayoutParams.WRAP_CONTENT));
+        row.addView(count);
+        return row;
+    }
+
+    private TextView toggleTab(String label, boolean active, Runnable onClick) {
+        TextView t = text(label, 13, active ? 0xFF4527A0 : 0xFF5F5F64, active);
+        t.setPadding(dp(14), dp(5), dp(14), dp(5));
+        if (active) t.setBackgroundResource(R.drawable.tab_active);
+        t.setOnClickListener(v -> onClick.run());
+        return t;
+    }
+
+    private TextView arrow(String symbol, String description, boolean enabled, Runnable onClick) {
+        TextView t = text(symbol, 26, 0xFF5E35B1, false);
+        t.setGravity(Gravity.CENTER);
+        t.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(40)));
+        t.setContentDescription(description);
+        t.setOnClickListener(v -> onClick.run());
+        setEnabled(t, enabled);
+        return t;
     }
 
     private static void appendColored(android.text.SpannableStringBuilder sb, String part, int color) {
@@ -636,6 +730,44 @@ public class HistoryActivity extends AppCompatActivity {
 
         legend.addView(legendItem("You", PairedRingView.ME, "outer"));
         if (both) legend.addView(legendItem(partnerName, PairedRingView.PARTNER, "inner"));
+    }
+
+    /** One person's last 7 days: a ring per practice in that practice's colour. */
+    private void renderPersonRings(TreeMap<String, HistoryRepository.DayRecord> days) {
+        LinearLayout row = findViewById(R.id.personRingsRow);
+        row.removeAllViews();
+        Calendar c = Calendar.getInstance();
+        String to = ActivityLog.dayKey(c.getTime());
+        c.add(Calendar.DAY_OF_YEAR, -6);
+        String from = ActivityLog.dayKey(c.getTime());
+        int[] tracks = {0xFFEDE7F6, 0xFFE0F2F1, 0xFFFFF3E0, 0xFFFCE4EC};
+
+        for (int i = 0; i < LABELS.length; i++) {
+            int done = ProgressMath.countBetween(days, from, to, i);
+            LinearLayout col = new LinearLayout(this);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setGravity(Gravity.CENTER_HORIZONTAL);
+            col.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+            android.widget.FrameLayout holder = new android.widget.FrameLayout(this);
+            holder.setLayoutParams(new LinearLayout.LayoutParams(dp(62), dp(62)));
+            PairedRingView ring = new PairedRingView(this);
+            ring.setSingle(done / 7f, COLORS[i], tracks[i]);
+            holder.addView(ring, new android.widget.FrameLayout.LayoutParams(-1, -1));
+            TextView inside = text(String.valueOf(done), 18, TEXT_COLORS[i], true);
+            inside.setGravity(Gravity.CENTER);
+            holder.addView(inside, new android.widget.FrameLayout.LayoutParams(-1, -1));
+            col.addView(holder);
+
+            TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
+            name.setGravity(Gravity.CENTER);
+            name.setPadding(0, dp(8), 0, 0);
+            col.addView(name);
+            TextView of = text(done + " of 7 days", 11, 0xFF5F5F64, false);
+            of.setGravity(Gravity.CENTER);
+            col.addView(of);
+            row.addView(col);
+        }
     }
 
     private View legendItem(String who, int color, String where) {

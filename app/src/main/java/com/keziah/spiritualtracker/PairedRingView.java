@@ -20,6 +20,7 @@ public class PairedRingView extends View {
     private float mine = 0f;
     /** Negative means there is no partner ring to draw. */
     private float theirs = -1f;
+    private int meColor = ME, meTrack = ME_TRACK;
 
     public PairedRingView(Context context) { this(context, null); }
 
@@ -27,6 +28,13 @@ public class PairedRingView extends View {
         super(context, attrs);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    /** One ring only, in the given colour (used on a single person's page). */
+    public void setSingle(float value, int color, int track) {
+        meColor = color;
+        meTrack = track;
+        setValues(value, -1f);
     }
 
     /** Fractions from 0 to 1; pass a negative partner value to show my ring only. */
@@ -43,13 +51,13 @@ public class PairedRingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         float d = getResources().getDisplayMetrics().density;
-        float stroke = 7 * d;
+        float stroke = (theirs < 0 ? 8 : 7) * d;
         float gap = 3 * d;
         float size = Math.min(getWidth(), getHeight());
         float cx = getWidth() / 2f, cy = getHeight() / 2f;
 
         float r = size / 2f - stroke / 2f;
-        ring(canvas, cx, cy, r, stroke, ME_TRACK, ME, mine);
+        ring(canvas, cx, cy, r, stroke, meTrack, meColor, mine);
         if (theirs >= 0) ring(canvas, cx, cy, r - stroke - gap, stroke, PARTNER_TRACK, PARTNER, theirs);
     }
 
