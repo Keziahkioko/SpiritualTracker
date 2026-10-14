@@ -99,13 +99,14 @@
             android:layout_width="match_parent"
             android:layout_height="58dp"
             android:layout_marginBottom="14dp"
-            android:backgroundTint="#333333"
+            android:background="@drawable/bg_login_button"
+            android:elevation="4dp"
             android:letterSpacing="0.08"
             android:text="LOG IN"
-            android:textColor="#FFFFFF"
+            android:textColor="#5E35B1"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="29dp" />
+            app:backgroundTint="@null" />
 
         <TextView
             android:id="@+id/tvRegister"
