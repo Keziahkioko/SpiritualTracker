@@ -479,13 +479,21 @@ public class JournalActivity extends AppCompatActivity {
                 boolean publishingDraft = publishing && "draft".equals(existingStatus);
                 if (publishingDraft) updates.put("date", new Timestamp(new Date()));
 
-                db.collection("journal_entries").document(existingDocId)
+                Runnable save = () -> db.collection("journal_entries").document(existingDocId)
                         .update(updates)
                         .addOnSuccessListener(aVoid -> {
                             if (publishingDraft) onPublished(userId, authorName, title, existingDocId);
                             finish();
                         })
                         .addOnFailureListener(e -> onSaveFailed());
+
+                // Files taken off the entry while editing: removed photos and a replaced voice note.
+                ArrayList<String> dropped = new ArrayList<>();
+                for (String p : originalPhotos) if (p.startsWith("http") && !photos.contains(p)) dropped.add(p);
+                if (audioUrl != null && existingAudioUrl != null && !audioUrl.equals(existingAudioUrl)) dropped.add(existingAudioUrl);
+                // Clean-up first: the relay only deletes files the entry still lists. Save either way.
+                if (dropped.isEmpty()) save.run();
+                else Relay.deleteJournalMedia(existingDocId, dropped, ok -> save.run());
             } else {
                 // CREATE NEW ENTRY
                 JournalEntry entry = new JournalEntry(title, content, new Timestamp(new Date()), userId, partnerId, authorName, status, durationToSave);

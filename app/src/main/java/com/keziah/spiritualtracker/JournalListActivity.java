@@ -225,6 +225,12 @@ public class JournalListActivity extends AppCompatActivity {
 
     private void deleteEntry(String docId) {
         if (docId == null) { Toast.makeText(this, "Error finding entry", Toast.LENGTH_SHORT).show(); return; }
+        // Remove its photos and voice notes from storage first (the relay checks the entry while
+        // it still exists); the entry is deleted either way, even if that clean-up fails.
+        Relay.deleteJournalMedia(docId, null, ok -> removeEntryDoc(docId));
+    }
+
+    private void removeEntryDoc(String docId) {
         db.collection("journal_entries").document(docId)
                 .delete()
                 .addOnSuccessListener(v -> Toast.makeText(this, "Entry deleted", Toast.LENGTH_SHORT).show())

@@ -113,10 +113,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void showAccountMenu() {
         android.widget.PopupMenu menu = new android.widget.PopupMenu(this, binding.ivLogout);
-        if (partnerId != null) menu.getMenu().add(0, 3, 0, "Rename " + PartnerName.get(this));
-        menu.getMenu().add(0, 2, 1, "Sign out");
+        if (partnerId != null) {
+            menu.getMenu().add(0, 3, 0, "Rename " + PartnerName.get(this));
+            menu.getMenu().add(0, 4, 1, "Unlink " + PartnerName.get(this));
+        }
+        menu.getMenu().add(0, 2, 2, "Sign out");
         menu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 3) showNamePartnerDialog(false);
+            else if (item.getItemId() == 4) confirmUnlink();
             else signOut();
             return true;
         });
@@ -156,6 +160,45 @@ public class MainActivity extends AppCompatActivity {
                     recreate(); // refresh every label that shows the name
                 })
                 .setNegativeButton(firstTime ? null : "Cancel", null)
+                .show();
+    }
+
+    /** Ends the partnership for both of us (done by the relay, which can update both profiles). */
+    private void confirmUnlink() {
+        String name = PartnerName.get(this);
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Unlink " + name + "?")
+                .setMessage("You'll stop seeing each other's progress, journal and prayers, and "
+                        + name + " will be told. Your own entries stay with you. You can link again later with a new code.")
+                .setPositiveButton("Unlink", null)
+                .setNegativeButton("Cancel", null)
+                .show();
+        android.widget.Button unlink = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+        unlink.setTextColor(Color.parseColor("#C62828"));
+        unlink.setOnClickListener(v -> {
+            unlink.setEnabled(false);
+            unlink.setText("Unlinking…");
+            Relay.post("/api/unlink", new org.json.JSONObject(), ok -> {
+                if (isFinishing()) return;
+                dialog.dismiss();
+                // On success the profile listener sees partnerId disappear and updates the screen.
+                if (!ok) Toast.makeText(this, "Couldn't unlink. Check your connection and try again.", Toast.LENGTH_LONG).show();
+            });
+        });
+    }
+
+    /** Partnership ended (by either of us): forget their name on this phone and say so once. */
+    private void onPartnerUnlinked() {
+        String name = PartnerName.get(this);
+        PartnerName.save(this, null);
+        PartnerName.setNickname(this, null);
+        namePartnerAsked = false;
+        if (isFinishing()) return;
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("No longer linked")
+                .setMessage("You and " + name + " are no longer partners in the app. Your own entries are still here.")
+                .setPositiveButton("OK", (d, w) -> recreate())
+                .setCancelable(false)
                 .show();
     }
 
@@ -310,6 +353,7 @@ public class MainActivity extends AppCompatActivity {
                         partnerId = null;
                         stopPartnerListeners();
                         loadHeatmap();
+                        onPartnerUnlinked();
                     }
                     refreshProgressCard();
                 });
