@@ -147,8 +147,6 @@ public class MainActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle(firstTime ? "What do you want to call your partner?" : "Rename your partner")
-                .setMessage("This name is only on your phone, like a saved contact."
-                        + (ownKnown ? " They call themselves “" + ownName + "”." : ""))
                 .setView(wrap)
                 .setCancelable(!firstTime)
                 .setPositiveButton("Save", (d, w) -> {
