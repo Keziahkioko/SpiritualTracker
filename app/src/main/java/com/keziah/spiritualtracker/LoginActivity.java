@@ -85,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void submit() {
         String email = binding.etEmail.getText().toString().trim();
-        String password = binding.etPassword.getText().toString();
+        String password = binding.etPassword.getText().toString().trim(); // trimmed like when accounts were created
 
         boolean ok = true;
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
