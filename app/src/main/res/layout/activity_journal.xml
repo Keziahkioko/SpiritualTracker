@@ -92,51 +92,6 @@
             android:textColor="#333333"
             android:textColorHint="#6E6E73"/>
 
-        <!-- Photos of handwritten notes etc.: "Add photo" tile, then the chosen photos. -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:clipToPadding="false"
-            android:paddingTop="6dp"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/photoStrip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/btnAddPhoto"
-                    android:layout_width="76dp"
-                    android:layout_height="76dp"
-                    android:background="@drawable/bg_add_photo_tile"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/ic_add_photo" />
-
-                    <TextView
-                        android:id="@+id/tvAddPhoto"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Add photo"
-                        android:textColor="#6A4FB0"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-        </HorizontalScrollView>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -144,11 +99,57 @@
             android:gravity="center_vertical|end"
             android:layout_marginBottom="20dp">
 
-            <TextView
-                android:id="@+id/tvRecordTimer"
+            <!-- Photos of handwritten notes etc.: "Add photo" tile, then the chosen photos. -->
+            <HorizontalScrollView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginEnd="12dp"
+                android:clipToPadding="false"
+                android:paddingTop="6dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/photoStrip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/btnAddPhoto"
+                        android:layout_width="76dp"
+                        android:layout_height="76dp"
+                        android:background="@drawable/bg_add_photo_tile"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_add_photo" />
+
+                        <TextView
+                            android:id="@+id/tvAddPhoto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Add photo"
+                            android:textColor="#6A4FB0"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/tvRecordTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:text="00:00"
                 android:textColor="#5F5F64"
                 android:textSize="14sp"

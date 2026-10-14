@@ -33,7 +33,7 @@ public final class JournalPhotos {
 
     public static final int MAX = 4;
     /** Longest side after shrinking: sharp enough to read handwriting, small enough for mobile data. */
-    private static final int MAX_SIDE = 1600;
+    private static final int MAX_SIDE = 2048;
     private static final String TAG = "JournalPhotos";
     private static final ExecutorService IO = Executors.newSingleThreadExecutor();
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
@@ -101,7 +101,7 @@ public final class JournalPhotos {
 
                 File out = new File(app.getCacheDir(), "journal_photo_" + System.nanoTime() + ".jpg");
                 try (FileOutputStream fos = new FileOutputStream(out)) {
-                    upright.compress(Bitmap.CompressFormat.JPEG, 82, fos);
+                    upright.compress(Bitmap.CompressFormat.JPEG, 85, fos);
                 }
                 path = out.getAbsolutePath();
             } catch (Exception e) {

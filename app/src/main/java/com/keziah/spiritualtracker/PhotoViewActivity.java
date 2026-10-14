@@ -60,17 +60,20 @@ public class PhotoViewActivity extends AppCompatActivity {
         ImageView close = new ImageView(this);
         close.setImageResource(R.drawable.ic_back);
         close.setColorFilter(Color.WHITE);
-        close.setPadding(12 * dp, 12 * dp, 12 * dp, 12 * dp);
+        close.setPadding(11 * dp, 11 * dp, 11 * dp, 11 * dp);
         close.setBackgroundResource(R.drawable.bg_photo_close);
         close.setContentDescription("Close");
         close.setOnClickListener(v -> finish());
         FrameLayout.LayoutParams closeLp = new FrameLayout.LayoutParams(48 * dp, 48 * dp);
+        close.setElevation(4 * dp);
         closeLp.setMargins(12 * dp, 12 * dp, 0, 0);
         root.addView(close, closeLp);
 
         TextView counter = new TextView(this);
         counter.setTextColor(Color.WHITE);
         counter.setTextSize(15);
+        counter.setBackgroundResource(R.drawable.bg_photo_counter);
+        counter.setPadding(12 * dp, 4 * dp, 12 * dp, 4 * dp);
         FrameLayout.LayoutParams countLp = new FrameLayout.LayoutParams(-2, -2, android.view.Gravity.TOP | android.view.Gravity.END);
         countLp.setMargins(0, 24 * dp, 20 * dp, 0);
         root.addView(counter, countLp);

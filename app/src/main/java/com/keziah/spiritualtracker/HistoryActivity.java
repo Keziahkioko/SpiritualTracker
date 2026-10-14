@@ -389,7 +389,7 @@ public class HistoryActivity extends AppCompatActivity {
             row.addView(label);
 
             row.addView(text("Now " + s[0] + "d", 13, 0xFF1A1A2E, true));
-            TextView best = text("  ·  Best " + s[1] + "d", 13, 0xFF9E9E9E, false);
+            TextView best = text("  ·  Best " + s[1] + "d", 13, 0xFF5F5F64, false);
             row.addView(best);
             streakContainer.addView(row);
         }
@@ -409,28 +409,39 @@ public class HistoryActivity extends AppCompatActivity {
         labels.setOrientation(LinearLayout.HORIZONTAL);
         SimpleDateFormat df = new SimpleDateFormat("d MMM", Locale.getDefault());
 
-        int lastMine = 0, lastTheirs = 0;
+        int[] mineAll = new int[weeks], theirsAll = new int[weeks];
+        Calendar[] starts = new Calendar[weeks];
+        int highest = 0;
         for (int w = weeks - 1; w >= 0; w--) {
             Calendar end = Calendar.getInstance();
             end.add(Calendar.DAY_OF_YEAR, -7 * w);
             Calendar start = (Calendar) end.clone();
             start.add(Calendar.DAY_OF_YEAR, -6);
             String from = ActivityLog.dayKey(start.getTime()), to = ActivityLog.dayKey(end.getTime());
+            starts[w] = start;
+            mineAll[w] = weekPercent(myDays, from, to);
+            theirsAll[w] = both ? weekPercent(partnerDays, from, to) : -1;
+            highest = Math.max(highest, Math.max(mineAll[w], theirsAll[w]));
+        }
+        // Top of the chart: the best week rounded up to a quarter, so small weeks are still visible.
+        int scale = Math.max(25, Math.min(100, (int) Math.ceil(highest / 25.0) * 25));
 
-            int mine = weekPercent(myDays, from, to);
-            int theirs = both ? weekPercent(partnerDays, from, to) : -1;
-            if (w == 0) { lastMine = mine; lastTheirs = theirs; }
+        int lastMine = mineAll[0], lastTheirs = theirsAll[0];
+        for (int w = weeks - 1; w >= 0; w--) {
+            Calendar start = starts[w];
+            int mine = mineAll[w];
+            int theirs = theirsAll[w];
 
             LinearLayout pair = new LinearLayout(this);
             pair.setOrientation(LinearLayout.HORIZONTAL);
             pair.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
             pair.setLayoutParams(new LinearLayout.LayoutParams(0, maxHeight, 1f));
-            pair.addView(weekBar(mine, PairedRingView.ME, maxHeight));
+            pair.addView(weekBar(mine, scale, PairedRingView.ME, maxHeight));
             if (both) {
                 View gap = new View(this);
                 gap.setLayoutParams(new LinearLayout.LayoutParams(dp(3), 1));
                 pair.addView(gap);
-                pair.addView(weekBar(theirs, PairedRingView.PARTNER, maxHeight));
+                pair.addView(weekBar(theirs, scale, PairedRingView.PARTNER, maxHeight));
             }
             String who = "Week from " + df.format(start.getTime()) + ": you " + mine + "%"
                     + (both ? ", " + partnerName + " " + theirs + "%" : "");
@@ -446,8 +457,8 @@ public class HistoryActivity extends AppCompatActivity {
             labels.addView(tv);
         }
 
-        // Faint guide line at 100% so heights read as "share of a full week".
-        TextView top = text("100%", 10, 0xFF6E6E73, false);
+        // Label the top so heights read as "share of a full week".
+        TextView top = text("Top line: " + scale + "% of the week", 11, 0xFF5F5F64, false);
         top.setPadding(0, 0, 0, dp(4));
         trendContainer.addView(top);
         trendContainer.addView(bars);
@@ -483,13 +494,13 @@ public class HistoryActivity extends AppCompatActivity {
         sb.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), at, sb.length(), 0);
     }
 
-    private View weekBar(int pct, int color, int maxHeight) {
+    private View weekBar(int pct, int scale, int color, int maxHeight) {
         View bar = new View(this);
         GradientDrawable bg = new GradientDrawable();
         bg.setCornerRadii(new float[]{dp(5), dp(5), dp(5), dp(5), 0, 0, 0, 0});
         bg.setColor(pct <= 0 ? 0xFFEDE7F6 : color);
         bar.setBackground(bg);
-        int h = pct <= 0 ? dp(3) : Math.max(dp(4), maxHeight * pct / 100);
+        int h = pct <= 0 ? dp(3) : Math.max(dp(4), maxHeight * Math.min(pct, scale) / scale);
         bar.setLayoutParams(new LinearLayout.LayoutParams(dp(11), h));
         return bar;
     }
@@ -529,7 +540,8 @@ public class HistoryActivity extends AppCompatActivity {
             ring.setValues(mine / 7f, both ? theirs / 7f : -1f);
             col.addView(ring);
 
-            TextView name = text(LABELS[i], 13, TEXT_COLORS[i], true);
+            TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
+            name.setGravity(Gravity.CENTER);
             name.setPadding(0, dp(8), 0, dp(2));
             col.addView(name);
 
@@ -540,6 +552,7 @@ public class HistoryActivity extends AppCompatActivity {
                 appendColored(sb, theirs + "/7", 0xFF2E7D32);
             }
             TextView counts = text("", 12, 0xFF1A1A2E, false);
+            counts.setGravity(Gravity.CENTER);
             counts.setText(sb);
             col.addView(counts);
             row.addView(col);
