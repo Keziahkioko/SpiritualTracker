@@ -128,7 +128,7 @@ public class ReminderWorker extends Worker {
         if (partnerId != null && !partnerId.isEmpty()) {
             try {
                 DocumentSnapshot p = Tasks.await(db.collection("users").document(partnerId).get(), 20, TimeUnit.SECONDS);
-                body += "\n" + UserProfile.partnerName(p) + ": " + summary(weekOf(partnerId, from, to), from, to);
+                body += "\n" + PartnerName.display(getApplicationContext(), p) + ": " + summary(weekOf(partnerId, from, to), from, to);
             } catch (Exception e) {
                 Log.w(TAG, "Partner week unavailable", e);
             }

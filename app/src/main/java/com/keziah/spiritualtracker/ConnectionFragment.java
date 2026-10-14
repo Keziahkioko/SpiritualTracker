@@ -706,7 +706,7 @@ public class ConnectionFragment extends Fragment {
         partnerStatusListener = db.collection("users").document(partnerId).addSnapshotListener((snapshot, error) -> {
             if (error != null || snapshot == null || !snapshot.exists()) return;
 
-            String partnerName = UserProfile.partnerName(snapshot);
+            String partnerName = PartnerName.display(getContext(), snapshot);
             tvPartnerNameStatus.setText(partnerName + "'s Status");
             TextView title = getView() != null ? getView().findViewById(R.id.tvConnectionTitle) : null;
             if (title != null) title.setText("Praying with " + partnerName);

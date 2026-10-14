@@ -113,30 +113,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void showAccountMenu() {
         android.widget.PopupMenu menu = new android.widget.PopupMenu(this, binding.ivLogout);
-        menu.getMenu().add(0, 1, 0, "Change my name");
+        if (partnerId != null) menu.getMenu().add(0, 3, 0, "Rename " + PartnerName.get(this));
         menu.getMenu().add(0, 2, 1, "Sign out");
         menu.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == 1) showChangeNameDialog();
+            if (item.getItemId() == 3) showNamePartnerDialog(false);
             else signOut();
             return true;
         });
         menu.show();
     }
 
-    private void signOut() {
-        PartnerName.save(this, null);
-        mAuth.signOut();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
-    }
+    private boolean namePartnerAsked = false;
 
-    /** Lets someone fix or change the name their partner sees. */
-    private void showChangeNameDialog() {
+    /**
+     * Like saving a contact: you choose what your partner is called on your phone.
+     * Asked once when a partner is first linked; "Rename" in the menu opens it again.
+     */
+    private void showNamePartnerDialog(boolean firstTime) {
+        if (isFinishing()) return;
+        String ownName = PartnerName.ownName(this);
+        boolean ownKnown = !"Partner".equals(ownName);
         EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-        input.setHint("Your first name");
-        String current = myUserDoc != null ? myUserDoc.getString("name") : null;
-        input.setText(current != null ? current : UserProfile.suggestedName());
+        input.setTextColor(Color.parseColor("#1A1A1A"));
+        input.setHintTextColor(Color.parseColor("#6E6E73"));
+        input.setHint("Their name");
+        input.setText(firstTime ? (ownKnown ? ownName : "") : PartnerName.get(this));
         input.setSelection(input.getText().length());
         int pad = (int) (20 * getResources().getDisplayMetrics().density);
         FrameLayout wrap = new FrameLayout(this);
@@ -144,26 +146,26 @@ public class MainActivity extends AppCompatActivity {
         wrap.addView(input);
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setTitle("Change your name")
-                .setMessage("This is the name your partner sees on prayers, journal entries and notifications.")
+                .setTitle(firstTime ? "What do you want to call your partner?" : "Rename your partner")
+                .setMessage("This name is only on your phone, like a saved contact."
+                        + (ownKnown ? " They call themselves “" + ownName + "”." : ""))
                 .setView(wrap)
+                .setCancelable(!firstTime)
                 .setPositiveButton("Save", (d, w) -> {
-                    String name = input.getText().toString().trim();
-                    if (name.isEmpty()) {
-                        Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("name", name);
-                    db.collection("users").document(currentUserId).set(data, SetOptions.merge())
-                            .addOnSuccessListener(x -> Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show());
-                    if (mAuth.getCurrentUser() != null) {
-                        mAuth.getCurrentUser().updateProfile(
-                                new UserProfileChangeRequest.Builder().setDisplayName(name).build());
-                    }
+                    String nick = input.getText().toString().trim();
+                    PartnerName.setNickname(this, nick.isEmpty() ? (ownKnown ? ownName : "Partner") : nick);
+                    recreate(); // refresh every label that shows the name
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(firstTime ? null : "Cancel", null)
                 .show();
+    }
+
+    private void signOut() {
+        PartnerName.save(this, null);
+        PartnerName.setNickname(this, null);
+        mAuth.signOut();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 
     @Override
@@ -240,6 +242,8 @@ public class MainActivity extends AppCompatActivity {
 
         EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.setTextColor(Color.parseColor("#1A1A1A"));
+        input.setHintTextColor(Color.parseColor("#6E6E73"));
         input.setHint("Your first name");
         input.setText(UserProfile.suggestedName());
         input.setSelection(input.getText().length());
@@ -344,6 +348,11 @@ public class MainActivity extends AppCompatActivity {
                     partnerUserDoc = e == null ? snap : null;
                     if (snap != null && snap.exists()) {
                         PartnerName.save(this, UserProfile.partnerName(snap));
+                        // First time this phone sees the partner: ask what to call them.
+                        if (!PartnerName.hasNickname(this) && !namePartnerAsked) {
+                            namePartnerAsked = true;
+                            showNamePartnerDialog(true);
+                        }
                         PartnerName.apply(binding.getRoot());
                     }
                     refreshProgressCard();

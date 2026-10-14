@@ -59,6 +59,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     /** Posts a notification that opens the screen matching {@code type}. Also used for local reminders. */
     public static void showNotification(Context context, String title, String body, String type, String docId) {
+        // The sender writes their own name; show the name you saved for them instead.
+        if (PartnerName.hasNickname(context)) {
+            String own = PartnerName.ownName(context), nick = PartnerName.get(context);
+            if (!"Partner".equals(own) && !own.equals(nick)) {
+                if (title != null) title = title.replace(own, nick);
+                if (body != null) body = body.replace(own, nick);
+            }
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {

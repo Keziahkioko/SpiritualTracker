@@ -94,7 +94,7 @@ public class BibleActivity extends AppCompatActivity {
                         partnerId = pid;
                         listenToPartnerDay();
                         db.collection("users").document(pid).get().addOnSuccessListener(p -> {
-                            partnerName = UserProfile.partnerName(p);
+                            partnerName = PartnerName.display(this, p);
                             renderPartner();
                         });
                     } else {

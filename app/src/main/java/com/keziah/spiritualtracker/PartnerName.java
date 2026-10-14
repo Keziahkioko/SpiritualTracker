@@ -18,16 +18,48 @@ public final class PartnerName {
 
     private static final String PREFS = "partner_profile";
     private static final String KEY = "partner_name";
+    /** A name you chose for your partner; only stored on this phone and never shared. */
+    private static final String NICKNAME = "partner_nickname";
     private static final String GENERIC = "Partner";
     private static final Pattern WORD = Pattern.compile("\\b(?:(?:[Yy]our|[Mm]y) partner|PARTNER|[Pp]artner)\\b");
 
     private PartnerName() {}
 
-    /** The partner's name, or "Partner" when it isn't known yet. */
+    /** What to call the partner: your nickname if you set one, else their own name, else "Partner". */
     public static String get(Context context) {
+        if (context == null) return GENERIC;
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String nick = prefs.getString(NICKNAME, null);
+        if (nick != null && !nick.trim().isEmpty()) return nick;
+        String name = prefs.getString(KEY, null);
+        return name == null || name.trim().isEmpty() ? GENERIC : name;
+    }
+
+    /** Their own name, ignoring any nickname. */
+    public static String ownName(Context context) {
         if (context == null) return GENERIC;
         String name = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null);
         return name == null || name.trim().isEmpty() ? GENERIC : name;
+    }
+
+    public static boolean hasNickname(Context context) {
+        if (context == null) return false;
+        String nick = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(NICKNAME, null);
+        return nick != null && !nick.trim().isEmpty();
+    }
+
+    /** Pass null or blank to go back to their own name. */
+    public static void setNickname(Context context, String nickname) {
+        if (context == null) return;
+        SharedPreferences.Editor e = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
+        if (nickname == null || nickname.trim().isEmpty()) e.remove(NICKNAME);
+        else e.putString(NICKNAME, nickname.trim());
+        e.apply();
+    }
+
+    /** Name for a partner profile just loaded from the database, respecting your nickname. */
+    public static String display(Context context, com.google.firebase.firestore.DocumentSnapshot partnerDoc) {
+        return hasNickname(context) ? get(context) : UserProfile.partnerName(partnerDoc);
     }
 
     public static boolean isKnown(Context context) {

@@ -123,7 +123,7 @@ public class HistoryActivity extends AppCompatActivity {
                     if (partnerId != null) {
                         db.collection("users").document(partnerId).get()
                                 .addOnSuccessListener(p -> {
-                                    partnerName = UserProfile.partnerName(p);
+                                    partnerName = PartnerName.display(this, p);
                                     tabPartner.setText(partnerName);
                                 });
                         loadPerson(partnerId, true);
