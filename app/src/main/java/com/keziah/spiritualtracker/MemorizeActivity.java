@@ -418,6 +418,13 @@ public class MemorizeActivity extends AppCompatActivity {
         TextInputEditText etText = v.findViewById(R.id.etVerseText);
         etRef.setText(verse.getReference());
         etText.setText(verse.getText());
+        // A whole part is several verses; give it room instead of a small scrolling box.
+        etText.setMinLines(12);
+        etText.setMaxLines(16);
+        v.findViewById(R.id.cbSharedVerse).setVisibility(View.GONE);
+        // No share checkbox below it here, so no gap to leave above the buttons.
+        ((ViewGroup.MarginLayoutParams) v.findViewById(R.id.tilVerseText).getLayoutParams()).bottomMargin = 0;
+        v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), 0);
 
         androidx.appcompat.app.AlertDialog dialog =
                 new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)

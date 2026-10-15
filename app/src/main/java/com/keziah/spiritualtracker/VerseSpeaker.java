@@ -38,6 +38,10 @@ public final class VerseSpeaker {
     /** Puts back the button labels of whichever controls started the current playback. */
     private Runnable onStopped;
     private View playingFrom;
+    /** What's playing and where it has got to, so a speed or repeat change can pick up from there. */
+    private String playRef, playText;
+    private boolean playEcho;
+    private volatile int atRound, atLine;
 
     public VerseSpeaker(Context context) {
         this.context = context.getApplicationContext();
@@ -68,10 +72,12 @@ public final class VerseSpeaker {
         speed.setOnClickListener(v -> {
             prefs().edit().putInt("speed", (speedIndex() + 1) % SPEEDS.length).apply();
             showSettings(speed, times);
+            continueWithNewSettings();
         });
         times.setOnClickListener(v -> {
             prefs().edit().putInt("times", (timesIndex() + 1) % TIMES.length).apply();
             showSettings(speed, times);
+            continueWithNewSettings();
         });
     }
 
@@ -97,9 +103,22 @@ public final class VerseSpeaker {
         stop();
         if (failed) { noVoice(); return; }
         onStopped = whenStopped;
-        Runnable go = () -> queue(reference, text, echo);
+        playRef = reference;
+        playText = text;
+        playEcho = echo;
+        atRound = 0;
+        atLine = -1;
+        Runnable go = () -> queue(0, -1);
         ensureEngine();
         if (ready) go.run(); else pending = go;
+    }
+
+    /** Changed speed or repeats mid-way: carry on from the current line with the new settings. */
+    private void continueWithNewSettings() {
+        if (playingFrom == null || !ready || pending != null) return;
+        int round = atRound, line = atLine;
+        tts.stop();
+        queue(round, line);
     }
 
     public void stop() {
@@ -138,7 +157,14 @@ public final class VerseSpeaker {
                 tts.setLanguage(Locale.ENGLISH);
             }
             tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                @Override public void onStart(String id) {}
+                @Override public void onStart(String id) {
+                    // Ids are "round:line:n"; remember the position for continueWithNewSettings().
+                    String[] at = id.split(":");
+                    if (at.length == 3) {
+                        atRound = Integer.parseInt(at[0]);
+                        atLine = Integer.parseInt(at[1]);
+                    }
+                }
                 @Override public void onDone(String id) {
                     if (END.equals(id)) main.post(VerseSpeaker.this::stopped);
                 }
@@ -151,41 +177,49 @@ public final class VerseSpeaker {
         }));
     }
 
-    private void queue(String reference, String text, boolean echo) {
+    /**
+     * Queues the reading from round {@code fromRound}, line {@code fromLine} (-1 = the opening
+     * reference). Each round: reference, the verses, reference.
+     */
+    private void queue(int fromRound, int fromLine) {
         float speed = SPEEDS[speedIndex()];
-        int times = TIMES[timesIndex()];
+        // Turning repeats down mid-way still finishes the round already under way.
+        int rounds = Math.max(TIMES[timesIndex()], fromRound + 1);
         tts.setSpeechRate(speed);
-        String ref = referenceForSpeech(reference, text);
-        List<String> lines = linesForSpeech(text);
+        String ref = referenceForSpeech(playRef, playText);
+        List<String> lines = linesForSpeech(playText);
 
-        for (int t = 0; t < times; t++) {
-            say(ref);
-            pause(500);
-            for (String line : lines) {
-                if (echo) {
-                    for (String phrase : phrases(line)) {
-                        say(phrase);
+        for (int t = fromRound; t < rounds; t++) {
+            int start = t == fromRound ? fromLine : -1;
+            if (start < 0) {
+                say(ref, t, -1);
+                pause(500, t, -1);
+            }
+            for (int i = Math.max(start, 0); i < lines.size(); i++) {
+                if (playEcho) {
+                    for (String phrase : phrases(lines.get(i))) {
+                        say(phrase, t, i);
                         // Long enough to say it back: about half a second a word, longer when slowed down.
-                        pause((long) (wordCount(phrase) * 450 / speed) + 900);
+                        pause((long) (wordCount(phrase) * 450 / speed) + 900, t, i);
                     }
                 } else {
-                    say(line);
-                    pause(250);
+                    say(lines.get(i), t, i);
+                    pause(250, t, i);
                 }
             }
-            pause(300);
-            say(ref);
-            if (t < times - 1) pause(1500);
+            pause(300, t, lines.size());
+            say(ref, t, lines.size());
+            if (t < rounds - 1) pause(1500, t, lines.size());
         }
         tts.playSilentUtterance(1, TextToSpeech.QUEUE_ADD, END);
     }
 
-    private void say(String s) {
-        tts.speak(s, TextToSpeech.QUEUE_ADD, null, "u" + (nextId++));
+    private void say(String s, int round, int line) {
+        tts.speak(s, TextToSpeech.QUEUE_ADD, null, round + ":" + line + ":" + (nextId++));
     }
 
-    private void pause(long ms) {
-        tts.playSilentUtterance(ms, TextToSpeech.QUEUE_ADD, "u" + (nextId++));
+    private void pause(long ms, int round, int line) {
+        tts.playSilentUtterance(ms, TextToSpeech.QUEUE_ADD, round + ":" + line + ":" + (nextId++));
     }
 
     private void noVoice() {

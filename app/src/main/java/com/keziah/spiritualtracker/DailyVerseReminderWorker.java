@@ -4,8 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
+import androidx.work.Data;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -30,38 +29,25 @@ public class DailyVerseReminderWorker extends Worker {
         super(ctx, params);
     }
 
+    private static final int HOUR = 8;
+
     public static void schedule(Context context) {
-        long nowMillis    = System.currentTimeMillis();
-        long eightAm      = getNext8AmMillis();
-        long initialDelay = eightAm - nowMillis;
-        if (initialDelay < 0) initialDelay += TimeUnit.DAYS.toMillis(1);
-
-        PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(
-                DailyVerseReminderWorker.class, 1, TimeUnit.DAYS)
-                .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                .build();
-
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
-                work);
-
-        Log.d(TAG, "Daily verse reminder scheduled, fires in " +
-                TimeUnit.MILLISECONDS.toMinutes(initialDelay) + " minutes");
+        // The old every-24-hours job drifted (see DailySchedule); stop it.
+        WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME);
+        book(context);
     }
 
-    private static long getNext8AmMillis() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 8);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTimeInMillis();
+    private static void book(Context context) {
+        DailySchedule.bookNext(context, "verse", DailyVerseReminderWorker.class, -1, HOUR, Data.EMPTY);
     }
 
     @NonNull
     @Override
     public Result doWork() {
+        // Book tomorrow's first, so a failure below can't end the chain.
+        book(getApplicationContext());
+        if (!DailySchedule.onTime(HOUR)) return Result.success();
+
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) return Result.success();
 

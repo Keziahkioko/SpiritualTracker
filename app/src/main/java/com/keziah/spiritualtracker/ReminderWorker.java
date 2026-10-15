@@ -5,8 +5,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -39,48 +37,40 @@ public class ReminderWorker extends Worker {
         super(context, params);
     }
 
+    private static final int EVENING_HOUR = 20;
+    private static final int WEEKLY_HOUR  = 19;
+
     public static void schedule(Context context) {
         WorkManager wm = WorkManager.getInstance(context);
-
-        Calendar evening = nextAt(-1, 20);
-        wm.enqueueUniquePeriodicWork("evening_reminder", ExistingPeriodicWorkPolicy.UPDATE,
-                new PeriodicWorkRequest.Builder(ReminderWorker.class, 1, TimeUnit.DAYS)
-                        .setInitialDelay(evening.getTimeInMillis() - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                        .setInputData(new Data.Builder().putString(KEY_MODE, MODE_EVENING).build())
-                        .build());
-
-        Calendar sunday = nextAt(Calendar.SUNDAY, 19);
-        wm.enqueueUniquePeriodicWork("weekly_summary", ExistingPeriodicWorkPolicy.UPDATE,
-                new PeriodicWorkRequest.Builder(ReminderWorker.class, 7, TimeUnit.DAYS)
-                        .setInitialDelay(sunday.getTimeInMillis() - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                        .setInputData(new Data.Builder().putString(KEY_MODE, MODE_WEEKLY).build())
-                        .build());
+        // The old every-24-hours jobs drifted (see DailySchedule); stop them.
+        wm.cancelUniqueWork("evening_reminder");
+        wm.cancelUniqueWork("weekly_summary");
+        bookEvening(context);
+        bookWeekly(context);
     }
 
-    /** Next occurrence of {@code hour}:00, optionally on a given weekday (-1 = any day). */
-    static Calendar nextAt(int dayOfWeek, int hour) {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        if (dayOfWeek > 0) {
-            while (c.get(Calendar.DAY_OF_WEEK) != dayOfWeek || c.getTimeInMillis() <= System.currentTimeMillis()) {
-                c.add(Calendar.DAY_OF_YEAR, 1);
-            }
-        } else if (c.getTimeInMillis() <= System.currentTimeMillis()) {
-            c.add(Calendar.DAY_OF_YEAR, 1);
-        }
-        return c;
+    private static void bookEvening(Context context) {
+        DailySchedule.bookNext(context, "evening", ReminderWorker.class, -1, EVENING_HOUR,
+                new Data.Builder().putString(KEY_MODE, MODE_EVENING).build());
+    }
+
+    private static void bookWeekly(Context context) {
+        DailySchedule.bookNext(context, "weekly", ReminderWorker.class, Calendar.SUNDAY, WEEKLY_HOUR,
+                new Data.Builder().putString(KEY_MODE, MODE_WEEKLY).build());
     }
 
     @NonNull
     @Override
     public Result doWork() {
+        boolean weeklyRun = MODE_WEEKLY.equals(getInputData().getString(KEY_MODE));
+        // Book the next one first, so a failure below can't end the chain.
+        if (weeklyRun) bookWeekly(getApplicationContext()); else bookEvening(getApplicationContext());
+        if (!DailySchedule.onTime(weeklyRun ? WEEKLY_HOUR : EVENING_HOUR)) return Result.success();
+
         if (FirebaseAuth.getInstance().getCurrentUser() == null) return Result.success();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         try {
-            if (MODE_WEEKLY.equals(getInputData().getString(KEY_MODE))) weekly(uid);
+            if (weeklyRun) weekly(uid);
             else evening(uid);
             return Result.success();
         } catch (Exception e) {
