@@ -71,6 +71,7 @@ public class MemorizeActivity extends AppCompatActivity {
     private final List<MemoryVerse> masteredList      = new ArrayList<>();
     private final List<MemoryVerse> partnerSharedList = new ArrayList<>();
     private final List<Object>      displayList       = new ArrayList<>();
+    private final List<Together>    togetherList      = new ArrayList<>();
 
     // Firebase
     private FirebaseFirestore    db;
@@ -150,7 +151,7 @@ public class MemorizeActivity extends AppCompatActivity {
             return insets;
         });
 
-        adapter = new VerseAdapter(displayList, this::onVerseTapped, this::onVerseLongTapped);
+        adapter = new VerseAdapter(displayList, this::onVerseTapped, this::onVerseLongTapped, this::showTogetherDialog);
         rvVerses.setLayoutManager(new LinearLayoutManager(this));
         rvVerses.setAdapter(adapter);
 
@@ -224,6 +225,8 @@ public class MemorizeActivity extends AppCompatActivity {
                         }
                     }
 
+                    buildTogether();
+                    for (Together t : togetherList) if (t.due()) due++;
                     myDueCount = due;
                     unlockReadyParts();
                     if (!viewingPartner) {
@@ -301,6 +304,10 @@ public class MemorizeActivity extends AppCompatActivity {
             LockedGroup g = locked.get(key);
             if (g == null) locked.put(key, g = new LockedGroup(title, v));
             g.count++;
+        }
+        if (!togetherList.isEmpty()) {
+            displayList.add("SAY IT TOGETHER");
+            displayList.addAll(togetherList);
         }
         if (!locked.isEmpty()) {
             displayList.add("UP NEXT  \u00B7  unlock as you go");
@@ -768,36 +775,50 @@ public class MemorizeActivity extends AppCompatActivity {
     // ─── Quiz dialog ─────────────────────────────────────────────────────────
 
     private void showQuizDialog(MemoryVerse verse) {
-        View dv = LayoutInflater.from(this).inflate(R.layout.dialog_verse_quiz, null);
+        int idx = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
+        boolean refresh = "mastered".equals(verse.getStage());
+        // Day 3 onwards gives a hint by itself; a mastered verse's refresh doesn't.
+        int autoHint = refresh || idx < 2 ? -1
+                : idx >= 4 ? LearnText.ALL_HIDDEN : idx == 3 ? LearnText.EVERY_OTHER : LearnText.EVERY_THIRD;
+        openRecallWindow(verse.getReference(),
+                refresh ? "Refresh" : "Day " + (idx + 1) + " of " + INTERVALS.length,
+                null, leadInFor(verse), verse.getReference(), verse.getText(), autoHint,
+                () -> markReviewed(verse, true),
+                () -> {
+                    markReviewed(verse, false);
+                    if (!refresh) Toast.makeText(this, "Keep going, you'll get it!", Toast.LENGTH_SHORT).show();
+                },
+                idx == 0 && !refresh ? () -> showLearnDialog(verse, false) : null);
+    }
 
-        TextView       tvRef          = dv.findViewById(R.id.tvQuizReference);
-        TextView       tvProgress     = dv.findViewById(R.id.tvQuizProgress);
+    /**
+     * The recall window: hints (rounded gaps or letter tiles, tap one to peek), Reveal, then
+     * Listen and Got it / Try again. Peeks are counted and shown after Reveal; they don't
+     * affect the marking. {@code autoHint} is a LearnText mode shown straight away, or -1.
+     */
+    private void openRecallWindow(String title, String pill, String prompt, CharSequence leadIn,
+                                  String listenRef, String text, int autoHint,
+                                  Runnable onGotIt, Runnable onTryAgain, Runnable learnFirst) {
+        View dv = LayoutInflater.from(this).inflate(R.layout.dialog_verse_quiz, null);
         TextView       tvHint         = dv.findViewById(R.id.tvQuizHint);
         TextView       tvText         = dv.findViewById(R.id.tvQuizText);
         MaterialButton btnFirstLetter = dv.findViewById(R.id.btnFirstLetter);
         MaterialButton btnReveal      = dv.findViewById(R.id.btnReveal);
+        MaterialButton btnLearnFirst  = dv.findViewById(R.id.btnLearnFirst);
         View           layoutActions  = dv.findViewById(R.id.layoutQuizActions);
-        MaterialButton btnGotIt       = dv.findViewById(R.id.btnGotIt);
-        MaterialButton btnTryAgain    = dv.findViewById(R.id.btnTryAgain);
 
-        int idx = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
-        tvRef.setText(verse.getReference());
-        boolean refresh = "mastered".equals(verse.getStage());
-        if (tvProgress != null) tvProgress.setText(refresh ? "Refresh" : "Day " + (idx + 1) + " of " + INTERVALS.length);
+        ((TextView) dv.findViewById(R.id.tvQuizReference)).setText(title);
+        ((TextView) dv.findViewById(R.id.tvQuizProgress)).setText(pill);
+        if (prompt != null) ((TextView) dv.findViewById(R.id.tvQuizPrompt)).setText(prompt);
+        showLeadIn(dv.findViewById(R.id.tvQuizLeadIn), leadIn);
 
-        tvText.setVisibility(View.GONE);
-        layoutActions.setVisibility(View.GONE);
-        if (tvHint != null) tvHint.setVisibility(View.GONE);
-
-        // Hints look and work like the learn steps: rounded gaps or letter tiles, and tapping one
-        // shows that word. Peeks are counted and shown after Reveal; they don't affect the marking.
-        LearnText hint = new LearnText(verse.getText());
-        int[] hintMode = {idx >= 4 ? LearnText.ALL_HIDDEN : idx == 3 ? LearnText.EVERY_OTHER : LearnText.EVERY_THIRD};
+        LearnText hint = new LearnText(text);
+        int[] hintMode = {autoHint};
         Runnable[] showHint = new Runnable[1];
         showHint[0] = () -> tvHint.setText(hint.render(hintMode[0], showHint[0]));
         tvHint.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvHint.setHighlightColor(android.graphics.Color.TRANSPARENT);
-        if (idx >= 2 && !refresh) { // mastered: no hint unless asked for with "Show first letters"
+        if (autoHint >= 0) {
             showHint[0].run();
             tvHint.setVisibility(View.VISIBLE);
         }
@@ -806,29 +827,24 @@ public class MemorizeActivity extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                         .setView(dv).setCancelable(true).create();
 
-        MaterialButton btnLearnFirst = dv.findViewById(R.id.btnLearnFirst);
-        if (idx == 0 && !"mastered".equals(verse.getStage())) {
+        if (learnFirst != null) {
             btnLearnFirst.setVisibility(View.VISIBLE);
             btnLearnFirst.setOnClickListener(lv -> {
                 dialog.dismiss();
-                showLearnDialog(verse, false);
+                learnFirst.run();
             });
         }
-
-        if (btnFirstLetter != null) {
-            btnFirstLetter.setOnClickListener(fv -> {
-                hintMode[0] = LearnText.FIRST_LETTERS;
-                showHint[0].run();
-                tvHint.setVisibility(View.VISIBLE);
-                btnFirstLetter.setVisibility(View.GONE);
-            });
-        }
-
+        btnFirstLetter.setOnClickListener(fv -> {
+            hintMode[0] = LearnText.FIRST_LETTERS;
+            showHint[0].run();
+            tvHint.setVisibility(View.VISIBLE);
+            btnFirstLetter.setVisibility(View.GONE);
+        });
         btnReveal.setOnClickListener(rv -> {
-            tvText.setText(verse.getText());
+            tvText.setText(text);
             tvText.setVisibility(View.VISIBLE);
             btnReveal.setVisibility(View.GONE);
-            if (btnFirstLetter != null) btnFirstLetter.setVisibility(View.GONE);
+            btnFirstLetter.setVisibility(View.GONE);
             btnLearnFirst.setVisibility(View.GONE);
             tvHint.setVisibility(View.GONE);
             int peeked = hint.peeked();
@@ -842,19 +858,103 @@ public class MemorizeActivity extends AppCompatActivity {
             }
             layoutActions.setVisibility(View.VISIBLE);
             View listen = dv.findViewById(R.id.quizListen);
-            speaker.bind(listen, verse.getReference(), verse.getText());
+            speaker.bind(listen, listenRef, text);
             listen.setVisibility(View.VISIBLE);
         });
         dialog.setOnDismissListener(d -> speaker.stop());
 
-        btnGotIt.setOnClickListener(gv -> { markReviewed(verse, true); dialog.dismiss(); });
-        btnTryAgain.setOnClickListener(tv -> {
-            markReviewed(verse, false);
-            dialog.dismiss();
-            Toast.makeText(this, "Keep going, you'll get it!", Toast.LENGTH_SHORT).show();
-        });
-
+        dv.findViewById(R.id.btnGotIt).setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
+        dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
         dialog.show();
+    }
+
+    // ─── Joining parts up ────────────────────────────────────────────────────
+
+    /**
+     * The last verse of the part before this one, shown as a lead-in so a part is practised
+     * from where you'd really be when reciting. Null for Part 1 and single verses.
+     */
+    private CharSequence leadInFor(MemoryVerse verse) {
+        String key = verse.groupKey();
+        if (key == null) return null;
+        MemoryVerse before = null;
+        for (MemoryVerse v : myVerses()) {
+            if (!key.equals(v.groupKey()) || v.getChunkIndex() >= verse.getChunkIndex()) continue;
+            if (before == null || v.getChunkIndex() > before.getChunkIndex()) before = v;
+        }
+        if (before == null || before.getText() == null || before.getText().trim().isEmpty()) return null;
+        String[] lines = before.getText().trim().split("\n");
+        String last = lines[lines.length - 1].trim();
+        String[] words = last.split("\\s+");
+        if (words.length > 30) {
+            last = "…" + String.join(" ", java.util.Arrays.copyOfRange(words, words.length - 30, words.length));
+        }
+        android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
+        out.append("Leading in from Part " + (before.getChunkIndex() + 1));
+        out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, out.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.setSpan(new android.text.style.ForegroundColorSpan(0xFF7E57C2), 0, out.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.append("\n").append(last);
+        return out;
+    }
+
+    private static void showLeadIn(TextView view, CharSequence leadIn) {
+        view.setVisibility(leadIn == null ? View.GONE : View.VISIBLE);
+        if (leadIn != null) view.setText(leadIn);
+    }
+
+    private List<MemoryVerse> myVerses() {
+        List<MemoryVerse> all = new ArrayList<>(activeList);
+        all.addAll(masteredList);
+        return all;
+    }
+
+    /**
+     * For each passage, the run of parts from the first one that have all reached Reviewing or
+     * Mastered. Two or more of them can be practised together; the run grows as parts are learned.
+     */
+    private void buildTogether() {
+        togetherList.clear();
+        Map<String, List<MemoryVerse>> passages = new java.util.LinkedHashMap<>();
+        for (MemoryVerse v : myVerses()) {
+            String key = v.groupKey();
+            if (key == null || v.getId() == null) continue;
+            List<MemoryVerse> parts = passages.get(key);
+            if (parts == null) passages.put(key, parts = new ArrayList<>());
+            parts.add(v);
+        }
+        for (List<MemoryVerse> parts : passages.values()) {
+            java.util.Collections.sort(parts, (a, b) -> Integer.compare(a.getChunkIndex(), b.getChunkIndex()));
+            List<MemoryVerse> run = new ArrayList<>();
+            for (MemoryVerse part : parts) {
+                boolean learned = !isLocked(part) && !needsLearning(part)
+                        && ("reviewing".equals(part.getStage()) || "mastered".equals(part.getStage()));
+                if (!learned) break;
+                run.add(part);
+            }
+            if (run.size() >= 2) togetherList.add(new Together(run));
+        }
+    }
+
+    private void showTogetherDialog(Together t) {
+        String text = t.text();
+        openRecallWindow(VerseSpeaker.referenceForSpeech(t.title, text), "Together",
+                "Can you say " + t.label().replace("Parts", "parts") + " as one, without stopping?",
+                null, t.title, text, -1,
+                () -> markTogether(t, true), () -> markTogether(t, false), null);
+    }
+
+    /** Remembered: together again in a week. Not quite: back tomorrow. Part schedules don't change. */
+    private void markTogether(Together t, boolean gotIt) {
+        logPractice(t.title);
+        int days = gotIt ? 7 : 1;
+        db.collection("users").document(currentUserId)
+                .collection("memory_verses").document(t.anchor.getId())
+                .update("togetherNextDate", new Timestamp(addDays(new Date(), days)))
+                .addOnSuccessListener(x -> Toast.makeText(this, gotIt
+                        ? "Well done! Together again in a week."
+                        : "No problem. It'll be back tomorrow.", Toast.LENGTH_LONG).show());
     }
 
     // ─── Learn steps ─────────────────────────────────────────────────────────
@@ -882,6 +982,7 @@ public class MemorizeActivity extends AppCompatActivity {
         MaterialButton btnNext = dv.findViewById(R.id.btnLearnNext);
 
         tvRef.setText(verse.getReference());
+        showLeadIn(dv.findViewById(R.id.tvLearnLeadIn), leadInFor(verse));
         tvText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvText.setHighlightColor(android.graphics.Color.TRANSPARENT);
         speaker.bind(dv.findViewById(R.id.learnListen), verse.getReference(), verse.getText());
@@ -1071,6 +1172,38 @@ public class MemorizeActivity extends AppCompatActivity {
         if (speaker != null) speaker.shutdown();
     }
 
+    /** Learned parts of one passage, from the first, practised as one. */
+    static class Together {
+        final List<MemoryVerse> parts;
+        final MemoryVerse anchor; // first part: holds when it's next due
+        final String title;
+
+        Together(List<MemoryVerse> parts) {
+            this.parts = parts;
+            this.anchor = parts.get(0);
+            this.title = anchor.getPassageId() != null ? anchor.getPassageId() : anchor.getReference();
+        }
+
+        String text() {
+            StringBuilder sb = new StringBuilder();
+            for (MemoryVerse p : parts) {
+                if (sb.length() > 0) sb.append("\n");
+                if (p.getText() != null) sb.append(p.getText().trim());
+            }
+            return sb.toString();
+        }
+
+        String label() {
+            return "Parts " + (anchor.getChunkIndex() + 1) + "–" + (parts.get(parts.size() - 1).getChunkIndex() + 1);
+        }
+
+        /** Due once a week; due straight away the first time. */
+        boolean due() {
+            return anchor.getTogetherNextDate() == null
+                    || ProgressMath.isDueOn(anchor.getTogetherNextDate().toDate(), new Date());
+        }
+    }
+
     /** The still-locked parts of one passage, shown as a single row. */
     static class LockedGroup {
         final String title;
@@ -1089,10 +1222,12 @@ public class MemorizeActivity extends AppCompatActivity {
         private static final int   TYPE_VERSE  = 0;
         private static final int   TYPE_HEADER = 1;
         private static final int   TYPE_LOCKED = 2;
+        private static final int   TYPE_TOGETHER = 3;
         private static final int[] INTERVALS   = {1, 2, 4, 7, 30};
 
         private final List<Object>                              list;
         private final java.util.function.Consumer<MemoryVerse> onTap, onLong;
+        private final java.util.function.Consumer<Together>    onTogether;
         private boolean partnerMode = false;
 
         /** Partner's verses are read-only: no "Review now", and "Shared" goes without saying. */
@@ -1100,8 +1235,10 @@ public class MemorizeActivity extends AppCompatActivity {
 
         VerseAdapter(List<Object> list,
                      java.util.function.Consumer<MemoryVerse> onTap,
-                     java.util.function.Consumer<MemoryVerse> onLong) {
+                     java.util.function.Consumer<MemoryVerse> onLong,
+                     java.util.function.Consumer<Together> onTogether) {
             this.list   = list;
+            this.onTogether = onTogether;
             this.onTap  = onTap;
             this.onLong = onLong;
         }
@@ -1110,6 +1247,7 @@ public class MemorizeActivity extends AppCompatActivity {
             Object item = list.get(pos);
             if (item instanceof String) return TYPE_HEADER;
             if (item instanceof LockedGroup) return TYPE_LOCKED;
+            if (item instanceof Together) return TYPE_TOGETHER;
             return MemorizeActivity.isLocked((MemoryVerse) item) ? TYPE_LOCKED : TYPE_VERSE;
         }
 
@@ -1150,6 +1288,11 @@ public class MemorizeActivity extends AppCompatActivity {
                 }
                 holder.itemView.setOnClickListener(view -> onTap.accept(lv));
                 holder.itemView.setOnLongClickListener(view -> { onLong.accept(lv); return true; });
+                return;
+            }
+
+            if (list.get(pos) instanceof Together) {
+                bindTogether((VerseVH) holder, (Together) list.get(pos));
                 return;
             }
 
@@ -1210,6 +1353,24 @@ public class MemorizeActivity extends AppCompatActivity {
 
             h.itemView.setOnClickListener(view -> onTap.accept(v));
             h.itemView.setOnLongClickListener(view -> { onLong.accept(v); return true; });
+        }
+
+        private void bindTogether(VerseVH h, Together t) {
+            boolean due = t.due();
+            h.tvReference.setText(t.title + " · " + t.label());
+            h.tvText.setText(t.text());
+            if (h.tvProgress != null) h.tvProgress.setText(t.parts.size() + " parts");
+            if (h.tvShared != null) h.tvShared.setVisibility(View.GONE);
+            h.tvStage.setText(due ? "Say them as one" : "Next: " + new SimpleDateFormat("d MMM", Locale.getDefault())
+                    .format(t.anchor.getTogetherNextDate().toDate()));
+            h.tvStage.setTextColor(due ? 0xFF6A1B9A : 0xFF5E35B1);
+            h.viewStripe.setBackgroundColor(due ? 0xFF7E57C2 : 0xFFB39DDB);
+            if (h.tvDuePill != null) {
+                h.tvDuePill.setVisibility(due ? View.VISIBLE : View.GONE);
+                h.tvDuePill.setText("Say it together");
+            }
+            h.itemView.setOnClickListener(view -> onTogether.accept(t));
+            h.itemView.setOnLongClickListener(null);
         }
 
         private String capitalize(String s) {

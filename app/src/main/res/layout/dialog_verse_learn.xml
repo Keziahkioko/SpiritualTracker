@@ -40,6 +40,18 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- Last verse of the part before, as a lead-in (parts 2 onwards) -->
+    <TextView
+        android:id="@+id/tvLearnLeadIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="#8A8494"
+        android:textSize="13sp"
+        android:textStyle="italic"
+        android:lineSpacingMultiplier="1.3"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/tvLearnTitle"
         android:layout_width="wrap_content"

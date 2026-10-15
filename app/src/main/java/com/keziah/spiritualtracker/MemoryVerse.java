@@ -27,6 +27,11 @@ public class MemoryVerse {
     public Integer getRefreshes()                   { return refreshes; }
     public void    setRefreshes(Integer n)          { this.refreshes = n; }
 
+    /** On a passage's first part: when its parts are next practised together. */
+    private com.google.firebase.Timestamp togetherNextDate;
+    public com.google.firebase.Timestamp getTogetherNextDate()           { return togetherNextDate; }
+    public void setTogetherNextDate(com.google.firebase.Timestamp t)     { this.togetherNextDate = t; }
+
     /** True until the learn steps are done; null on parts saved before the learn step existed. */
     private Boolean needsLearning;
     public Boolean getNeedsLearning()               { return needsLearning; }
