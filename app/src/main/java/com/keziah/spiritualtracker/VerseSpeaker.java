@@ -1,0 +1,250 @@
+package com.keziah.spiritualtracker;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.button.MaterialButton;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Reads a verse aloud with the phone's own text-to-speech voice (offline, free).
+ * "Listen" reads reference, verse, reference; "Repeat after me" reads a phrase at a time
+ * and leaves a pause to say it back. Speed and how many times to play are remembered.
+ */
+public final class VerseSpeaker {
+
+    private static final float[] SPEEDS = {0.5f, 0.75f, 1f, 1.25f};
+    private static final int[]   TIMES  = {1, 3, 5};
+    private static final String  PREFS  = "memorize_audio";
+    private static final String  END    = "end";
+
+    private final Context context;
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private TextToSpeech tts;
+    private boolean ready, failed;
+    private Runnable pending;
+    private int nextId;
+    /** Puts back the button labels of whichever controls started the current playback. */
+    private Runnable onStopped;
+    private View playingFrom;
+
+    public VerseSpeaker(Context context) {
+        this.context = context.getApplicationContext();
+    }
+
+    // ─── Controls ────────────────────────────────────────────────────────────
+
+    /** Wires a view_listen_controls row to read {@code text} under {@code reference}. */
+    public void bind(View controls, String reference, String text) {
+        MaterialButton listen = controls.findViewById(R.id.btnListen);
+        MaterialButton echo   = controls.findViewById(R.id.btnEcho);
+        TextView speed        = controls.findViewById(R.id.tvSpeed);
+        TextView times        = controls.findViewById(R.id.tvTimes);
+
+        Runnable reset = () -> {
+            listen.setText("🔊 Listen");
+            echo.setText("Repeat after me");
+        };
+        reset.run();
+        showSettings(speed, times);
+
+        listen.setOnClickListener(v -> toggle(listen, reference, text, false, reset));
+        echo.setOnClickListener(v -> toggle(echo, reference, text, true, reset));
+        speed.setOnClickListener(v -> {
+            prefs().edit().putInt("speed", (speedIndex() + 1) % SPEEDS.length).apply();
+            showSettings(speed, times);
+        });
+        times.setOnClickListener(v -> {
+            prefs().edit().putInt("times", (timesIndex() + 1) % TIMES.length).apply();
+            showSettings(speed, times);
+        });
+    }
+
+    private void toggle(MaterialButton button, String reference, String text, boolean echo, Runnable reset) {
+        if (playingFrom == button) { stop(); return; }
+        play(reference, text, echo, reset);
+        playingFrom = button;
+        button.setText("■ Stop");
+    }
+
+    private void showSettings(TextView speed, TextView times) {
+        float s = SPEEDS[speedIndex()];
+        speed.setText("Speed " + (s == (int) s ? String.valueOf((int) s) : String.valueOf(s)) + "×");
+        int t = TIMES[timesIndex()];
+        times.setText(t == 1 ? "Play once" : "Play " + t + " times");
+    }
+
+    // ─── Playback ────────────────────────────────────────────────────────────
+
+    private void play(String reference, String text, boolean echo, Runnable whenStopped) {
+        stop();
+        if (failed) { noVoice(); return; }
+        onStopped = whenStopped;
+        Runnable go = () -> queue(reference, text, echo);
+        ensureEngine();
+        if (ready) go.run(); else pending = go;
+    }
+
+    public void stop() {
+        pending = null;
+        if (tts != null && ready) tts.stop();
+        stopped();
+    }
+
+    public void shutdown() {
+        stop();
+        if (tts != null) tts.shutdown();
+        tts = null;
+        ready = false;
+    }
+
+    private void stopped() {
+        playingFrom = null;
+        Runnable r = onStopped;
+        onStopped = null;
+        if (r != null) r.run();
+    }
+
+    private void ensureEngine() {
+        if (tts != null) return;
+        tts = new TextToSpeech(context, status -> main.post(() -> {
+            if (tts == null) return; // shut down while starting
+            if (status != TextToSpeech.SUCCESS) {
+                failed = true;
+                pending = null;
+                stopped();
+                noVoice();
+                return;
+            }
+            int lang = tts.setLanguage(Locale.getDefault());
+            if (lang == TextToSpeech.LANG_MISSING_DATA || lang == TextToSpeech.LANG_NOT_SUPPORTED) {
+                tts.setLanguage(Locale.ENGLISH);
+            }
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override public void onStart(String id) {}
+                @Override public void onDone(String id) {
+                    if (END.equals(id)) main.post(VerseSpeaker.this::stopped);
+                }
+                @Override public void onError(String id) { main.post(VerseSpeaker.this::stopped); }
+            });
+            ready = true;
+            Runnable p = pending;
+            pending = null;
+            if (p != null) p.run();
+        }));
+    }
+
+    private void queue(String reference, String text, boolean echo) {
+        float speed = SPEEDS[speedIndex()];
+        int times = TIMES[timesIndex()];
+        tts.setSpeechRate(speed);
+        String ref = referenceForSpeech(reference);
+        List<String> lines = linesForSpeech(text);
+
+        for (int t = 0; t < times; t++) {
+            say(ref);
+            pause(500);
+            for (String line : lines) {
+                if (echo) {
+                    for (String phrase : phrases(line)) {
+                        say(phrase);
+                        // Long enough to say it back: about half a second a word, longer when slowed down.
+                        pause((long) (wordCount(phrase) * 450 / speed) + 900);
+                    }
+                } else {
+                    say(line);
+                    pause(250);
+                }
+            }
+            pause(300);
+            say(ref);
+            if (t < times - 1) pause(1500);
+        }
+        tts.playSilentUtterance(1, TextToSpeech.QUEUE_ADD, END);
+    }
+
+    private void say(String s) {
+        tts.speak(s, TextToSpeech.QUEUE_ADD, null, "u" + (nextId++));
+    }
+
+    private void pause(long ms) {
+        tts.playSilentUtterance(ms, TextToSpeech.QUEUE_ADD, "u" + (nextId++));
+    }
+
+    private void noVoice() {
+        Toast.makeText(context, "This phone has no text-to-speech voice. Add one in Settings → Accessibility → Text-to-speech.",
+                Toast.LENGTH_LONG).show();
+    }
+
+    private SharedPreferences prefs() {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    private int speedIndex() {
+        int i = prefs().getInt("speed", 2);
+        return i >= 0 && i < SPEEDS.length ? i : 2;
+    }
+
+    private int timesIndex() {
+        int i = prefs().getInt("times", 0);
+        return i >= 0 && i < TIMES.length ? i : 0;
+    }
+
+    // ─── Text shaping ────────────────────────────────────────────────────────
+
+    /** "Exodus 15:1-3 (Part 1 of 4)" → "Exodus 15, verses 1 to 3". */
+    static String referenceForSpeech(String reference) {
+        if (reference == null) return "";
+        return reference
+                .replaceAll("\\s*\\(Part \\d+ of \\d+\\)", "")
+                .replaceAll("(\\d+):(\\d+)\\s*[-–—]\\s*(\\d+)", "$1, verses $2 to $3")
+                .replaceAll("(\\d+):(\\d+)", "$1, verse $2")
+                .trim();
+    }
+
+    /** One entry per line, without the verse numbers at the start of each line. */
+    static List<String> linesForSpeech(String text) {
+        List<String> out = new ArrayList<>();
+        if (text == null) return out;
+        for (String line : text.split("\n")) {
+            String clean = line.replaceFirst("^\\s*[\\[(]?\\d+[\\])]?[.:]?\\s+", "").trim();
+            if (!clean.isEmpty()) out.add(clean);
+        }
+        return out;
+    }
+
+    /** Splits at commas and full stops; long stretches without either get cut every six words. */
+    static List<String> phrases(String line) {
+        List<String> out = new ArrayList<>();
+        for (String part : line.split("(?<=[,;:.!?])\\s+")) {
+            List<String> words = new ArrayList<>(Arrays.asList(part.trim().split("\\s+")));
+            words.removeIf(String::isEmpty);
+            if (words.size() <= 9) {
+                if (!words.isEmpty()) out.add(String.join(" ", words));
+                continue;
+            }
+            for (int i = 0; i < words.size(); i += 6) {
+                // Don't leave a one- or two-word scrap at the end.
+                int end = words.size() - (i + 6) < 3 ? words.size() : i + 6;
+                out.add(String.join(" ", words.subList(i, end)));
+                if (end == words.size()) break;
+            }
+        }
+        return out;
+    }
+
+    private static int wordCount(String s) {
+        return s.trim().isEmpty() ? 0 : s.trim().split("\\s+").length;
+    }
+}

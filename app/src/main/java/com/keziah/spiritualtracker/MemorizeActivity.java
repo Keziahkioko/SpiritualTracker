@@ -80,6 +80,9 @@ public class MemorizeActivity extends AppCompatActivity {
     // State
     private boolean      viewingPartner = false;
     private VerseAdapter adapter;
+    private VerseSpeaker speaker;
+    /** Parts this screen has already asked to unlock, so a slow write isn't sent (or toasted) twice. */
+    private final java.util.Set<String> unlocking = new java.util.HashSet<>();
 
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -98,8 +101,9 @@ public class MemorizeActivity extends AppCompatActivity {
             return;
         }
         currentUserId = auth.getCurrentUser().getUid();
+        speaker = new VerseSpeaker(this);
 
-        rvVerses              = findViewById(R.id.rvVerses);
+        rvVerses             = findViewById(R.id.rvVerses);
         layoutEmpty           = findViewById(R.id.layoutMemorizeEmpty);
         tvDueCount            = findViewById(R.id.tvDueCount);
         tvMasteredCount       = findViewById(R.id.tvMasteredCount);
@@ -217,6 +221,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     }
 
                     myDueCount = due;
+                    unlockReadyParts();
                     if (!viewingPartner) {
                         rebuildMyDisplayList();
                         updateStats(due, masteredList.size());
@@ -287,9 +292,10 @@ public class MemorizeActivity extends AppCompatActivity {
         java.util.LinkedHashMap<String, LockedGroup> locked = new java.util.LinkedHashMap<>();
         for (MemoryVerse v : activeList) {
             if (!isLocked(v)) { displayList.add(v); continue; }
-            String key = v.getPassageId() != null ? v.getPassageId() : v.getReference();
+            String key = v.groupKey() != null ? v.groupKey() : v.getReference();
+            String title = v.getPassageId() != null ? v.getPassageId() : v.getReference();
             LockedGroup g = locked.get(key);
-            if (g == null) locked.put(key, g = new LockedGroup(key, v));
+            if (g == null) locked.put(key, g = new LockedGroup(title, v));
             g.count++;
         }
         if (!locked.isEmpty()) {
@@ -394,7 +400,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     String ref  = etRef.getText()  != null ? etRef.getText().toString().trim() : "";
                     String text = etText.getText() != null ? etText.getText().toString().trim() : "";
                     boolean shared = cbShare != null && cbShare.isChecked();
-                    if (!ref.isEmpty() && !text.isEmpty()) saveVerse(ref, text, shared, null, -1);
+                    if (!ref.isEmpty() && !text.isEmpty()) saveVerse(ref, text, shared, null, null, -1);
                     else Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
@@ -495,9 +501,11 @@ public class MemorizeActivity extends AppCompatActivity {
             return;
         }
 
+        // Its own id, so another passage typed with the same name can't unlock these parts.
+        String passageKey = java.util.UUID.randomUUID().toString();
         for (int i = 0; i < chunks.size(); i++) {
             String chunkRef = baseRef + " (Part " + (i + 1) + " of " + chunks.size() + ")";
-            saveVerse(chunkRef, chunks.get(i), shared, baseRef, i);
+            saveVerse(chunkRef, chunks.get(i), shared, baseRef, passageKey, i);
         }
 
         Toast.makeText(this,
@@ -508,7 +516,7 @@ public class MemorizeActivity extends AppCompatActivity {
     // ─── Save ────────────────────────────────────────────────────────────────
 
     private void saveVerse(String reference, String text, boolean shared,
-                           String passageId, int chunkIndex) {
+                           String passageId, String passageKey, int chunkIndex) {
         String today  = todayString();
 
         // Part 1 (chunkIndex 0) is due tomorrow
@@ -529,6 +537,7 @@ public class MemorizeActivity extends AppCompatActivity {
         data.put("ownerName",        myName);
         if (passageId != null) {
             data.put("passageId",  passageId);
+            data.put("passageKey", passageKey);
             data.put("chunkIndex", chunkIndex);
         }
 
@@ -553,13 +562,15 @@ public class MemorizeActivity extends AppCompatActivity {
         // Any honest attempt counts as today's memorization practice.
         logPractice(verse.getReference());
 
+        // Only the first review of the day moves a part up or down; extra practice just counts.
+        if (sameDay) {
+            Toast.makeText(this,
+                    gotIt ? "Great practice! Come back tomorrow to advance 📖"
+                          : "Practice counted. Your schedule stays the same.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         if (gotIt) {
-            if (sameDay) {
-                Toast.makeText(this,
-                        "Great practice! Come back tomorrow to advance 📖",
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
             nextIdx  = Math.min(currentIdx + 1, INTERVALS.length - 1);
             newStage = (nextIdx >= MASTERED_IDX) ? "mastered"
                     : (nextIdx >= 2)             ? "reviewing"
@@ -584,65 +595,50 @@ public class MemorizeActivity extends AppCompatActivity {
                         Toast.makeText(this, "🎉 Verse mastered!", Toast.LENGTH_LONG).show();
                         notifyPartnerOfMastery(verse.getReference());
                     }
-
-                    // ── Sequential unlock ──
-                    // When a chunk advances to "reviewing" or "mastered",
-                    // unlock the next chunk in the passage
-                    boolean advanced = gotIt && !newStage.equals("learning");
-                    boolean isChunk  = verse.getPassageId() != null;
-
-                    if (advanced && isChunk && verse.getChunkIndex() != null) {
-                        unlockNextChunk(verse.getPassageId(), verse.getChunkIndex());
-                    }
+                    // The list listener sees the new stage and unlocks the next part if it's ready.
                 });
-
-        
     }
 
-    private void unlockNextChunk(String passageId, int currentChunkIndex) {
-        if (passageId == null) return;
-        int nextChunkIndex = currentChunkIndex + 1;
+    /**
+     * Opens the first locked part of each passage once the part just before it has reached
+     * "Reviewing" (or Mastered), the same rule as always. Checked every time the list changes,
+     * so a part whose earlier part was deleted (nothing left in front of it) opens too
+     * instead of staying locked for good.
+     */
+    private void unlockReadyParts() {
+        Map<String, List<MemoryVerse>> passages = new HashMap<>();
+        List<MemoryVerse> all = new ArrayList<>(activeList);
+        all.addAll(masteredList);
+        for (MemoryVerse v : all) {
+            String key = v.groupKey();
+            if (key == null || v.getId() == null) continue;
+            List<MemoryVerse> parts = passages.get(key);
+            if (parts == null) passages.put(key, parts = new ArrayList<>());
+            parts.add(v);
+        }
+        for (List<MemoryVerse> parts : passages.values()) {
+            java.util.Collections.sort(parts, (a, b) -> Integer.compare(a.getChunkIndex(), b.getChunkIndex()));
+            MemoryVerse before = null;
+            for (MemoryVerse part : parts) {
+                if (!isLocked(part)) { before = part; continue; }
+                boolean ready = before == null
+                        || "reviewing".equals(before.getStage()) || "mastered".equals(before.getStage());
+                if (ready && unlocking.add(part.getId())) unlock(part);
+                break; // only the first locked part of a passage can be next
+            }
+        }
+    }
 
-        // Find the next chunk in this passage
+    private void unlock(MemoryVerse part) {
+        Map<String, Object> unlock = new HashMap<>();
+        unlock.put("nextReviewDate", new Timestamp(addDays(new Date(), 1)));
         db.collection("users").document(currentUserId)
                 .collection("memory_verses")
-                .whereEqualTo("passageId",  passageId)
-                .whereEqualTo("chunkIndex", nextChunkIndex)
-                .limit(1)
-                .get()
-                .addOnSuccessListener(query -> {
-                    if (query.isEmpty()) return; // no next chunk — this was the last one
-
-                    DocumentSnapshot nextDoc   = query.getDocuments().get(0);
-                    String           nextStage = nextDoc.getString("stage");
-
-                    // Only unlock if it's still locked (learning with a far future date)
-                    // We detect "locked" by checking if nextReviewDate is more than
-                    // 365 days away — that's our sentinel for a locked chunk
-                    com.google.firebase.Timestamp nextReview =
-                            nextDoc.getTimestamp("nextReviewDate");
-
-                    boolean isLocked = nextReview != null &&
-                            nextReview.toDate().getTime() - System.currentTimeMillis()
-                                    > 365L * 24 * 60 * 60 * 1000;
-
-                    if (!isLocked) return; // already unlocked, nothing to do
-
-                    // Unlock: set nextReviewDate to tomorrow
-                    Map<String, Object> unlock = new HashMap<>();
-                    unlock.put("nextReviewDate", new Timestamp(addDays(new Date(), 1)));
-
-                    db.collection("users").document(currentUserId)
-                            .collection("memory_verses")
-                            .document(nextDoc.getId())
-                            .update(unlock)
-                            .addOnSuccessListener(v -> {
-                                String ref = nextDoc.getString("reference");
-                                Toast.makeText(this,
-                                        "🔓 Next part unlocked: " + ref,
-                                        Toast.LENGTH_LONG).show();
-                            });
-                });
+                .document(part.getId())
+                .update(unlock)
+                .addOnSuccessListener(v -> Toast.makeText(this,
+                        "🔓 Next part unlocked: " + part.getReference(), Toast.LENGTH_LONG).show())
+                .addOnFailureListener(e -> unlocking.remove(part.getId()));
     }
 
     private void logPractice(String reference) {
@@ -738,7 +734,11 @@ public class MemorizeActivity extends AppCompatActivity {
             if (btnFirstLetter != null) btnFirstLetter.setVisibility(View.GONE);
             if (tvHint != null) tvHint.setVisibility(View.GONE);
             layoutActions.setVisibility(View.VISIBLE);
+            View listen = dv.findViewById(R.id.quizListen);
+            speaker.bind(listen, verse.getReference(), verse.getText());
+            listen.setVisibility(View.VISIBLE);
         });
+        dialog.setOnDismissListener(d -> speaker.stop());
 
         btnGotIt.setOnClickListener(gv -> { markReviewed(verse, true); dialog.dismiss(); });
         btnTryAgain.setOnClickListener(tv -> {
@@ -771,6 +771,15 @@ public class MemorizeActivity extends AppCompatActivity {
                 .setNeutralButton(viewingPartner ? null : "Delete",
                         viewingPartner ? null : (d, w) -> onVerseLongTapped(verse))
                 .create();
+        // A locked part's text is for later; everything else can be listened to.
+        if (!isLocked(verse)) {
+            View listen = LayoutInflater.from(this).inflate(R.layout.view_listen_controls, null);
+            int pad = (int) (20 * getResources().getDisplayMetrics().density);
+            listen.setPadding(pad, pad / 2, pad, 0);
+            speaker.bind(listen, verse.getReference(), verse.getText());
+            dialog.setView(listen);
+        }
+        dialog.setOnDismissListener(d -> speaker.stop());
         dialog.show();
         android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
         if (delete != null) delete.setTextColor(android.graphics.Color.parseColor("#C62828"));
@@ -846,6 +855,7 @@ public class MemorizeActivity extends AppCompatActivity {
         super.onDestroy();
         if (myVerseListener      != null) myVerseListener.remove();
         if (partnerVerseListener != null) partnerVerseListener.remove();
+        if (speaker != null) speaker.shutdown();
     }
 
     /** The still-locked parts of one passage, shown as a single row. */

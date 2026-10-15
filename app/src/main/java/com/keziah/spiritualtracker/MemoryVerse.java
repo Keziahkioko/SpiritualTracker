@@ -15,8 +15,18 @@ public class MemoryVerse {
     private String    ownerName;         // shown on partner's shared view
     private String    passageId;         // non-null for chunk entries — groups chunks together
     private Integer   chunkIndex;        // 0-based position within the passage
+    private String    passageKey;        // unique per added passage, so two with the same name stay apart
 
     public MemoryVerse() {}
+
+    public String getPassageKey()                  { return passageKey; }
+    public void   setPassageKey(String passageKey) { this.passageKey = passageKey; }
+
+    /** What ties the parts of one passage together (older passages only have the typed name). */
+    public String groupKey() {
+        if (chunkIndex == null) return null;
+        return passageKey != null ? passageKey : passageId;
+    }
 
     // Getters
     public String    getId()               { return id; }

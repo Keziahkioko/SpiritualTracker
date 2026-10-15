@@ -109,6 +109,15 @@
         app:backgroundTint="#7E57C2"
         app:cornerRadius="12dp"/>
 
+    <!-- Listen: only after Reveal, so it never gives the answer away -->
+    <include
+        android:id="@+id/quizListen"
+        layout="@layout/view_listen_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
     <!-- Got it / Try again -->
     <LinearLayout
         android:id="@+id/layoutQuizActions"
