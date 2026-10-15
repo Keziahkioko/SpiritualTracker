@@ -53,8 +53,12 @@ public final class VerseSpeaker {
         TextView times        = controls.findViewById(R.id.tvTimes);
 
         Runnable reset = () -> {
-            listen.setText("🔊 Listen");
+            listen.setText("Listen");
+            listen.setIconResource(R.drawable.ic_listen);
+            listen.setIconTint(null); // keep the icon's own gradient
             echo.setText("Repeat after me");
+            echo.setIconResource(R.drawable.ic_repeat_after);
+            echo.setIconTint(null);
         };
         reset.run();
         showSettings(speed, times);
@@ -75,7 +79,9 @@ public final class VerseSpeaker {
         if (playingFrom == button) { stop(); return; }
         play(reference, text, echo, reset);
         playingFrom = button;
-        button.setText("■ Stop");
+        button.setText("Stop");
+        button.setIconResource(R.drawable.ic_stop_audio);
+        button.setIconTint(null);
     }
 
     private void showSettings(TextView speed, TextView times) {
@@ -149,7 +155,7 @@ public final class VerseSpeaker {
         float speed = SPEEDS[speedIndex()];
         int times = TIMES[timesIndex()];
         tts.setSpeechRate(speed);
-        String ref = referenceForSpeech(reference);
+        String ref = referenceForSpeech(reference, text);
         List<String> lines = linesForSpeech(text);
 
         for (int t = 0; t < times; t++) {
@@ -203,22 +209,40 @@ public final class VerseSpeaker {
 
     // ─── Text shaping ────────────────────────────────────────────────────────
 
-    /** "Exodus 15:1-3 (Part 1 of 4)" → "Exodus 15, verses 1 to 3". */
-    static String referenceForSpeech(String reference) {
+    private static final java.util.regex.Pattern VERSE_NUMBER =
+            java.util.regex.Pattern.compile("^\\s*[\\[(]?(\\d+)[\\])]?[.:]?\\s+");
+
+    /**
+     * What to announce before and after the verse. When the text carries verse numbers, the range
+     * comes from them, so a part says what it actually covers: "Matthew 23 (Part 4 of 8)" holding
+     * verses 17–21 → "Matthew 23, verses 17 to 21". Otherwise the typed reference is read out.
+     */
+    static String referenceForSpeech(String reference, String text) {
         if (reference == null) return "";
-        return reference
-                .replaceAll("\\s*\\(Part \\d+ of \\d+\\)", "")
+        String plain = reference.replaceAll("\\s*\\(Part \\d+ of \\d+\\)", "").trim();
+        List<String> numbers = new ArrayList<>();
+        if (text != null) {
+            for (String line : text.split("\n")) {
+                java.util.regex.Matcher m = VERSE_NUMBER.matcher(line);
+                if (m.find()) numbers.add(m.group(1));
+            }
+        }
+        if (!numbers.isEmpty()) {
+            String chapter = plain.replaceFirst(":.*$", "").trim(); // "Exodus 15:1-21" → "Exodus 15"
+            String first = numbers.get(0), last = numbers.get(numbers.size() - 1);
+            return chapter + (first.equals(last) ? ", verse " + first : ", verses " + first + " to " + last);
+        }
+        return plain
                 .replaceAll("(\\d+):(\\d+)\\s*[-–—]\\s*(\\d+)", "$1, verses $2 to $3")
-                .replaceAll("(\\d+):(\\d+)", "$1, verse $2")
-                .trim();
+                .replaceAll("(\\d+):(\\d+)", "$1, verse $2");
     }
 
-    /** One entry per line, without the verse numbers at the start of each line. */
+    /** One entry per line, without the verse numbers (the range is announced at the start). */
     static List<String> linesForSpeech(String text) {
         List<String> out = new ArrayList<>();
         if (text == null) return out;
         for (String line : text.split("\n")) {
-            String clean = line.replaceFirst("^\\s*[\\[(]?\\d+[\\])]?[.:]?\\s+", "").trim();
+            String clean = VERSE_NUMBER.matcher(line).replaceFirst("").trim();
             if (!clean.isEmpty()) out.add(clean);
         }
         return out;

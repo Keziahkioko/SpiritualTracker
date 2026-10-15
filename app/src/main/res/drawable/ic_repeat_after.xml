@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gradient (light lavender to deep purple) with a soft highlight, to sit with ic_partner_done. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M9,4.5c2.2,0 4,1.8 4,4s-1.8,4 -4,4 -4,-1.8 -4,-4 1.8,-4 4,-4zM9,14c3.3,0 8,1.65 8,4.5v1c0,0.55 -0.45,1 -1,1H2c-0.55,0 -1,-0.45 -1,-1v-1C1,15.65 5.7,14 9,14zM16.7,5.6c1.9,1.75 1.9,4.65 0,6.4c-0.3,0.28 -0.75,0.25 -1.03,-0.03c-0.28,-0.3 -0.25,-0.75 0.03,-1.03c1.2,-1.15 1.2,-3.15 0,-4.3c-0.28,-0.28 -0.3,-0.73 -0.03,-1.03c0.28,-0.28 0.73,-0.3 1.03,-0.01zM19.4,3c3.4,3.2 3.4,8.4 0,11.6c-0.3,0.28 -0.75,0.27 -1.03,-0.02c-0.28,-0.3 -0.27,-0.75 0.02,-1.03c2.8,-2.65 2.8,-6.85 0,-9.5c-0.3,-0.28 -0.3,-0.73 -0.02,-1.03c0.28,-0.3 0.73,-0.3 1.03,-0.02z">
+        <aapt:attr name="android:fillColor"><gradient android:type="linear" android:startX="3" android:startY="3" android:endX="21" android:endY="21"><item android:offset="0" android:color="#FFB58AD3"/><item android:offset="1" android:color="#FF6A1B9A"/></gradient></aapt:attr>
+    </path>
+    <path android:fillColor="#59FFFFFF" android:pathData="M7.4,5.9c0.9,-0.5 2,-0.5 2.6,-0.1c0.25,0.15 0.15,0.5 -0.15,0.5c-1.4,0.05 -2.5,1 -2.9,2.2c-0.1,0.3 -0.5,0.25 -0.5,-0.05c0,-1 0.4,-2 0.95,-2.55z" />
+</vector>

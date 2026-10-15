@@ -407,6 +407,44 @@ public class MemorizeActivity extends AppCompatActivity {
                 .show();
     }
 
+    /** Fix a typo in a verse or part. Its place in the schedule doesn't change. */
+    private void showEditVerseDialog(MemoryVerse verse) {
+        if (verse.getId() == null) return;
+        View v = LayoutInflater.from(this).inflate(R.layout.dialog_add_verse, null);
+        ((TextView) v.findViewById(R.id.tvAddVerseTitle)).setText("Edit");
+        ((TextView) v.findViewById(R.id.tvAddVerseSubtitle))
+                .setText("Fix anything typed wrongly. Your progress stays the same.");
+        TextInputEditText etRef  = v.findViewById(R.id.etVerseReference);
+        TextInputEditText etText = v.findViewById(R.id.etVerseText);
+        etRef.setText(verse.getReference());
+        etText.setText(verse.getText());
+
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                        .setView(v)
+                        .setPositiveButton("Save", null)
+                        .setNegativeButton("Cancel", null)
+                        .show();
+        // Kept open on an empty field instead of closing and losing the edit.
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener(b -> {
+            String ref  = etRef.getText()  != null ? etRef.getText().toString().trim()  : "";
+            String text = etText.getText() != null ? etText.getText().toString().trim() : "";
+            if (ref.isEmpty() || text.isEmpty()) {
+                Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("reference", ref);
+            updates.put("text", text);
+            db.collection("users").document(currentUserId)
+                    .collection("memory_verses").document(verse.getId())
+                    .update(updates)
+                    .addOnSuccessListener(x -> Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Couldn't save. Try again.", Toast.LENGTH_SHORT).show());
+            dialog.dismiss();
+        });
+    }
+
     // ─── Passage / chunk dialog ───────────────────────────────────────────────
 
     private void showAddPassageDialog() {
@@ -770,6 +808,8 @@ public class MemorizeActivity extends AppCompatActivity {
                 .setPositiveButton("Close", null)
                 .setNeutralButton(viewingPartner ? null : "Delete",
                         viewingPartner ? null : (d, w) -> onVerseLongTapped(verse))
+                .setNegativeButton(viewingPartner ? null : "Edit",
+                        viewingPartner ? null : (d, w) -> showEditVerseDialog(verse))
                 .create();
         // A locked part's text is for later; everything else can be listened to.
         if (!isLocked(verse)) {
@@ -783,6 +823,9 @@ public class MemorizeActivity extends AppCompatActivity {
         dialog.show();
         android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
         if (delete != null) delete.setTextColor(android.graphics.Color.parseColor("#C62828"));
+        android.widget.Button edit = dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
+        android.widget.Button close = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+        if (edit != null && close != null) edit.setTextColor(close.getTextColors());
     }
 
     // ─── Hint builders ───────────────────────────────────────────────────────
