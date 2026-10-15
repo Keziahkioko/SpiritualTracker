@@ -564,10 +564,10 @@ public class MemorizeActivity extends AppCompatActivity {
                            String passageId, String passageKey, int chunkIndex) {
         String today  = todayString();
 
-        // Part 1 (chunkIndex 0) is due tomorrow
-        // All subsequent parts are locked — due date set 10 years away
+        // Part 1 (or a single verse) is ready to learn now; later parts are locked
+        // (parked 10 years out) until the part before them advances.
         Date dueDate = (chunkIndex <= 0)
-                ? addDays(new Date(), INTERVALS[0])
+                ? new Date()
                 : addDays(new Date(), 365 * 10);
 
         Map<String, Object> data = new HashMap<>();
@@ -580,6 +580,7 @@ public class MemorizeActivity extends AppCompatActivity {
         data.put("addedAt",          FieldValue.serverTimestamp());
         data.put("shared",           shared);
         data.put("ownerName",        myName);
+        data.put("needsLearning",    true);
         if (passageId != null) {
             data.put("passageId",  passageId);
             data.put("passageKey", passageKey);
@@ -675,8 +676,10 @@ public class MemorizeActivity extends AppCompatActivity {
     }
 
     private void unlock(MemoryVerse part) {
+        // Ready to learn straight away; its first test comes the day after it's learned.
         Map<String, Object> unlock = new HashMap<>();
-        unlock.put("nextReviewDate", new Timestamp(addDays(new Date(), 1)));
+        unlock.put("nextReviewDate", new Timestamp(new Date()));
+        unlock.put("needsLearning", true);
         db.collection("users").document(currentUserId)
                 .collection("memory_verses")
                 .document(part.getId())
@@ -717,8 +720,9 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private void onVerseTapped(MemoryVerse verse) {
         if (viewingPartner) { showVerseDetailDialog(verse); return; }
-        if (isDue(verse)) showQuizDialog(verse);
-        else     showVerseDetailDialog(verse);
+        if (needsLearning(verse)) showLearnDialog(verse, false);
+        else if (isDue(verse))    showQuizDialog(verse);
+        else                      showVerseDetailDialog(verse);
     }
 
     private void onVerseLongTapped(MemoryVerse verse) {
@@ -763,6 +767,15 @@ public class MemorizeActivity extends AppCompatActivity {
                 new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                         .setView(dv).setCancelable(true).create();
 
+        MaterialButton btnLearnFirst = dv.findViewById(R.id.btnLearnFirst);
+        if (idx == 0 && !"mastered".equals(verse.getStage())) {
+            btnLearnFirst.setVisibility(View.VISIBLE);
+            btnLearnFirst.setOnClickListener(lv -> {
+                dialog.dismiss();
+                showLearnDialog(verse, false);
+            });
+        }
+
         if (btnFirstLetter != null) {
             btnFirstLetter.setOnClickListener(fv -> {
                 if (tvHint != null) {
@@ -795,6 +808,98 @@ public class MemorizeActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    // ─── Learn steps ─────────────────────────────────────────────────────────
+
+    private static final String[] LEARN_TITLES = {
+            "Read and listen", "Fill the gaps", "Fewer clues", "First letters only"};
+    private static final String[] LEARN_TIPS = {
+            "Read it aloud slowly, two or three times. Listen along if it helps.",
+            "Say the whole thing, filling in the hidden words. Tap a gap if you're stuck.",
+            "Every other word is hidden now. Tap a gap if you're stuck.",
+            "Only the first letter of each word is left. Say it all. Tap a letter to see the word."};
+
+    /**
+     * Four short steps from reading the verse to recalling it from first letters. Learning a new
+     * part sets its first test for tomorrow; practising ({@code practice}) leaves the schedule alone.
+     */
+    private void showLearnDialog(MemoryVerse verse, boolean practice) {
+        View dv = LayoutInflater.from(this).inflate(R.layout.dialog_verse_learn, null);
+        TextView       tvRef   = dv.findViewById(R.id.tvLearnReference);
+        TextView       tvStep  = dv.findViewById(R.id.tvLearnStep);
+        TextView       tvTitle = dv.findViewById(R.id.tvLearnTitle);
+        TextView       tvTip   = dv.findViewById(R.id.tvLearnTip);
+        TextView       tvText  = dv.findViewById(R.id.tvLearnText);
+        MaterialButton btnBack = dv.findViewById(R.id.btnLearnBack);
+        MaterialButton btnNext = dv.findViewById(R.id.btnLearnNext);
+
+        tvRef.setText(verse.getReference());
+        tvText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        tvText.setHighlightColor(android.graphics.Color.TRANSPARENT);
+        speaker.bind(dv.findViewById(R.id.learnListen), verse.getReference(), verse.getText());
+
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                        .setView(dv).create();
+        // A stray tap outside shouldn't throw away the steps done so far.
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setOnDismissListener(d -> speaker.stop());
+
+        LearnText learnText = new LearnText(verse.getText());
+        int[] step = {0};
+        Runnable[] show = new Runnable[1];
+        show[0] = () -> {
+            int s = step[0];
+            tvStep.setText("Step " + (s + 1) + " of " + LEARN_TITLES.length);
+            tvTitle.setText(LEARN_TITLES[s]);
+            tvTip.setText(LEARN_TIPS[s]);
+            tvText.setText(learnText.render(s, show[0]));
+            btnBack.setText(s == 0 ? "Close" : "Back");
+            btnNext.setText(s < LEARN_TITLES.length - 1 ? "Next" : practice ? "Done" : "I've learned it");
+        };
+        btnBack.setOnClickListener(b -> {
+            if (step[0] == 0) { dialog.dismiss(); return; }
+            step[0]--;
+            learnText.hideAgain();
+            show[0].run();
+        });
+        btnNext.setOnClickListener(b -> {
+            if (step[0] < LEARN_TITLES.length - 1) {
+                step[0]++;
+                learnText.hideAgain();
+                show[0].run();
+                return;
+            }
+            dialog.dismiss();
+            if (practice) {
+                logPractice(verse.getReference());
+                Toast.makeText(this, "Practice counted. Your schedule stays the same.", Toast.LENGTH_LONG).show();
+            } else {
+                finishLearning(verse);
+            }
+        });
+        show[0].run();
+        dialog.show();
+    }
+
+    /** Learned: first test tomorrow, then the usual 1, 2, 4, 7, 30 days. */
+    private void finishLearning(MemoryVerse verse) {
+        if (verse.getId() == null) return;
+        logPractice(verse.getReference());
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("needsLearning",    false);
+        updates.put("intervalIndex",    0);
+        updates.put("stage",            "learning");
+        updates.put("lastReviewedDate", todayString());
+        updates.put("nextReviewDate",   new Timestamp(addDays(new Date(), INTERVALS[0])));
+        db.collection("users").document(currentUserId)
+                .collection("memory_verses").document(verse.getId())
+                .update(updates)
+                .addOnSuccessListener(x -> Toast.makeText(this,
+                        "Learned! Your first test is tomorrow.", Toast.LENGTH_LONG).show())
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Couldn't save. Check your connection and try again.", Toast.LENGTH_LONG).show());
+    }
+
     private void showVerseDetailDialog(MemoryVerse verse) {
         int    idx  = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
         String reviewLine;
@@ -820,11 +925,33 @@ public class MemorizeActivity extends AppCompatActivity {
                 .create();
         // A locked part's text is for later; everything else can be listened to.
         if (!isLocked(verse)) {
-            View listen = LayoutInflater.from(this).inflate(R.layout.view_listen_controls, null);
-            int pad = (int) (20 * getResources().getDisplayMetrics().density);
-            listen.setPadding(pad, pad / 2, pad, 0);
+            float dp = getResources().getDisplayMetrics().density;
+            LinearLayout extras = new LinearLayout(this);
+            extras.setOrientation(LinearLayout.VERTICAL);
+            extras.setPadding((int) (20 * dp), (int) (10 * dp), (int) (20 * dp), 0);
+            View listen = LayoutInflater.from(this).inflate(R.layout.view_listen_controls, extras, false);
             speaker.bind(listen, verse.getReference(), verse.getText());
-            dialog.setView(listen);
+            extras.addView(listen);
+            if (!viewingPartner) {
+                // The learn steps any time, e.g. to brush up before a test. Doesn't change the schedule.
+                MaterialButton practise = new MaterialButton(this, null,
+                        com.google.android.material.R.attr.materialButtonOutlinedStyle);
+                practise.setText("Practise");
+                practise.setAllCaps(false);
+                practise.setTextColor(android.graphics.Color.parseColor("#5E35B1"));
+                practise.setStrokeColor(android.content.res.ColorStateList.valueOf(
+                        android.graphics.Color.parseColor("#9575CD")));
+                practise.setCornerRadius((int) (24 * dp));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, (int) (48 * dp));
+                lp.topMargin = (int) (10 * dp);
+                extras.addView(practise, lp);
+                practise.setOnClickListener(b -> {
+                    dialog.dismiss();
+                    showLearnDialog(verse, true);
+                });
+            }
+            dialog.setView(extras);
         }
         dialog.setOnDismissListener(d -> speaker.stop());
         dialog.show();
@@ -875,7 +1002,21 @@ public class MemorizeActivity extends AppCompatActivity {
     /** Due any time on its review day, not only after the exact minute it was scheduled. */
     static boolean isDue(MemoryVerse v) {
         if (v.getNextReviewDate() == null || "mastered".equals(v.getStage())) return false;
+        if (needsLearning(v)) return true; // ready to learn as soon as it's open
         return ProgressMath.isDueOn(v.getNextReviewDate().toDate(), new Date());
+    }
+
+    /**
+     * Not learned yet, so it gets the learn steps instead of a test. Parts saved before the learn
+     * step existed count too if they've never been reviewed: still on Day 1, with no review
+     * since the day they were added.
+     */
+    static boolean needsLearning(MemoryVerse v) {
+        if (isLocked(v) || "mastered".equals(v.getStage())) return false;
+        if (v.getNeedsLearning() != null) return v.getNeedsLearning();
+        int idx = v.getIntervalIndex() != null ? v.getIntervalIndex() : 0;
+        return idx == 0 && v.getAddedAt() != null
+                && ActivityLog.dayKey(v.getAddedAt().toDate()).equals(v.getLastReviewedDate());
     }
 
     /** Later parts of a passage are parked ~10 years out until the previous part advances. */
@@ -1011,6 +1152,14 @@ public class MemorizeActivity extends AppCompatActivity {
                 h.tvStage.setTextColor(0xFF2E7D32);
                 h.viewStripe.setBackgroundColor(0xFF43A047);
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
+            } else if (MemorizeActivity.needsLearning(v)) {
+                h.tvStage.setText(partnerMode ? "New, learning it" : "New · learn it first");
+                h.tvStage.setTextColor(0xFF6A1B9A);
+                h.viewStripe.setBackgroundColor(0xFF7E57C2);
+                if (h.tvDuePill != null) {
+                    h.tvDuePill.setVisibility(partnerMode ? View.GONE : View.VISIBLE);
+                    h.tvDuePill.setText("Learn now");
+                }
             } else if (isDue) {
                 h.tvStage.setText(partnerMode ? "Reviewing today" : "Due for review");
                 h.tvStage.setTextColor(0xFF6A1B9A);

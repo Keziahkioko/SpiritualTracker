@@ -91,6 +91,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Show first letters"
+        android:textAllCaps="false"
+        android:letterSpacing="0"
         android:textSize="13sp"
         android:textColor="#5E35B1"
         android:layout_marginBottom="8dp"
@@ -98,6 +100,20 @@
         app:strokeWidth="1dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:cornerRadius="20dp"/>
+
+    <!-- Day 1 only: do the learn steps instead of being tested on something not learned yet -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLearnFirst"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Not learned yet? Learn it first"
+        android:letterSpacing="0"
+        android:textAllCaps="false"
+        android:textColor="#5E35B1"
+        android:textSize="13sp"
+        android:visibility="gone" />
 
     <!-- Reveal -->
     <com.google.android.material.button.MaterialButton
