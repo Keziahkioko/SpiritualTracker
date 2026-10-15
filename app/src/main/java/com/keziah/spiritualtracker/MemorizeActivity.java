@@ -51,6 +51,9 @@ public class MemorizeActivity extends AppCompatActivity {
 
     private static final int[]  INTERVALS    = {1, 2, 4, 7, 30};
     private static final int    MASTERED_IDX = 4;
+    /** Mastered verses come back for a refresh this often, or sooner after a "Try again". */
+    private static final int    REFRESH_DAYS       = 30;
+    private static final int    REFRESH_AGAIN_DAYS = 7;
     private static final String DATE_FMT     = "yyyy-MM-dd";
 
     // Views
@@ -214,6 +217,7 @@ public class MemorizeActivity extends AppCompatActivity {
                         v.setId(doc.getId());
                         if ("mastered".equals(v.getStage())) {
                             masteredList.add(v);
+                            if (isDue(v)) due++; // refresh due
                         } else {
                             activeList.add(v);
                             if (isDue(v)) due++;
@@ -616,6 +620,10 @@ public class MemorizeActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
             return;
         }
+        if ("mastered".equals(verse.getStage())) {
+            markRefreshed(verse, gotIt, today);
+            return;
+        }
         if (gotIt) {
             nextIdx  = Math.min(currentIdx + 1, INTERVALS.length - 1);
             newStage = (nextIdx >= MASTERED_IDX) ? "mastered"
@@ -629,8 +637,10 @@ public class MemorizeActivity extends AppCompatActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("intervalIndex",    nextIdx);
         updates.put("stage",            newStage);
-        updates.put("nextReviewDate",   new Timestamp(addDays(new Date(), INTERVALS[nextIdx])));
+        updates.put("nextReviewDate",   new Timestamp(addDays(new Date(),
+                "mastered".equals(newStage) ? REFRESH_DAYS : INTERVALS[nextIdx])));
         updates.put("lastReviewedDate", today);
+        if ("mastered".equals(newStage)) updates.put("refreshes", 0);
 
         db.collection("users").document(currentUserId)
                 .collection("memory_verses")
@@ -643,6 +653,26 @@ public class MemorizeActivity extends AppCompatActivity {
                     }
                     // The list listener sees the new stage and unlocks the next part if it's ready.
                 });
+    }
+
+    /**
+     * A mastered verse's refresh. It stays mastered either way: remembered, it comes back in
+     * 30 days; not quite, it comes back in a week for another go.
+     */
+    private void markRefreshed(MemoryVerse verse, boolean gotIt, String today) {
+        int days = gotIt ? REFRESH_DAYS : REFRESH_AGAIN_DAYS;
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("nextReviewDate",   new Timestamp(addDays(new Date(), days)));
+        updates.put("lastReviewedDate", today);
+        // Always set, so a verse mastered before refreshes existed stops counting as due straight away.
+        int done = verse.getRefreshes() != null ? verse.getRefreshes() : 0;
+        updates.put("refreshes", gotIt ? done + 1 : done);
+        db.collection("users").document(currentUserId)
+                .collection("memory_verses").document(verse.getId())
+                .update(updates)
+                .addOnSuccessListener(x -> Toast.makeText(this, gotIt
+                        ? "Still there! Next refresh in " + REFRESH_DAYS + " days."
+                        : "No problem. It'll come back in a week for another go.", Toast.LENGTH_LONG).show());
     }
 
     /**
@@ -752,7 +782,8 @@ public class MemorizeActivity extends AppCompatActivity {
 
         int idx = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
         tvRef.setText(verse.getReference());
-        if (tvProgress != null) tvProgress.setText("Day " + (idx + 1) + " of " + INTERVALS.length);
+        boolean refresh = "mastered".equals(verse.getStage());
+        if (tvProgress != null) tvProgress.setText(refresh ? "Refresh" : "Day " + (idx + 1) + " of " + INTERVALS.length);
 
         tvText.setVisibility(View.GONE);
         layoutActions.setVisibility(View.GONE);
@@ -766,7 +797,7 @@ public class MemorizeActivity extends AppCompatActivity {
         showHint[0] = () -> tvHint.setText(hint.render(hintMode[0], showHint[0]));
         tvHint.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvHint.setHighlightColor(android.graphics.Color.TRANSPARENT);
-        if (idx >= 2) {
+        if (idx >= 2 && !refresh) { // mastered: no hint unless asked for with "Show first letters"
             showHint[0].run();
             tvHint.setVisibility(View.VISIBLE);
         }
@@ -921,7 +952,9 @@ public class MemorizeActivity extends AppCompatActivity {
     private void showVerseDetailDialog(MemoryVerse verse) {
         int    idx  = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
         String reviewLine;
-        if ("mastered".equals(verse.getStage())) reviewLine = "";
+        if ("mastered".equals(verse.getStage())) reviewLine = isDue(verse) ? "\nRefresh: today"
+                : verse.getNextReviewDate() == null ? "" : "\nNext refresh: " + new java.text.SimpleDateFormat(
+                        "d MMM yyyy", Locale.getDefault()).format(verse.getNextReviewDate().toDate());
         else if (isLocked(verse)) reviewLine = "\nNext review: after the previous part advances";
         else if (verse.getNextReviewDate() == null) reviewLine = "";
         else if (isDue(verse)) reviewLine = "\nNext review: today";
@@ -988,7 +1021,9 @@ public class MemorizeActivity extends AppCompatActivity {
 
     /** Due any time on its review day, not only after the exact minute it was scheduled. */
     static boolean isDue(MemoryVerse v) {
-        if (v.getNextReviewDate() == null || "mastered".equals(v.getStage())) return false;
+        if (v.getNextReviewDate() == null) return false;
+        // Mastered before refreshes existed: their first refresh is due now.
+        if ("mastered".equals(v.getStage()) && v.getRefreshes() == null) return true;
         if (needsLearning(v)) return true; // ready to learn as soon as it's open
         return ProgressMath.isDueOn(v.getNextReviewDate().toDate(), new Date());
     }
@@ -1135,10 +1170,14 @@ public class MemorizeActivity extends AppCompatActivity {
             boolean isMast = "mastered".equals(v.getStage());
 
             if (isMast) {
-                h.tvStage.setText("Mastered");
+                boolean refreshDue = isDue && !partnerMode;
+                h.tvStage.setText(refreshDue ? "Mastered · refresh due" : "Mastered");
                 h.tvStage.setTextColor(0xFF2E7D32);
                 h.viewStripe.setBackgroundColor(0xFF43A047);
-                if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
+                if (h.tvDuePill != null) {
+                    h.tvDuePill.setVisibility(refreshDue ? View.VISIBLE : View.GONE);
+                    h.tvDuePill.setText("Refresh");
+                }
             } else if (MemorizeActivity.needsLearning(v)) {
                 h.tvStage.setText(partnerMode ? "New, learning it" : "New · learn it first");
                 h.tvStage.setTextColor(0xFF6A1B9A);

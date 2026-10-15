@@ -22,6 +22,11 @@ public class MemoryVerse {
     public String getPassageKey()                  { return passageKey; }
     public void   setPassageKey(String passageKey) { this.passageKey = passageKey; }
 
+    /** Refreshes passed since mastering; null on verses mastered before refreshes existed. */
+    private Integer refreshes;
+    public Integer getRefreshes()                   { return refreshes; }
+    public void    setRefreshes(Integer n)          { this.refreshes = n; }
+
     /** True until the learn steps are done; null on parts saved before the learn step existed. */
     private Boolean needsLearning;
     public Boolean getNeedsLearning()               { return needsLearning; }

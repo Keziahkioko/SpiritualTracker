@@ -12,7 +12,6 @@ import androidx.work.WorkerParameters;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Calendar;
 import java.util.concurrent.CountDownLatch;
@@ -66,17 +65,13 @@ public class DailyVerseReminderWorker extends Worker {
         tomorrow.set(Calendar.SECOND, 0);
         tomorrow.set(Calendar.MILLISECOND, 0);
 
-        // Only filter by nextReviewDate; mastered verses are skipped here to avoid a composite index.
+        // Everything scheduled for today, refreshes of mastered verses included.
         db.collection("users").document(userId)
                 .collection("memory_verses")
                 .whereLessThan("nextReviewDate", new Timestamp(tomorrow.getTime()))
                 .get()
                 .addOnSuccessListener(query -> {
-                    int count = 0;
-                    for (QueryDocumentSnapshot doc : query) {
-                        if (!"mastered".equals(doc.getString("stage"))) count++;
-                    }
-                    dueCount.set(count);
+                    dueCount.set(query.size());
                     latch.countDown();
                 })
                 .addOnFailureListener(e -> {
