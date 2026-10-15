@@ -158,7 +158,7 @@
                     android:id="@+id/cbPartnerPrayedPartner"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Prayed for Partner"
+                    android:text="Prayed for me"
                     android:textColor="#424242"
                     android:textSize="12sp"
                     android:clickable="false"

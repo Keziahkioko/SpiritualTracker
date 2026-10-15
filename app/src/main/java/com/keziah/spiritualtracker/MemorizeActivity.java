@@ -176,9 +176,9 @@ public class MemorizeActivity extends AppCompatActivity {
 
                         db.collection("users").document(partnerId).get()
                                 .addOnSuccessListener(pDoc -> {
-                                    // Show partner's name on the pill label
-                                    String pName = pDoc.getString("name");
-                                    if (tvTogglePartnerLabel != null && pName != null) {
+                                    // Show partner's name on the pill label (your nickname for them if you set one)
+                                    String pName = PartnerName.display(this, pDoc);
+                                    if (tvTogglePartnerLabel != null) {
                                         tvTogglePartnerLabel.setText(pName + "'s verses");
                                     }
                                     loadPartnerStats();

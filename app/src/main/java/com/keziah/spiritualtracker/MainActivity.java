@@ -115,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
         android.widget.PopupMenu menu = new android.widget.PopupMenu(this, binding.ivLogout);
         if (partnerId != null) {
             menu.getMenu().add(0, 3, 0, "Rename " + PartnerName.get(this));
-            menu.getMenu().add(0, 4, 1, "Unlink " + PartnerName.get(this));
+            // While a request is open, the banner on the home screen handles it instead.
+            if (unlinkRequestBy == null) menu.getMenu().add(0, 4, 1, "Unlink " + PartnerName.get(this));
         }
         menu.getMenu().add(0, 2, 2, "Sign out");
         menu.setOnMenuItemClickListener(item -> {
@@ -163,27 +164,142 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    /** Ends the partnership for both of us (done by the relay, which can update both profiles). */
+    // ─── Unlinking (needs both of us) ────────────────────────────────────────
+
+    /** After asking, the asker may unlink alone if there's still no answer after this long. */
+    private static final long UNLINK_WAIT_MS = 7L * 24 * 60 * 60 * 1000;
+    private static final int RED = Color.parseColor("#C62828");
+
+    /** Step one: ask. Nothing changes until the other person agrees. */
     private void confirmUnlink() {
+        if (unlinkRequestBy != null) return; // already asked (by either of us); the banner says so
         String name = PartnerName.get(this);
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setTitle("Unlink " + name + "?")
-                .setMessage("You'll stop seeing each other's progress, journal and prayers, and "
-                        + name + " will be told. Your own entries stay with you. You can link again later with a new code.")
+                .setTitle("Ask " + name + " to unlink?")
+                .setMessage(name + " will be asked to agree. Until they do, you stay linked and can cancel the request.\n\n"
+                        + "If you both agree, you'll stop seeing each other's progress, journal and prayers. "
+                        + "Your own entries stay with you.")
+                .setPositiveButton("Send request", null)
+                .setNegativeButton("Cancel", null)
+                .show();
+        android.widget.Button send = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+        send.setTextColor(RED);
+        send.setOnClickListener(v -> {
+            send.setEnabled(false);
+            unlinkAction("request", ok -> {
+                dialog.dismiss();
+                if (ok) Toast.makeText(this, name + " has been asked.", Toast.LENGTH_LONG).show();
+            });
+        });
+    }
+
+    private String unlinkRequestBy;
+    private com.google.firebase.Timestamp unlinkRequestAt;
+
+    /** Shows or hides the calm banner on the home screen, depending on who asked. */
+    private void showUnlinkBanner(DocumentSnapshot snap) {
+        Object raw = snap.get("unlinkRequest");
+        unlinkRequestBy = null;
+        unlinkRequestAt = null;
+        if (raw instanceof Map && partnerId != null) {
+            Map<?, ?> req = (Map<?, ?>) raw;
+            Object by = req.get("by"), at = req.get("at");
+            if (by instanceof String) unlinkRequestBy = (String) by;
+            if (at instanceof com.google.firebase.Timestamp) unlinkRequestAt = (com.google.firebase.Timestamp) at;
+        }
+        if (unlinkRequestBy == null) {
+            binding.cardUnlinkRequest.setVisibility(View.GONE);
+            return;
+        }
+        String name = PartnerName.get(this);
+        binding.cardUnlinkRequest.setVisibility(View.VISIBLE);
+        binding.btnUnlinkSecondary.setVisibility(View.GONE);
+        if (unlinkRequestBy.equals(currentUserId)) {
+            binding.tvUnlinkTitle.setText("You asked to unlink");
+            binding.btnUnlinkPrimary.setText("Cancel request");
+            binding.btnUnlinkPrimary.setOnClickListener(v -> unlinkAction("cancel", ok -> {}));
+            boolean waitedLongEnough = unlinkRequestAt != null
+                    && System.currentTimeMillis() - unlinkRequestAt.toDate().getTime() >= UNLINK_WAIT_MS;
+            if (waitedLongEnough) {
+                binding.tvUnlinkBody.setText(name + " hasn't answered in a week. You can keep waiting or unlink on your own.");
+                binding.btnUnlinkSecondary.setVisibility(View.VISIBLE);
+                binding.btnUnlinkSecondary.setText("Unlink anyway");
+                binding.btnUnlinkSecondary.setOnClickListener(v -> confirmTyped(
+                        "Unlink without " + name + "'s answer?",
+                        "You'll stop seeing each other's progress, journal and prayers. Your own entries stay with you.",
+                        "force"));
+            } else {
+                binding.tvUnlinkBody.setText("Waiting for " + name + " to agree. You're still linked until they do.");
+            }
+        } else {
+            binding.tvUnlinkTitle.setText(name + " asked to unlink");
+            binding.tvUnlinkBody.setText("Nothing changes unless you agree. Take your time.");
+            binding.btnUnlinkPrimary.setText("Read and answer");
+            binding.btnUnlinkPrimary.setOnClickListener(v -> answerUnlinkRequest());
+        }
+    }
+
+    /** The asked person's choice: staying linked is the easy, highlighted answer. */
+    private void answerUnlinkRequest() {
+        String name = PartnerName.get(this);
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle(name + " asked to unlink")
+                .setMessage("If you agree, you'll both stop seeing each other's progress, journal and prayers. "
+                        + "Your own entries stay with you, and you can link again later with a new code.\n\n"
+                        + "If you'd rather stay linked, tap \"Stay linked\" and " + name + " will be told.")
+                .setPositiveButton("Stay linked", (d, w) -> unlinkAction("decline", ok -> {
+                    if (ok) Toast.makeText(this, "You're still linked. " + name + " has been told.", Toast.LENGTH_LONG).show();
+                }))
+                .setNeutralButton("Decide later", null)
+                .setNegativeButton("I agree to unlink", (d, w) -> confirmTyped(
+                        "Unlink from " + name + "?", "This ends the partnership for both of you.", "accept"))
+                .show();
+    }
+
+    /** Last step before unlinking: type UNLINK, so a stray tap can never do it. */
+    private void confirmTyped(String title, String message, String action) {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+        input.setTextColor(Color.parseColor("#1A1A1A"));
+        input.setHintTextColor(Color.parseColor("#6E6E73"));
+        input.setHint("Type UNLINK");
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        FrameLayout wrap = new FrameLayout(this);
+        wrap.setPadding(pad, pad / 2, pad, 0);
+        wrap.addView(input);
+
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle(title)
+                .setMessage(message + "\n\nTo confirm, type UNLINK below.")
+                .setView(wrap)
                 .setPositiveButton("Unlink", null)
                 .setNegativeButton("Cancel", null)
                 .show();
         android.widget.Button unlink = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
-        unlink.setTextColor(Color.parseColor("#C62828"));
+        unlink.setTextColor(RED);
+        unlink.setEnabled(false);
+        input.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                unlink.setEnabled("UNLINK".equalsIgnoreCase(s.toString().trim()));
+            }
+        });
         unlink.setOnClickListener(v -> {
             unlink.setEnabled(false);
             unlink.setText("Unlinking…");
-            Relay.post("/api/unlink", new org.json.JSONObject(), ok -> {
-                if (isFinishing()) return;
-                dialog.dismiss();
-                // On success the profile listener sees partnerId disappear and updates the screen.
-                if (!ok) Toast.makeText(this, "Couldn't unlink. Check your connection and try again.", Toast.LENGTH_LONG).show();
-            });
+            // On success the profile listener sees partnerId disappear and updates the screen.
+            unlinkAction(action, ok -> dialog.dismiss());
+        });
+    }
+
+    private void unlinkAction(String action, Relay.Done done) {
+        org.json.JSONObject body = new org.json.JSONObject();
+        try { body.put("action", action); } catch (org.json.JSONException ignored) {}
+        Relay.post("/api/unlink", body, ok -> {
+            if (isFinishing()) return;
+            if (!ok) Toast.makeText(this, "Couldn't reach the server. Check your connection and try again.", Toast.LENGTH_LONG).show();
+            done.done(ok);
         });
     }
 
@@ -355,6 +471,7 @@ public class MainActivity extends AppCompatActivity {
                         loadHeatmap();
                         onPartnerUnlinked();
                     }
+                    showUnlinkBanner(snap);
                     refreshProgressCard();
                 });
 
