@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  */
 final class LearnText {
 
-    static final int FULL = 0, EVERY_THIRD = 1, EVERY_OTHER = 2, FIRST_LETTERS = 3;
+    static final int FULL = 0, EVERY_THIRD = 1, EVERY_OTHER = 2, FIRST_LETTERS = 3, ALL_HIDDEN = 4;
 
     private static final int GAP      = Color.parseColor("#E6DDF7");
     private static final int REVEALED = Color.parseColor("#6A1B9A");
@@ -72,6 +72,20 @@ final class LearnText {
         }
     }
 
+    /** How many words have been tapped open (a review shows this as "peeked"). */
+    int peeked() {
+        int n = 0;
+        for (Word w : words) if (w.revealed) n++;
+        return n;
+    }
+
+    /** Words that can be hidden (verse numbers and punctuation don't count). */
+    int wordCount() {
+        int n = 0;
+        for (Word w : words) if (!w.verseNumber && !w.core.isEmpty()) n++;
+        return n;
+    }
+
     /** Hides everything that was tapped open, ready for the next step. */
     void hideAgain() {
         for (Word w : words) w.revealed = false;
@@ -86,7 +100,7 @@ final class LearnText {
             out.append(w.lead);
             if (w.verseNumber || w.core.isEmpty()) continue;
 
-            boolean hidden = mode == FIRST_LETTERS
+            boolean hidden = mode == FIRST_LETTERS || mode == ALL_HIDDEN
                     || (mode == EVERY_THIRD && w.index % 3 == 2)
                     || (mode == EVERY_OTHER && w.index % 2 == 1);
             int start = out.length();

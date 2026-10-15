@@ -758,8 +758,16 @@ public class MemorizeActivity extends AppCompatActivity {
         layoutActions.setVisibility(View.GONE);
         if (tvHint != null) tvHint.setVisibility(View.GONE);
 
-        if (idx >= 2 && tvHint != null) {
-            tvHint.setText(buildProgressiveHint(verse.getText(), idx));
+        // Hints look and work like the learn steps: rounded gaps or letter tiles, and tapping one
+        // shows that word. Peeks are counted and shown after Reveal; they don't affect the marking.
+        LearnText hint = new LearnText(verse.getText());
+        int[] hintMode = {idx >= 4 ? LearnText.ALL_HIDDEN : idx == 3 ? LearnText.EVERY_OTHER : LearnText.EVERY_THIRD};
+        Runnable[] showHint = new Runnable[1];
+        showHint[0] = () -> tvHint.setText(hint.render(hintMode[0], showHint[0]));
+        tvHint.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        tvHint.setHighlightColor(android.graphics.Color.TRANSPARENT);
+        if (idx >= 2) {
+            showHint[0].run();
             tvHint.setVisibility(View.VISIBLE);
         }
 
@@ -778,10 +786,10 @@ public class MemorizeActivity extends AppCompatActivity {
 
         if (btnFirstLetter != null) {
             btnFirstLetter.setOnClickListener(fv -> {
-                if (tvHint != null) {
-                    tvHint.setText(buildFirstLetterHint(verse.getText()));
-                    tvHint.setVisibility(View.VISIBLE);
-                }
+                hintMode[0] = LearnText.FIRST_LETTERS;
+                showHint[0].run();
+                tvHint.setVisibility(View.VISIBLE);
+                btnFirstLetter.setVisibility(View.GONE);
             });
         }
 
@@ -790,7 +798,17 @@ public class MemorizeActivity extends AppCompatActivity {
             tvText.setVisibility(View.VISIBLE);
             btnReveal.setVisibility(View.GONE);
             if (btnFirstLetter != null) btnFirstLetter.setVisibility(View.GONE);
-            if (tvHint != null) tvHint.setVisibility(View.GONE);
+            btnLearnFirst.setVisibility(View.GONE);
+            tvHint.setVisibility(View.GONE);
+            int peeked = hint.peeked();
+            if (peeked > 0) {
+                TextView tvPeeks = dv.findViewById(R.id.tvQuizPeeks);
+                int total = hint.wordCount();
+                // Just information for marking yourself honestly; it doesn't change the result.
+                tvPeeks.setText("You peeked at " + peeked + " of " + total + " words"
+                        + (peeked * 2 > total ? ", more than half." : "."));
+                tvPeeks.setVisibility(View.VISIBLE);
+            }
             layoutActions.setVisibility(View.VISIBLE);
             View listen = dv.findViewById(R.id.quizListen);
             speaker.bind(listen, verse.getReference(), verse.getText());
@@ -960,37 +978,6 @@ public class MemorizeActivity extends AppCompatActivity {
         android.widget.Button edit = dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
         android.widget.Button close = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
         if (edit != null && close != null) edit.setTextColor(close.getTextColors());
-    }
-
-    // ─── Hint builders ───────────────────────────────────────────────────────
-
-    private String buildProgressiveHint(String text, int idx) {
-        if (text == null || text.isEmpty()) return "";
-        String[] words = text.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (i > 0) sb.append(" ");
-            boolean blank = (idx >= 4) || (idx == 3 && i % 2 == 1) || (idx == 2 && i % 3 == 2);
-            sb.append(blank ? underscores(words[i].length()) : words[i]);
-        }
-        return sb.toString();
-    }
-
-    private String buildFirstLetterHint(String text) {
-        if (text == null || text.isEmpty()) return "";
-        String[] words = text.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (i > 0) sb.append(" ");
-            if (!words[i].isEmpty()) sb.append(words[i].charAt(0));
-        }
-        return sb.toString();
-    }
-
-    private String underscores(int len) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < Math.max(len, 1); i++) sb.append('_');
-        return sb.toString();
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
