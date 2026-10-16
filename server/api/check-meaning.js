@@ -56,13 +56,14 @@ export default async function handler(req, res) {
       }),
     });
     if (!r.ok) {
-      console.warn('Groq refused', r.status, (await r.text()).slice(0, 300));
-      return res.status(502).json({ error: r.status === 429 ? 'Daily limit reached' : 'Meaning check failed' });
+      const detail = (await r.text()).slice(0, 300);
+      console.warn('Groq refused', r.status, detail);
+      return res.status(502).json({ error: r.status === 429 ? 'Daily limit reached' : 'Meaning check failed', groqStatus: r.status, detail });
     }
     reply = JSON.parse((await r.json()).choices?.[0]?.message?.content || '{}');
   } catch (err) {
     console.warn('Groq call failed', err);
-    return res.status(502).json({ error: 'Meaning check failed' });
+    return res.status(502).json({ error: 'Meaning check failed', detail: String(err?.message || err).slice(0, 300) });
   }
 
   // Keep only well-formed answers for the verses we asked about.

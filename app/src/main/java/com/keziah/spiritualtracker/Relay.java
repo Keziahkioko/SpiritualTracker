@@ -82,7 +82,8 @@ public final class Relay {
                     JSONObject reply = null;
                     try {
                         if (response.isSuccessful() && response.body() != null) reply = new JSONObject(response.body().string());
-                        else Log.w(TAG, path + " refused: HTTP " + response.code());
+                        else Log.w(TAG, path + " refused: HTTP " + response.code()
+                                + (response.body() != null ? " " + response.body().string() : ""));
                     } catch (Exception e) {
                         Log.w(TAG, path + " gave an unreadable reply", e);
                     } finally {
