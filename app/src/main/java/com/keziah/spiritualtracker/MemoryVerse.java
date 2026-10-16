@@ -43,6 +43,33 @@ public class MemoryVerse {
         return passageKey != null ? passageKey : passageId;
     }
 
+    private static final java.util.regex.Pattern PART = java.util.regex.Pattern.compile("\\s*\\(Part \\d+ of \\d+\\)");
+    private static final java.util.regex.Pattern NUMBER = java.util.regex.Pattern.compile("^\\s*[\\[(]?(\\d+)[\\])]?[.:]?\\s+");
+
+    /**
+     * The reference as shown: a part names the verses it holds, so "Exodus 15:1-21 (Part 1 of 7)"
+     * holding verses 1 to 3 shows as "Exodus 15:1-3 (Part 1 of 7)". Taken from the verse numbers
+     * in the text; when there are none, or they don't run in order, the typed name is kept.
+     */
+    public String shownReference() {
+        if (reference == null || text == null) return reference;
+        java.util.regex.Matcher part = PART.matcher(reference);
+        if (!part.find()) return reference;
+        String chapter = reference.substring(0, part.start()).replaceFirst(":.*$", "").trim();
+        if (!chapter.matches(".*\\d+$")) return reference;
+        int first = -1, last = -1;
+        for (String line : text.split("\n")) {
+            java.util.regex.Matcher m = NUMBER.matcher(line);
+            if (!m.find()) continue;
+            int n = Integer.parseInt(m.group(1));
+            if (first < 0) first = n;
+            else if (n <= last) return reference;
+            last = n;
+        }
+        if (first < 0) return reference;
+        return chapter + ":" + first + (last > first ? "-" + last : "") + " " + part.group().trim();
+    }
+
     // Getters
     public String    getId()               { return id; }
     public String    getReference()        { return reference; }

@@ -25,7 +25,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SpiritualTracker">
 
-        <activity android:name=".MemorizeActivity" android:exported="false" />
+        <!-- Turning the phone mustn't rebuild the screen: it would close a test with its typing. -->
+        <activity
+            android:name=".MemorizeActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:exported="false" />
 
         <activity
             android:name=".PrayerVaultActivity"

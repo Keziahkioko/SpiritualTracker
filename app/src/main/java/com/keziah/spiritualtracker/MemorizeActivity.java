@@ -656,7 +656,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 .addOnSuccessListener(unused -> {
                     if ("mastered".equals(newStage)) {
                         Toast.makeText(this, "🎉 Verse mastered!", Toast.LENGTH_LONG).show();
-                        notifyPartnerOfMastery(verse.getReference());
+                        notifyPartnerOfMastery(verse.shownReference());
                     }
                     // The list listener sees the new stage and unlocks the next part if it's ready.
                 });
@@ -722,7 +722,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 .document(part.getId())
                 .update(unlock)
                 .addOnSuccessListener(v -> Toast.makeText(this,
-                        "🔓 Next part unlocked: " + part.getReference(), Toast.LENGTH_LONG).show())
+                        "🔓 Next part unlocked: " + part.shownReference(), Toast.LENGTH_LONG).show())
                 .addOnFailureListener(e -> unlocking.remove(part.getId()));
     }
 
@@ -766,7 +766,7 @@ public class MemorizeActivity extends AppCompatActivity {
         if (viewingPartner) return;
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle("Delete Verse?")
-                .setMessage("\"" + verse.getReference() + "\" will be permanently removed.")
+                .setMessage("\"" + verse.shownReference() + "\" will be permanently removed.")
                 .setPositiveButton("Delete", (d, w) -> deleteVerse(verse))
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -780,7 +780,7 @@ public class MemorizeActivity extends AppCompatActivity {
         // Day 3 onwards gives a hint by itself; a mastered verse's refresh doesn't.
         int autoHint = refresh || idx < 2 ? -1
                 : idx >= 4 ? LearnText.ALL_HIDDEN : idx == 3 ? LearnText.EVERY_OTHER : LearnText.EVERY_THIRD;
-        openRecallWindow(verse.getReference(),
+        openRecallWindow(verse.shownReference(),
                 refresh ? "Refresh" : "Day " + (idx + 1) + " of " + INTERVALS.length,
                 null, leadInFor(verse), verse.getReference(), verse.getText(), autoHint,
                 () -> markReviewed(verse, true),
@@ -878,6 +878,20 @@ public class MemorizeActivity extends AppCompatActivity {
             btnCheck.setVisibility(View.VISIBLE);
             etTypeIt.requestFocus();
             keyboard.showSoftInput(etTypeIt, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            // Typing takes a while, so a stray tap outside or Back shouldn't throw it away.
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setOnKeyListener((d, keyCode, event) -> {
+                if (keyCode != android.view.KeyEvent.KEYCODE_BACK || tilTypeIt.getVisibility() != View.VISIBLE
+                        || etTypeIt.getText() == null || etTypeIt.getText().toString().trim().isEmpty()) return false;
+                if (event.getAction() == android.view.KeyEvent.ACTION_UP) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setMessage("Leave without checking? What you typed will be lost.")
+                            .setPositiveButton("Leave", (x, y) -> dialog.dismiss())
+                            .setNegativeButton("Keep typing", null)
+                            .show();
+                }
+                return true;
+            });
         });
         btnCheck.setOnClickListener(b -> {
             String typed = etTypeIt.getText() != null ? etTypeIt.getText().toString().trim() : "";
@@ -1127,7 +1141,7 @@ public class MemorizeActivity extends AppCompatActivity {
         MaterialButton btnBack = dv.findViewById(R.id.btnLearnBack);
         MaterialButton btnNext = dv.findViewById(R.id.btnLearnNext);
 
-        tvRef.setText(verse.getReference());
+        tvRef.setText(verse.shownReference());
         showLeadIn(dv.findViewById(R.id.tvLearnLeadIn), leadInFor(verse));
         tvText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvText.setHighlightColor(android.graphics.Color.TRANSPARENT);
@@ -1210,7 +1224,7 @@ public class MemorizeActivity extends AppCompatActivity {
 
         androidx.appcompat.app.AlertDialog dialog =
                 new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setTitle(verse.getReference())
+                .setTitle(verse.shownReference())
                 .setMessage(verse.getText()
                         + "\n\nDay " + (idx + 1) + " of " + INTERVALS.length
                         + "\nStage: " + getStageLabel(verse)
@@ -1429,7 +1443,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     lh.tvCount.setText(g.count == 1 ? "1 part to unlock" : g.count + " parts to unlock");
                 } else {
                     lv = (MemoryVerse) item;
-                    lh.tvReference.setText(lv.getReference());
+                    lh.tvReference.setText(lv.shownReference());
                     lh.tvCount.setText("Locked");
                 }
                 holder.itemView.setOnClickListener(view -> onTap.accept(lv));
@@ -1445,7 +1459,7 @@ public class MemorizeActivity extends AppCompatActivity {
             VerseVH     h = (VerseVH) holder;
             MemoryVerse v = (MemoryVerse) list.get(pos);
 
-            h.tvReference.setText(v.getReference());
+            h.tvReference.setText(v.shownReference());
             h.tvText.setText(v.getText());
 
             int idx = v.getIntervalIndex() != null ? v.getIntervalIndex() : 0;
