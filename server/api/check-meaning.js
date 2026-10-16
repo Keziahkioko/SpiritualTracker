@@ -1,7 +1,24 @@
 import { verifyCaller } from '../lib/firebase.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.3-70b-versatile';
+// Groq retires models now and then, so take the first of these it still offers.
+const PREFERRED = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'moonshotai/kimi-k2-instruct-0905',
+  'moonshotai/kimi-k2-instruct', 'qwen/qwen3-32b', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
+let chosen = null;
+
+async function pickModel(key) {
+  if (chosen) return chosen;
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: `Bearer ${key}` } });
+    const ids = new Set(((await r.json()).data || []).map((m) => m.id));
+    chosen = PREFERRED.find((id) => ids.has(id))
+      || [...ids].find((id) => !/whisper|guard|tts|playai|orpheus|compound/i.test(id))
+      || PREFERRED[0];
+  } catch {
+    return PREFERRED[0];
+  }
+  return chosen;
+}
 const VERDICTS = new Set(['same', 'changed', 'missing']);
 
 const SYSTEM = `You check Bible memorization. You get the real verses (numbered) and what the person
@@ -45,11 +62,12 @@ export default async function handler(req, res) {
 
   let reply;
   try {
+    const model = await pickModel(key);
     const r = await fetch(GROQ_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL,
+        model,
         temperature: 0,
         response_format: { type: 'json_object' },
         messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }],
@@ -57,6 +75,7 @@ export default async function handler(req, res) {
     });
     if (!r.ok) {
       const detail = (await r.text()).slice(0, 300);
+      if (r.status === 404 || r.status === 400) chosen = null; // look again next time
       console.warn('Groq refused', r.status, detail);
       return res.status(502).json({ error: r.status === 429 ? 'Daily limit reached' : 'Meaning check failed', groqStatus: r.status, detail });
     }
