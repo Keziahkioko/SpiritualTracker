@@ -840,11 +840,11 @@ public class MemorizeActivity extends AppCompatActivity {
             tvHint.setVisibility(View.VISIBLE);
             btnFirstLetter.setVisibility(View.GONE);
         });
-        btnReveal.setOnClickListener(rv -> {
+        Runnable showAnswer = () -> {
             tvText.setText(text);
             tvText.setVisibility(View.VISIBLE);
             btnReveal.setVisibility(View.GONE);
-            btnFirstLetter.setVisibility(View.GONE);
+            dv.findViewById(R.id.rowHints).setVisibility(View.GONE);
             btnLearnFirst.setVisibility(View.GONE);
             tvHint.setVisibility(View.GONE);
             int peeked = hint.peeked();
@@ -860,12 +860,158 @@ public class MemorizeActivity extends AppCompatActivity {
             View listen = dv.findViewById(R.id.quizListen);
             speaker.bind(listen, listenRef, text);
             listen.setVisibility(View.VISIBLE);
+        };
+        btnReveal.setOnClickListener(rv -> showAnswer.run());
+
+        // Type it out: typed (or said with the keyboard's mic), then checked word by word, and
+        // for meaning by the relay. Like the peek count, it only informs your own marking.
+        MaterialButton    btnTypeIt = dv.findViewById(R.id.btnTypeIt);
+        View              tilTypeIt = dv.findViewById(R.id.tilTypeIt);
+        TextInputEditText etTypeIt  = dv.findViewById(R.id.etTypeIt);
+        MaterialButton    btnCheck  = dv.findViewById(R.id.btnCheck);
+        TextView          tvSummary = dv.findViewById(R.id.tvCheckSummary);
+        android.view.inputmethod.InputMethodManager keyboard =
+                (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        btnTypeIt.setOnClickListener(b -> {
+            btnTypeIt.setVisibility(View.GONE);
+            tilTypeIt.setVisibility(View.VISIBLE);
+            btnCheck.setVisibility(View.VISIBLE);
+            etTypeIt.requestFocus();
+            keyboard.showSoftInput(etTypeIt, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        });
+        btnCheck.setOnClickListener(b -> {
+            String typed = etTypeIt.getText() != null ? etTypeIt.getText().toString().trim() : "";
+            if (typed.isEmpty()) {
+                Toast.makeText(this, "Type what you remember first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            keyboard.hideSoftInputFromWindow(etTypeIt.getWindowToken(), 0);
+            TypeCheck check = new TypeCheck(text, typed);
+            showAnswer.run();
+            tilTypeIt.setVisibility(View.GONE);
+            btnCheck.setVisibility(View.GONE);
+            tvText.setText(renderCheck(check, null));
+            tvSummary.setVisibility(View.VISIBLE);
+            if (check.exact == check.total()) {
+                tvSummary.setText(checkSummary(check, null, false));
+                return;
+            }
+            tvSummary.setText(checkSummary(check, null, false));
+            askMeaning(check, typed, meaning -> {
+                if (!dialog.isShowing()) return;
+                tvText.setText(renderCheck(check, meaning));
+                tvSummary.setText(checkSummary(check, meaning, true));
+            });
         });
         dialog.setOnDismissListener(d -> speaker.stop());
 
         dv.findViewById(R.id.btnGotIt).setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
         dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
         dialog.show();
+    }
+
+    // ─── Type it out ─────────────────────────────────────────────────────────
+
+    private static final int SAID_DIFFERENTLY = 0xFF7E57C2;
+    private static final int MISSED_WORD      = 0xFFC0392B;
+
+    /** The verse with every word that wasn't typed exactly picked out: purple said differently, red missed. */
+    private static CharSequence renderCheck(TypeCheck check, Map<Integer, String[]> meaning) {
+        android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
+        for (int i = 0; i < check.pieces.size(); i++) {
+            TypeCheck.Piece p = check.pieces.get(i);
+            if (i > 0) out.append(p.newLine ? "\n" : " ");
+            out.append(p.lead);
+            if (p.word) {
+                int start = out.length();
+                out.append(p.core);
+                if (p.status != TypeCheck.EXACT) {
+                    // A verse whose meaning changed shows its different words in red too.
+                    boolean changed = meaning != null && meaning.get(p.line) != null
+                            && !"same".equals(meaning.get(p.line)[0]);
+                    int color = p.status == TypeCheck.MISSED || changed ? MISSED_WORD : SAID_DIFFERENTLY;
+                    out.setSpan(new android.text.style.ForegroundColorSpan(color), start, out.length(),
+                            android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, out.length(),
+                            android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                out.append(p.trail);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Score, then a suggestion: word for word, or (when the relay could check) whether the
+     * meaning held in each verse. {@code asked} is false while the meaning check is on its way.
+     */
+    private static CharSequence checkSummary(TypeCheck check, Map<Integer, String[]> meaning, boolean asked) {
+        int total = check.total();
+        int pct = total == 0 ? 0 : Math.round(check.exact * 100f / total);
+        android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
+        out.append("You got " + check.exact + " of " + total + " words exactly (" + pct + "%)");
+        out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, out.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (check.different > 0) colored(out.append("\n"), check.different + " said differently", SAID_DIFFERENTLY);
+        if (check.missed > 0) colored(out.append(check.different > 0 ? " · " : "\n"), check.missed + " missed", MISSED_WORD);
+
+        if (check.exact == total) return out.append("\nWord for word. That's a Got it!");
+        if (!asked) return out.append("\nChecking the meaning…");
+        if (meaning == null) {
+            int close = Math.round((check.exact + check.different) * 100f / total);
+            out.append(pct >= 90 ? "\nThat's a Got it!"
+                    : close >= 90 ? "\nClose! " + check.different + " words were said differently. Your call."
+                    : "\nMaybe give it another go.");
+            return out.append("\n(The meaning couldn't be checked just now, so only the words were compared.)");
+        }
+        StringBuilder notes = new StringBuilder();
+        for (int line = 0; line < check.lines.size(); line++) {
+            String[] m = meaning.get(line);
+            if (check.notExactOn(line) == 0 || m == null || "same".equals(m[0])) continue;
+            String verse = check.verseNumber(line);
+            notes.append("\n• ").append(verse != null ? "Verse " + verse : "Line " + (line + 1)).append(": ")
+                 .append(!m[1].isEmpty() ? m[1] : "missing".equals(m[0]) ? "mostly missing" : "the meaning changed");
+        }
+        if (notes.length() == 0) {
+            return out.append(pct >= 90 ? "\nSame meaning. That's a Got it!"
+                    : "\nSame meaning, in your own words. That's a Got it!");
+        }
+        return out.append("\nMaybe give it another go:").append(notes);
+    }
+
+    private static void colored(android.text.SpannableStringBuilder out, String text, int color) {
+        int start = out.length();
+        out.append(text);
+        out.setSpan(new android.text.style.ForegroundColorSpan(color), start, out.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    interface MeaningAnswer { void answer(Map<Integer, String[]> byLine); }
+
+    /** Asks the relay whether each verse kept its meaning; null if it couldn't be checked. */
+    private void askMeaning(TypeCheck check, String typed, MeaningAnswer answer) {
+        org.json.JSONObject body = new org.json.JSONObject();
+        try {
+            org.json.JSONArray verses = new org.json.JSONArray();
+            for (int i = 0; i < check.lines.size(); i++) {
+                verses.put(new org.json.JSONObject().put("n", i + 1).put("text", check.lines.get(i)));
+            }
+            body.put("verses", verses).put("typed", typed);
+        } catch (org.json.JSONException e) {
+            answer.answer(null);
+            return;
+        }
+        Relay.ask("/api/check-meaning", body, reply -> {
+            org.json.JSONArray verses = reply != null ? reply.optJSONArray("verses") : null;
+            if (verses == null) { answer.answer(null); return; }
+            Map<Integer, String[]> byLine = new HashMap<>();
+            for (int i = 0; i < verses.length(); i++) {
+                org.json.JSONObject v = verses.optJSONObject(i);
+                if (v == null || "unknown".equals(v.optString("verdict"))) continue;
+                byLine.put(v.optInt("n") - 1, new String[]{v.optString("verdict"), v.optString("note")});
+            }
+            answer.answer(byLine.isEmpty() ? null : byLine);
+        });
     }
 
     // ─── Joining parts up ────────────────────────────────────────────────────

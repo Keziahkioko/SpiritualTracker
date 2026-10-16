@@ -60,6 +60,44 @@ public final class Relay {
         });
     }
 
+    public interface Answer { void answer(JSONObject reply); }
+
+    /** Like {@link #post}, but hands back the reply ({@code null} if it didn't work), on the main thread. */
+    public static void ask(String path, JSONObject body, Answer answer) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String relay = BuildConfig.RELAY_URL;
+        if (user == null || relay == null || relay.isEmpty()) { answer.answer(null); return; }
+        user.getIdToken(false).addOnSuccessListener(result -> {
+            Request request = new Request.Builder()
+                    .url(relay + path)
+                    .header("Authorization", "Bearer " + result.getToken())
+                    .post(RequestBody.create(body.toString(), JSON))
+                    .build();
+            PartnerNotifier.CLIENT.newCall(request).enqueue(new Callback() {
+                @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    Log.w(TAG, path + " failed", e);
+                    MAIN.post(() -> answer.answer(null));
+                }
+                @Override public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    JSONObject reply = null;
+                    try {
+                        if (response.isSuccessful() && response.body() != null) reply = new JSONObject(response.body().string());
+                        else Log.w(TAG, path + " refused: HTTP " + response.code());
+                    } catch (Exception e) {
+                        Log.w(TAG, path + " gave an unreadable reply", e);
+                    } finally {
+                        response.close();
+                    }
+                    JSONObject r = reply;
+                    MAIN.post(() -> answer.answer(r));
+                }
+            });
+        }).addOnFailureListener(e -> {
+            Log.w(TAG, "Couldn't get sign-in token for " + path, e);
+            answer.answer(null);
+        });
+    }
+
     /** Removes Cloudinary files referenced by a journal entry; null urls means all of them. */
     public static void deleteJournalMedia(String docId, java.util.List<String> urls, Done done) {
         try {

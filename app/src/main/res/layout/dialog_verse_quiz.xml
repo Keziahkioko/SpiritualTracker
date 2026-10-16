@@ -98,24 +98,91 @@
                 android:layout_marginBottom="12dp"
                 android:visibility="gone"/>
 
+            <!-- Type it out: the recitation from memory, typed or said with the keyboard's mic -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTypeIt"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:hint="Type it from memory"
+                android:textColorHint="#6E6880"
+                android:visibility="gone"
+                app:boxBackgroundColor="#F8F5FF"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#7E57C2"
+                app:helperText="Tip: tap the mic on your keyboard to say it instead."
+                app:helperTextTextColor="#6E6880"
+                app:hintTextColor="#7E57C2">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTypeIt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLines="10"
+                    android:minLines="5"
+                    android:scrollbars="vertical"
+                    android:textColor="#1A1A2E"
+                    android:textSize="15sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCheck"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Check"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:visibility="gone"
+                app:backgroundTint="#7E57C2"
+                app:cornerRadius="12dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- First-letter hint -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnFirstLetter"
-        android:layout_width="wrap_content"
+    <!-- Hints: first letters, or type it out and have it checked -->
+    <LinearLayout
+        android:id="@+id/rowHints"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show first letters"
-        android:textAllCaps="false"
-        android:letterSpacing="0"
-        android:textSize="13sp"
-        android:textColor="#5E35B1"
         android:layout_marginBottom="8dp"
-        app:strokeColor="#9575CD"
-        app:strokeWidth="1dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        app:cornerRadius="20dp"/>
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFirstLetter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show first letters"
+            android:textAllCaps="false"
+            android:letterSpacing="0"
+            android:textSize="13sp"
+            android:textColor="#5E35B1"
+            android:layout_marginEnd="8dp"
+            app:strokeColor="#9575CD"
+            app:strokeWidth="1dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:cornerRadius="20dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTypeIt"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0"
+            android:text="Type it out"
+            android:textAllCaps="false"
+            android:textColor="#5E35B1"
+            android:textSize="13sp"
+            app:cornerRadius="20dp"
+            app:strokeColor="#9575CD"
+            app:strokeWidth="1dp" />
+    </LinearLayout>
 
     <!-- Day 1 only: do the learn steps instead of being tested on something not learned yet -->
     <com.google.android.material.button.MaterialButton
@@ -149,6 +216,17 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
+
+    <!-- After Check: the score, the suggestion and what differed -->
+    <TextView
+        android:id="@+id/tvCheckSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:lineSpacingMultiplier="1.25"
+        android:textColor="#1A1A2E"
+        android:textSize="13sp"
+        android:visibility="gone"/>
 
     <!-- After Reveal: how many words were peeked at, to help mark yourself honestly -->
     <TextView
