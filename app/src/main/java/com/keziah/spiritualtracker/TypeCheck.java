@@ -16,11 +16,14 @@ final class TypeCheck {
 
     private static final Pattern PARTS = Pattern.compile("^([^\\p{L}\\p{N}]*)(.*?)([^\\p{L}\\p{N}]*)$");
     private static final Pattern VERSE_NUMBER = Pattern.compile("^[\\[(]?\\d+[\\])]?[.:]?$");
+    /** Just after a dash joining two words ("self-|indulgence"): each side counts as a word of its own. */
+    private static final String JOINING_DASH = "(?<=\\p{L}[-\u2010\u2013\u2014])(?=\\p{L})";
 
     /** One piece of the verse as shown: a verse number / punctuation (no status), or a word. */
     static final class Piece {
         String lead, core, trail;
-        boolean newLine, word;
+        /** glued: follows the piece before with no space (the second half of "self-indulgence"). */
+        boolean newLine, word, glued;
         int line, status;
     }
 
@@ -34,13 +37,19 @@ final class TypeCheck {
         for (String raw : (verse == null ? "" : verse).split("\n")) {
             String line = raw.trim();
             if (line.isEmpty()) continue;
-            String[] tokens = line.split("\\s+");
-            for (int i = 0; i < tokens.length; i++) {
+            List<String> tokens = new ArrayList<>();
+            List<Boolean> glued = new ArrayList<>();
+            for (String t : line.split("\\s+")) {
+                String[] halves = t.split(JOINING_DASH);
+                for (int h = 0; h < halves.length; h++) { tokens.add(halves[h]); glued.add(h > 0); }
+            }
+            for (int i = 0; i < tokens.size(); i++) {
                 Piece p = new Piece();
                 p.newLine = i == 0 && !lines.isEmpty();
+                p.glued = glued.get(i);
                 p.line = lines.size();
-                Matcher m = PARTS.matcher(tokens[i]);
-                boolean number = i == 0 && VERSE_NUMBER.matcher(tokens[i]).matches();
+                Matcher m = PARTS.matcher(tokens.get(i));
+                boolean number = i == 0 && VERSE_NUMBER.matcher(tokens.get(i)).matches();
                 if (!number && m.matches() && !normal(m.group(2)).isEmpty()) {
                     p.lead = m.group(1);
                     p.core = m.group(2);
@@ -48,7 +57,7 @@ final class TypeCheck {
                     p.word = true;
                     words.add(p);
                 } else {
-                    p.lead = tokens[i];
+                    p.lead = tokens.get(i);
                     p.core = "";
                     p.trail = "";
                 }
@@ -57,11 +66,18 @@ final class TypeCheck {
             lines.add(line);
         }
 
-        // What was typed: just the words.
+        // What was typed: just the words. Typed numbers are left out (they're verse numbers)
+        // unless the verse itself has that number in it ("5,000 men").
+        java.util.Set<String> numbersInVerse = new java.util.HashSet<>();
+        for (Piece w : words) {
+            String n = normal(w.core);
+            if (n.chars().allMatch(Character::isDigit)) numbersInVerse.add(n);
+        }
         List<String> said = new ArrayList<>();
-        for (String t : (typed == null ? "" : typed).split("\\s+")) {
+        for (String t : (typed == null ? "" : typed).split("\\s+|" + JOINING_DASH)) {
             String n = normal(t);
-            if (!n.isEmpty() && !n.chars().allMatch(Character::isDigit)) said.add(n);
+            if (n.isEmpty() || (n.chars().allMatch(Character::isDigit) && !numbersInVerse.contains(n))) continue;
+            said.add(n);
         }
 
         // Longest run of matching words, in order.

@@ -405,17 +405,24 @@ public class MemorizeActivity extends AppCompatActivity {
         CheckBox          cbShare = v.findViewById(R.id.cbSharedVerse);
         if (cbShare != null) cbShare.setVisibility(partnerId != null ? View.VISIBLE : View.GONE);
 
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setView(v)
-                .setPositiveButton("Add Verse", (d, w) -> {
-                    String ref  = etRef.getText()  != null ? etRef.getText().toString().trim() : "";
-                    String text = etText.getText() != null ? etText.getText().toString().trim() : "";
-                    boolean shared = cbShare != null && cbShare.isChecked();
-                    if (!ref.isEmpty() && !text.isEmpty()) saveVerse(ref, text, shared, null, null, -1);
-                    else Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                        .setView(v)
+                        .setPositiveButton("Add Verse", null)
+                        .setNegativeButton("Cancel", null)
+                        .show();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener(b -> {
+            String ref  = etRef.getText()  != null ? etRef.getText().toString().trim() : "";
+            String text = etText.getText() != null ? etText.getText().toString().trim() : "";
+            boolean shared = cbShare != null && cbShare.isChecked();
+            if (ref.isEmpty() || text.isEmpty()) {
+                Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            saveVerse(ref, text, shared, null, null, -1);
+        });
     }
 
     /** Fix a typo in a verse or part. Its place in the schedule doesn't change. */
@@ -492,50 +499,37 @@ public class MemorizeActivity extends AppCompatActivity {
         btn4.setOnClickListener(chunkClick);
         btn5.setOnClickListener(chunkClick);
 
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setView(v)
-                .setPositiveButton("Split & Add", (d, w) -> {
-                    String  baseRef  = etRef.getText()  != null ? etRef.getText().toString().trim()  : "";
-                    String  fullText = etText.getText() != null ? etText.getText().toString().trim() : "";
-                    boolean shared   = cbShare != null && cbShare.isChecked();
-                    if (baseRef.isEmpty() || fullText.isEmpty()) {
-                        Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    splitAndSavePassage(baseRef, fullText, chunkSize[0], shared);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                        .setView(v)
+                        .setPositiveButton("Split & Add", null)
+                        .setNegativeButton("Cancel", null)
+                        .show();
+        dialog.setCanceledOnTouchOutside(false); // a pasted passage shouldn't vanish on a stray tap
+        // Kept open on an empty field instead of closing and losing what was pasted.
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener(b -> {
+            String  baseRef  = etRef.getText()  != null ? etRef.getText().toString().trim()  : "";
+            String  fullText = etText.getText() != null ? etText.getText().toString().trim() : "";
+            boolean shared   = cbShare != null && cbShare.isChecked();
+            if (baseRef.isEmpty() || fullText.isEmpty()) {
+                Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            splitAndSavePassage(baseRef, fullText, chunkSize[0], shared);
+        });
     }
 
     private void splitAndSavePassage(String baseRef, String fullText, int chunkSize, boolean shared) {
-        // Step 1: Try to split by verse numbers first (e.g. "1 ", "[1]", "1.")
-        // This handles pasted Bible text that doesn't have newlines between verses
-        String normalized = fullText.trim();
-
-        // Insert a newline before each verse number pattern so we can split cleanly
-        // Matches: a digit (or digits) followed by a space at the start or after punctuation
-        normalized = normalized.replaceAll("(?<=[.!?\"\\u2019]?)\\s+(\\d+)\\s+", "\n$1 ");
-
-        // Also handle formats like [1] or (1)
-        normalized = normalized.replaceAll("\\[(\\d+)\\]", "\n$1 ");
-        normalized = normalized.replaceAll("\\((\\d+)\\)", "\n$1 ");
-
-        // Step 2: Split into individual verses by newline
-        String[] lines = normalized.split("\n");
-
-        List<String> verses = new ArrayList<>();
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (!trimmed.isEmpty()) verses.add(trimmed);
-        }
+        // Step 1: one verse per line, however the passage was copied (see PassageSplit)
+        List<String> verses = PassageSplit.verses(fullText);
 
         if (verses.isEmpty()) {
             Toast.makeText(this, "Could not read the passage", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Step 3: Group verses into chunks of the selected size
+        // Step 2: Group verses into chunks of the selected size
         List<String> chunks = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         int count = 0;
@@ -559,20 +553,36 @@ public class MemorizeActivity extends AppCompatActivity {
 
         // Its own id, so another passage typed with the same name can't unlock these parts.
         String passageKey = java.util.UUID.randomUUID().toString();
+        // All parts in one go, so a dropped connection can't leave a passage with a part missing.
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+        com.google.firebase.firestore.CollectionReference verses_ =
+                db.collection("users").document(currentUserId).collection("memory_verses");
         for (int i = 0; i < chunks.size(); i++) {
             String chunkRef = baseRef + " (Part " + (i + 1) + " of " + chunks.size() + ")";
-            saveVerse(chunkRef, chunks.get(i), shared, baseRef, passageKey, i);
+            batch.set(verses_.document(), verseData(chunkRef, chunks.get(i), shared, baseRef, passageKey, i));
         }
-
-        Toast.makeText(this,
-                chunks.size() + " chunks added for \"" + baseRef + "\"",
-                Toast.LENGTH_LONG).show();
+        int parts = chunks.size();
+        batch.commit()
+                .addOnSuccessListener(x -> Toast.makeText(this,
+                        (parts == 1 ? "1 part" : parts + " parts") + " added for \"" + baseRef + "\"",
+                        Toast.LENGTH_LONG).show())
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Couldn't add the passage. Check your connection and try again.", Toast.LENGTH_LONG).show());
     }
 
     // ─── Save ────────────────────────────────────────────────────────────────
 
     private void saveVerse(String reference, String text, boolean shared,
                            String passageId, String passageKey, int chunkIndex) {
+        db.collection("users").document(currentUserId)
+                .collection("memory_verses")
+                .add(verseData(reference, text, shared, passageId, passageKey, chunkIndex))
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to save verse", Toast.LENGTH_SHORT).show());
+    }
+
+    private Map<String, Object> verseData(String reference, String text, boolean shared,
+                                          String passageId, String passageKey, int chunkIndex) {
         String today  = todayString();
 
         // Part 1 (or a single verse) is ready to learn now; later parts are locked
@@ -597,12 +607,7 @@ public class MemorizeActivity extends AppCompatActivity {
             data.put("passageKey", passageKey);
             data.put("chunkIndex", chunkIndex);
         }
-
-        db.collection("users").document(currentUserId)
-                .collection("memory_verses")
-                .add(data)
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to save verse", Toast.LENGTH_SHORT).show());
+        return data;
     }
 
     // ─── Mark reviewed ───────────────────────────────────────────────────────
@@ -736,6 +741,8 @@ public class MemorizeActivity extends AppCompatActivity {
     // ─── Notifications ───────────────────────────────────────────────────────
 
     private void notifyPartnerOfMastery(String reference) {
+        // Debug builds: a throwaway "TEST" passage used for testing on the phone stays quiet.
+        if (BuildConfig.DEBUG && reference != null && reference.startsWith("TEST")) return;
         PartnerNotifier.notifyPartner(partnerId,
                 myName + " just mastered a verse!",
                 "\"" + reference + "\" — keep going!", "memorize", "");
@@ -934,7 +941,7 @@ public class MemorizeActivity extends AppCompatActivity {
         android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
         for (int i = 0; i < check.pieces.size(); i++) {
             TypeCheck.Piece p = check.pieces.get(i);
-            if (i > 0) out.append(p.newLine ? "\n" : " ");
+            if (i > 0) out.append(p.newLine ? "\n" : p.glued ? "" : " ");
             out.append(p.lead);
             if (p.word) {
                 int start = out.length();
@@ -1234,13 +1241,34 @@ public class MemorizeActivity extends AppCompatActivity {
         else reviewLine = "\nNext review: " + new java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault())
                 .format(verse.getNextReviewDate().toDate());
 
+        // The verse scrolls in a box of its own, so a long part can't push Listen and the
+        // buttons off the bottom of the window.
+        float dp = getResources().getDisplayMetrics().density;
+        int maxTextHeight = (int) (getResources().getDisplayMetrics().heightPixels * 0.36f);
+        android.widget.ScrollView textBox = new android.widget.ScrollView(this) {
+            @Override protected void onMeasure(int widthSpec, int heightSpec) {
+                super.onMeasure(widthSpec, View.MeasureSpec.makeMeasureSpec(maxTextHeight, View.MeasureSpec.AT_MOST));
+            }
+        };
+        TextView message = new TextView(this);
+        message.setText(verse.getText()
+                + "\n\nDay " + (idx + 1) + " of " + INTERVALS.length
+                + "\nStage: " + getStageLabel(verse)
+                + reviewLine);
+        message.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16);
+        message.setTextColor(0xFF49454F);
+        message.setLineSpacing(0, 1.2f);
+        textBox.addView(message);
+        textBox.setPadding((int) (4 * dp), 0, (int) (4 * dp), 0);
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding((int) (20 * dp), (int) (8 * dp), (int) (20 * dp), 0);
+        content.addView(textBox);
+
         androidx.appcompat.app.AlertDialog dialog =
                 new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle(verse.shownReference())
-                .setMessage(verse.getText()
-                        + "\n\nDay " + (idx + 1) + " of " + INTERVALS.length
-                        + "\nStage: " + getStageLabel(verse)
-                        + reviewLine)
+                .setView(content)
                 .setPositiveButton("Close", null)
                 .setNeutralButton(viewingPartner ? null : "Delete",
                         viewingPartner ? null : (d, w) -> onVerseLongTapped(verse))
@@ -1249,10 +1277,9 @@ public class MemorizeActivity extends AppCompatActivity {
                 .create();
         // A locked part's text is for later; everything else can be listened to.
         if (!isLocked(verse)) {
-            float dp = getResources().getDisplayMetrics().density;
             LinearLayout extras = new LinearLayout(this);
             extras.setOrientation(LinearLayout.VERTICAL);
-            extras.setPadding((int) (20 * dp), (int) (10 * dp), (int) (20 * dp), 0);
+            extras.setPadding(0, (int) (10 * dp), 0, 0);
             View listen = LayoutInflater.from(this).inflate(R.layout.view_listen_controls, extras, false);
             speaker.bind(listen, verse.getReference(), verse.getText());
             extras.addView(listen);
@@ -1275,7 +1302,7 @@ public class MemorizeActivity extends AppCompatActivity {
                     showLearnDialog(verse, true);
                 });
             }
-            dialog.setView(extras);
+            content.addView(extras);
         }
         dialog.setOnDismissListener(d -> speaker.stop());
         dialog.show();

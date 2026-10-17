@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug builds only. DUMP permission: only adb (the shell) can send to it, not other apps. -->
+        <receiver
+            android:name=".TestTools"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.keziah.spiritualtracker.test.SNAPSHOT" />
+                <action android:name="com.keziah.spiritualtracker.test.SHIFT" />
+                <action android:name="com.keziah.spiritualtracker.test.CLEANUP" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

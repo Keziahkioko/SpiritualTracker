@@ -83,6 +83,8 @@
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
                 android:minLines="6"
+                android:maxLines="8"
+                android:scrollbars="vertical"
                 android:gravity="top|start"
                 android:textColor="#1A1A2E"
                 android:textSize="13sp"
