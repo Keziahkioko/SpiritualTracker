@@ -123,7 +123,7 @@ public class MySpaceFragment extends Fragment {
                 });
     }
 
-    private void savePersonalPrayer(String title, String desc, int reminderDay) {
+    private void savePersonalPrayer(String title, String desc, java.util.Set<Integer> reminderDays) {
         if (currentUserId == null) return;
 
         Map<String, Object> data = new HashMap<>();
@@ -135,7 +135,7 @@ public class MySpaceFragment extends Fragment {
 
         com.google.firebase.firestore.DocumentReference newRef = db.collection("users").document(currentUserId)
                 .collection("personal_prayers").document();
-        PrayerReminders.setDay(requireContext(), PrayerReminders.PERSONAL + newRef.getId(), reminderDay);
+        PrayerReminders.setDays(requireContext(), PrayerReminders.PERSONAL + newRef.getId(), reminderDays);
         newRef.set(data)
                 .addOnSuccessListener(ref ->
                         Toast.makeText(getContext(), "Prayer added 🙏", Toast.LENGTH_SHORT).show());
@@ -191,7 +191,7 @@ public class MySpaceFragment extends Fragment {
                 .setPositiveButton("Add Prayer", (d, w) -> {
                     String title = etTitle.getText() != null ? etTitle.getText().toString().trim() : "";
                     String desc  = etDesc.getText()  != null ? etDesc.getText().toString().trim()  : "";
-                    if (!title.isEmpty()) savePersonalPrayer(title, desc, day.day());
+                    if (!title.isEmpty()) savePersonalPrayer(title, desc, day.days());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

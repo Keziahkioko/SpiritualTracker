@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 6:30 every morning: the unanswered prayer requests whose chosen day it is (see PrayerReminders),
+ * 6:30 every morning: the unanswered prayer requests with today among their days (see PrayerReminders),
  * from the shared board (both of ours), the joint focus list and my personal list, gathered
  * into one notification. Requests with their bell switched off are left out.
  */
@@ -65,7 +65,7 @@ public class PrayerReminderWorker extends Worker {
 
         // Your bells and chosen days: from your account, or the phone's copy if that can't be read.
         Set<String> muted = PrayerReminders.muted(context);
-        Map<String, Integer> days = PrayerReminders.days(context);
+        Map<String, Set<Integer>> days = PrayerReminders.days(context);
         try {
             DocumentSnapshot choices = await(PrayerReminders.cloudRef().get());
             if (choices.exists()) {
@@ -124,21 +124,14 @@ public class PrayerReminderWorker extends Worker {
         return lines.size();
     }
 
-    private static boolean due(DocumentSnapshot d, String kind, Set<String> muted, Map<String, Integer> days,
+    private static boolean due(DocumentSnapshot d, String kind, Set<String> muted, Map<String, Set<Integer>> days,
                                Calendar today) {
         if (Boolean.TRUE.equals(d.getBoolean("isAnswered"))) return false;
         String key = kind + d.getId();
         String title = d.getString("title");
         if (title == null || title.trim().isEmpty() || muted.contains(key)) return false;
         Timestamp posted = d.getTimestamp("timestamp");
-        Integer chosen = days.get(key);
-        int weekday = chosen != null ? chosen : -1;
-        if (weekday <= 0 && posted != null) {
-            Calendar p = Calendar.getInstance();
-            p.setTime(posted.toDate());
-            weekday = p.get(Calendar.DAY_OF_WEEK);
-        }
-        return PrayerReminders.dueOn(weekday, posted, today);
+        return PrayerReminders.dueOn(PrayerReminders.daysFor(days, key, posted), posted, today);
     }
 
     /** First line of a title, kept short: a focus item can be several paragraphs long. */

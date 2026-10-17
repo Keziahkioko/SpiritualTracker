@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,13 +30,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Weekly prayer reminders: every unanswered request (shared, joint focus list and personal) comes
- * back once a week at 6:30 in the morning, on a day you choose for it (until you choose, the
- * weekday it was posted). Each request has a bell to switch it off and the day beside it, which
- * you tap to change. Both are yours alone: kept under your account in
- * users/{uid}/private/prayer_reminders, with a copy on the phone so they draw instantly.
+ * back at 6:30 in the morning on the days you choose for it (until you choose, the weekday it was
+ * posted). Each request has a bell to switch it off and its days beside it, which you tap to
+ * change. Both are yours alone: kept under your account in users/{uid}/private/prayer_reminders,
+ * with a copy on the phone so they draw instantly.
  */
 final class PrayerReminders {
 
@@ -47,6 +49,10 @@ final class PrayerReminders {
     private static final String PREFS = "prayer_reminders";
     private static final String MUTED = "muted";
     private static final String DAYS = "days";
+
+    /** Monday first, as the day circles are laid out. */
+    private static final int[] WEEK = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+            Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
 
     private PrayerReminders() {}
 
@@ -62,64 +68,71 @@ final class PrayerReminders {
                 androidx.work.Data.EMPTY);
     }
 
-    // ─── Bell and day on a card ──────────────────────────────────────────────
+    // ─── Bell and days on a card ─────────────────────────────────────────────
 
     static boolean isOn(Context context, String key) {
         return !muted(context).contains(key);
     }
 
-    /** The weekday (Calendar.SUNDAY…SATURDAY) this request reminds you on, or -1 if unknown. */
-    static int dayFor(Context context, String key, Timestamp posted) {
-        Integer chosen = days(context).get(key);
-        if (chosen != null) return chosen;
-        if (posted == null) return -1;
-        Calendar p = Calendar.getInstance();
-        p.setTime(posted.toDate());
-        return p.get(Calendar.DAY_OF_WEEK);
+    /** The weekdays (Calendar.SUNDAY…SATURDAY) this request reminds you on; empty if unknown. */
+    static Set<Integer> daysFor(Context context, String key, Timestamp posted) {
+        return daysFor(days(context), key, posted);
     }
 
-    /** Draws a request's bell (solid purple = on, grey crossed out = off) and its day. */
-    static void bind(ImageView bell, TextView day, String key, Timestamp posted) {
+    static Set<Integer> daysFor(Map<String, Set<Integer>> chosen, String key, Timestamp posted) {
+        Set<Integer> days = chosen.get(key);
+        if (days != null && !days.isEmpty()) return days;
+        Set<Integer> posting = new TreeSet<>();
+        if (posted != null) {
+            Calendar p = Calendar.getInstance();
+            p.setTime(posted.toDate());
+            posting.add(p.get(Calendar.DAY_OF_WEEK));
+        }
+        return posting;
+    }
+
+    /** Draws a request's bell (solid purple = on, grey crossed out = off) and its days. */
+    static void bind(ImageView bell, TextView label, String key, Timestamp posted) {
         Context context = bell.getContext();
         boolean on = isOn(context, key);
-        int weekday = dayFor(context, key, posted);
+        Set<Integer> days = daysFor(context, key, posted);
         bell.setImageResource(on ? R.drawable.ic_bell_on : R.drawable.ic_bell_off);
-        bell.setContentDescription(on ? "Weekly reminder on. Tap to turn off" : "Weekly reminder off. Tap to turn on");
-        if (day != null) {
-            day.setText(weekday > 0 ? shortName(weekday) : "");
-            day.setVisibility(on && weekday > 0 ? View.VISIBLE : View.GONE);
-            day.setContentDescription("Reminds you on " + (weekday > 0 ? longName(weekday) : "") + ". Tap to change the day");
-            day.setOnClickListener(v -> pickDay(context, dayFor(context, key, posted), chosen -> {
-                setDay(context, key, chosen);
-                bind(bell, day, key, posted);
-                Toast.makeText(context, "Weekly reminder: every " + longName(chosen) + " at " + TIME,
+        bell.setContentDescription(on ? "Reminders on. Tap to turn off" : "Reminders off. Tap to turn on");
+        if (label != null) {
+            label.setText(shortList(days));
+            label.setVisibility(on && !days.isEmpty() ? View.VISIBLE : View.GONE);
+            label.setContentDescription("Reminds you " + longList(days) + ". Tap to change the days");
+            label.setOnClickListener(v -> pickDays(context, daysFor(context, key, posted), chosen -> {
+                setDays(context, key, chosen);
+                bind(bell, label, key, posted);
+                Toast.makeText(context, "Reminders: " + longList(chosen) + " at " + TIME,
                         Toast.LENGTH_SHORT).show();
             }));
         }
         bell.setOnClickListener(v -> {
             boolean nowOn = !isOn(context, key);
             setOn(context, key, nowOn);
-            bind(bell, day, key, posted);
+            bind(bell, label, key, posted);
             bell.animate().scaleX(1.2f).scaleY(1.2f).setDuration(90)
                     .withEndAction(() -> bell.animate().scaleX(1f).scaleY(1f).setDuration(90)).start();
-            int d = dayFor(context, key, posted);
+            Set<Integer> d = daysFor(context, key, posted);
             Toast.makeText(context, nowOn
-                    ? "Weekly reminder on: every " + (d > 0 ? longName(d) : "week") + " at " + TIME
-                    : "Weekly reminder off", Toast.LENGTH_SHORT).show();
+                    ? "Reminders on: " + (d.isEmpty() ? "weekly" : longList(d)) + " at " + TIME
+                    : "Reminders off", Toast.LENGTH_SHORT).show();
         });
     }
 
-    interface DayChosen { void chosen(int weekday); }
+    interface DaysChosen { void chosen(Set<Integer> weekdays); }
 
-    /** A small window to choose the reminder day. */
-    static void pickDay(Context context, int current, DayChosen then) {
-        DayPicker picker = new DayPicker(context, current > 0 ? current : today());
+    /** A small window to choose the reminder days. */
+    static void pickDays(Context context, Set<Integer> current, DaysChosen then) {
+        DayPicker picker = new DayPicker(context, current.isEmpty() ? Collections.singleton(today()) : current);
         int pad = dp(context, 24);
         picker.setPadding(pad, dp(context, 8), pad, 0);
         new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setTitle("Remind me every")
+                .setTitle("Remind me on")
                 .setView(picker)
-                .setPositiveButton("Save", (d, w) -> then.chosen(picker.day()))
+                .setPositiveButton("Save", (d, w) -> then.chosen(picker.days()))
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -130,11 +143,17 @@ final class PrayerReminders {
         return new HashSet<>(prefs(context).getStringSet(MUTED, Collections.emptySet()));
     }
 
-    static Map<String, Integer> days(Context context) {
-        Map<String, Integer> out = new HashMap<>();
+    /** Chosen days per request. Saved on the phone as "key=2,4,6". */
+    static Map<String, Set<Integer>> days(Context context) {
+        Map<String, Set<Integer>> out = new HashMap<>();
         for (String entry : prefs(context).getStringSet(DAYS, Collections.emptySet())) {
             int eq = entry.lastIndexOf('=');
-            try { out.put(entry.substring(0, eq), Integer.parseInt(entry.substring(eq + 1))); } catch (Exception ignored) { }
+            if (eq < 0) continue;
+            Set<Integer> days = new TreeSet<>();
+            for (String d : entry.substring(eq + 1).split(",")) {
+                try { days.add(Integer.parseInt(d.trim())); } catch (Exception ignored) { }
+            }
+            if (!days.isEmpty()) out.put(entry.substring(0, eq), days);
         }
         return out;
     }
@@ -150,13 +169,14 @@ final class PrayerReminders {
         }
     }
 
-    static void setDay(Context context, String key, int weekday) {
-        Map<String, Integer> days = days(context);
-        days.put(key, weekday);
+    static void setDays(Context context, String key, Set<Integer> weekdays) {
+        Map<String, Set<Integer>> days = days(context);
+        days.put(key, new TreeSet<>(weekdays));
         prefs(context).edit().putStringSet(DAYS, encode(days)).apply();
         DocumentReference ref = cloudRef();
         if (ref != null) {
-            ref.set(Collections.singletonMap(DAYS, Collections.singletonMap(key, weekday)), SetOptions.merge());
+            ref.set(Collections.singletonMap(DAYS, Collections.singletonMap(key, new ArrayList<>(new TreeSet<>(weekdays)))),
+                    SetOptions.merge());
         }
     }
 
@@ -181,22 +201,30 @@ final class PrayerReminders {
         return muted;
     }
 
-    static Map<String, Integer> daysIn(DocumentSnapshot doc) {
-        Map<String, Integer> days = new HashMap<>();
+    /** Chosen days from the account: a list of weekdays, or a single number (saved before several days could be chosen). */
+    static Map<String, Set<Integer>> daysIn(DocumentSnapshot doc) {
+        Map<String, Set<Integer>> days = new HashMap<>();
         Object map = doc.get(DAYS);
-        if (map instanceof Map) {
-            for (Map.Entry<?, ?> e : ((Map<?, ?>) map).entrySet()) {
-                if (e.getKey() instanceof String && e.getValue() instanceof Number) {
-                    days.put((String) e.getKey(), ((Number) e.getValue()).intValue());
-                }
+        if (!(map instanceof Map)) return days;
+        for (Map.Entry<?, ?> e : ((Map<?, ?>) map).entrySet()) {
+            if (!(e.getKey() instanceof String)) continue;
+            Set<Integer> set = new TreeSet<>();
+            if (e.getValue() instanceof Number) set.add(((Number) e.getValue()).intValue());
+            else if (e.getValue() instanceof List) {
+                for (Object o : (List<?>) e.getValue()) if (o instanceof Number) set.add(((Number) o).intValue());
             }
+            if (!set.isEmpty()) days.put((String) e.getKey(), set);
         }
         return days;
     }
 
-    private static Set<String> encode(Map<String, Integer> days) {
+    private static Set<String> encode(Map<String, Set<Integer>> days) {
         Set<String> out = new HashSet<>();
-        for (Map.Entry<String, Integer> e : days.entrySet()) out.add(e.getKey() + "=" + e.getValue());
+        for (Map.Entry<String, Set<Integer>> e : days.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            for (int d : e.getValue()) sb.append(sb.length() > 0 ? "," : "").append(d);
+            out.add(e.getKey() + "=" + sb);
+        }
         return out;
     }
 
@@ -214,11 +242,11 @@ final class PrayerReminders {
     // ─── Days ────────────────────────────────────────────────────────────────
 
     /**
-     * True when a request is due its reminder on {@code day}: it's the chosen weekday, and it
-     * wasn't posted that same day (the first reminder comes the following week).
+     * True when a request is due a reminder on {@code day}: it's one of its days, and it wasn't
+     * posted that same day (the first reminder is its next chosen day after that).
      */
-    static boolean dueOn(int weekday, Timestamp posted, Calendar day) {
-        if (weekday <= 0 || day.get(Calendar.DAY_OF_WEEK) != weekday) return false;
+    static boolean dueOn(Set<Integer> weekdays, Timestamp posted, Calendar day) {
+        if (!weekdays.contains(day.get(Calendar.DAY_OF_WEEK))) return false;
         if (posted == null) return true;
         Calendar p = Calendar.getInstance();
         p.setTime(posted.toDate());
@@ -229,6 +257,46 @@ final class PrayerReminders {
 
     static int today() {
         return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+    }
+
+    /** In week order (Monday first). */
+    private static List<Integer> ordered(Set<Integer> days) {
+        List<Integer> out = new ArrayList<>();
+        for (int d : WEEK) if (days.contains(d)) out.add(d);
+        return out;
+    }
+
+    private static final Set<Integer> WEEKDAYS = new HashSet<>(java.util.Arrays.asList(
+            Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY));
+    private static final Set<Integer> WEEKEND = new HashSet<>(java.util.Arrays.asList(
+            Calendar.SATURDAY, Calendar.SUNDAY));
+
+    /** For a card: "Tue", "Mon Wed Fri", "Weekdays", "Weekends", "Daily" or "5 days". */
+    static String shortList(Set<Integer> days) {
+        if (days.isEmpty()) return "";
+        if (days.size() == 7) return "Daily";
+        if (days.equals(WEEKDAYS)) return "Weekdays";
+        if (days.equals(WEEKEND)) return "Weekends";
+        if (days.size() > 3) return days.size() + " days";
+        StringBuilder sb = new StringBuilder();
+        for (int d : ordered(days)) sb.append(sb.length() > 0 ? " " : "").append(shortName(d));
+        return sb.toString();
+    }
+
+    /** In a sentence: "every Tuesday", "Mon, Wed and Fri", "every weekday", "every day". */
+    static String longList(Set<Integer> days) {
+        if (days.isEmpty()) return "weekly";
+        if (days.size() == 7) return "every day";
+        if (days.equals(WEEKDAYS)) return "every weekday";
+        if (days.equals(WEEKEND)) return "every weekend";
+        List<Integer> list = ordered(days);
+        if (list.size() == 1) return "every " + longName(list.get(0));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(i == list.size() - 1 ? " and " : ", ");
+            sb.append(shortName(list.get(i)));
+        }
+        return sb.toString();
     }
 
     static String shortName(int weekday) {
@@ -251,22 +319,20 @@ final class PrayerReminders {
     }
 
     /**
-     * Seven round day buttons (M T W T F S S) under a line saying which day is chosen, e.g.
-     * "Weekly reminder: Tuesday at 6:30". Used when adding a request and when changing its day.
+     * Seven round day buttons (M T W T F S S), any number of them chosen, under a line saying
+     * which, e.g. "Reminders: Mon, Wed and Fri at 6:30". Used when adding a request and when
+     * changing its days. At least one day stays chosen; the bell is for switching off.
      */
     static final class DayPicker extends LinearLayout {
 
-        private static final int[] ORDER = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
-                Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
-
         private final TextView label;
         private final TextView[] chips = new TextView[7];
-        private int day;
+        private final Set<Integer> days = new TreeSet<>();
 
-        DayPicker(Context context, int initial) {
+        DayPicker(Context context, Set<Integer> initial) {
             super(context);
             setOrientation(VERTICAL);
-            day = initial;
+            days.addAll(initial);
 
             label = new TextView(context);
             label.setTextColor(Color.parseColor("#5F5F64"));
@@ -281,14 +347,26 @@ final class PrayerReminders {
 
             int size = dp(context, 36);
             for (int i = 0; i < 7; i++) {
-                int weekday = ORDER[i];
+                int weekday = WEEK[i];
                 TextView chip = new TextView(context);
                 chip.setText(shortName(weekday).substring(0, 1));
                 chip.setGravity(Gravity.CENTER);
                 chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 chip.setTypeface(chip.getTypeface(), android.graphics.Typeface.BOLD);
                 chip.setContentDescription(longName(weekday));
-                chip.setOnClickListener(v -> { day = weekday; refresh(); });
+                chip.setOnClickListener(v -> {
+                    if (days.contains(weekday)) {
+                        if (days.size() == 1) {
+                            Toast.makeText(context, "Keep at least one day. To stop reminders, tap the bell.",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        days.remove(weekday);
+                    } else {
+                        days.add(weekday);
+                    }
+                    refresh();
+                });
                 LayoutParams p = new LayoutParams(0, size, 1f);
                 p.setMarginEnd(i < 6 ? dp(context, 4) : 0);
                 row.addView(chip, p);
@@ -297,12 +375,13 @@ final class PrayerReminders {
             refresh();
         }
 
-        int day() { return day; }
+        Set<Integer> days() { return new TreeSet<>(days); }
 
         private void refresh() {
-            label.setText("Weekly reminder: " + longName(day) + " at " + TIME);
+            String when = longList(days);
+            label.setText("Reminders: " + Character.toUpperCase(when.charAt(0)) + when.substring(1) + " at " + TIME);
             for (int i = 0; i < 7; i++) {
-                boolean selected = ORDER[i] == day;
+                boolean selected = days.contains(WEEK[i]);
                 GradientDrawable bg = selected
                         ? new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                                 new int[]{Color.parseColor("#B58AD3"), Color.parseColor("#6A1B9A")})
@@ -317,12 +396,12 @@ final class PrayerReminders {
     }
 
     /**
-     * Adds the day picker under an "add" window's own fields and returns it, so the chosen day can
-     * be saved with the new request.
+     * Adds the day picker under an "add" window's own fields and returns it, so the chosen days
+     * can be saved with the new request.
      */
     static DayPicker addPickerTo(View dialogView) {
         Context context = dialogView.getContext();
-        DayPicker picker = new DayPicker(context, today());
+        DayPicker picker = new DayPicker(context, Collections.singleton(today()));
         // The add windows are a purple header followed by the white section with the fields.
         android.view.ViewGroup root = (android.view.ViewGroup) dialogView;
         View last = root.getChildAt(root.getChildCount() - 1);
