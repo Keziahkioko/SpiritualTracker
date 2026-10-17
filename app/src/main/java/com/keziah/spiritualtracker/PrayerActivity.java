@@ -10,6 +10,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class PrayerActivity extends AppCompatActivity {
 
+    /** Which tab to open on: 0 Connection, 1 Shared, 2 My Space (from a prayer reminder). */
+    static final String EXTRA_TAB = "tab";
+
     private ViewPager2 viewPager;
     private BottomNavigationView bottomNavigation;
 
@@ -68,6 +71,10 @@ public class PrayerActivity extends AppCompatActivity {
             }
         });
 
+        openTab(getIntent());
+        // Bells switched off on another phone (or before reinstalling) show correctly here.
+        PrayerReminders.sync(this, null);
+
         // 4. Headers run up behind the status bar. Because the window no longer resizes for the
         //    keyboard by itself, lift the content above it and hide the bottom nav while typing.
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -84,5 +91,16 @@ public class PrayerActivity extends AppCompatActivity {
             v.setPadding(0, 0, 0, keyboardOpen ? imeBottom : 0);
             return insets;
         });
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        openTab(intent);
+    }
+
+    private void openTab(android.content.Intent intent) {
+        int tab = intent != null ? intent.getIntExtra(EXTRA_TAB, -1) : -1;
+        if (tab >= 0 && tab <= 2) viewPager.setCurrentItem(tab, false);
     }
 }

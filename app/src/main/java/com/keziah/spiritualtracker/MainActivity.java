@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermission();
         DailyVerseReminderWorker.schedule(this);
         ReminderWorker.schedule(this);
+        PrayerReminders.schedule(this);
 
         setupProgressListeners();
         handleNotificationIntent(getIntent());

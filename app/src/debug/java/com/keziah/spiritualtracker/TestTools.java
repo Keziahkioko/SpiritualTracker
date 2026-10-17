@@ -26,6 +26,8 @@ import java.util.Map;
  *   SNAPSHOT  remembers whether today's Memorize was already done, before testing starts
  *   SHIFT     moves the TEST verses' dates back (--ei days N, default 1), as if days had passed
  *   CLEANUP   deletes the TEST verses and takes them out of today's history, restoring the snapshot
+ *   PRAYER    shows the 12:30 prayer reminder now, as it would be on the next given weekday
+ *             (--ei weekday 1-7, Sunday = 1); reads only, nothing is saved
  * Nothing else is touched. Results go to logcat under "TestTools".
  */
 public class TestTools extends BroadcastReceiver {
@@ -114,6 +116,22 @@ public class TestTools extends BroadcastReceiver {
                         pending.finish();
                     });
                 });
+                break;
+
+            case "PRAYER":
+                int weekday = intent.getIntExtra("weekday", Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+                Calendar day = Calendar.getInstance();
+                day.add(Calendar.DAY_OF_YEAR, 1);
+                while (day.get(Calendar.DAY_OF_WEEK) != weekday) day.add(Calendar.DAY_OF_YEAR, 1);
+                new Thread(() -> {
+                    try {
+                        int n = PrayerReminderWorker.remind(context.getApplicationContext(), uid, day);
+                        Log.i(TAG, "PRAYER as on " + ActivityLog.dayKey(day.getTime()) + ": " + n + " request(s)");
+                    } catch (Exception e) {
+                        Log.w(TAG, "PRAYER failed", e);
+                    }
+                    pending.finish();
+                }).start();
                 break;
 
             default:

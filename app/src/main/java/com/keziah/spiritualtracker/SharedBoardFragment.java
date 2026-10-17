@@ -231,7 +231,7 @@ public class SharedBoardFragment extends Fragment {
 
     // ─── Focus list UI ──────────────────────────────────────────
 
-    private void addItemToLayout(String id, String title) {
+    private void addItemToLayout(String id, String title, com.google.firebase.Timestamp posted) {
         int dp10 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
         int dp8  = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,  getResources().getDisplayMetrics());
 
@@ -255,11 +255,30 @@ public class SharedBoardFragment extends Fragment {
         tv.setTextColor(Color.parseColor("#1A1A1A"));
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         tv.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        tv.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         row.addView(dot);
         row.addView(tv);
+
+        // Weekly reminder: the day it comes back, and a bell to switch it on or off.
+        TextView day = new TextView(getContext());
+        day.setTextColor(Color.parseColor("#7E57C2"));
+        day.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        day.setTypeface(Typeface.DEFAULT_BOLD);
+        day.setPadding(dp8, 0, 0, 0);
+        android.widget.ImageView bell = new android.widget.ImageView(getContext());
+        int bellSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
+        int bellPad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, getResources().getDisplayMetrics());
+        LinearLayout.LayoutParams bellParams = new LinearLayout.LayoutParams(bellSize, bellSize);
+        bellParams.setMarginEnd(-bellPad);
+        bell.setLayoutParams(bellParams);
+        bell.setPadding(bellPad, bellPad, bellPad, bellPad);
+        android.util.TypedValue ripple = new android.util.TypedValue();
+        requireContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
+        bell.setBackgroundResource(ripple.resourceId);
+        row.addView(day);
+        row.addView(bell);
+        PrayerReminders.bind(bell, day, PrayerReminders.JOINT + id, posted);
 
         android.view.View divider = new android.view.View(getContext());
         divider.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
@@ -318,7 +337,7 @@ public class SharedBoardFragment extends Fragment {
                     layoutJointListItems.removeAllViews();
                     for (com.google.firebase.firestore.DocumentSnapshot doc : value.getDocuments()) {
                         String title = doc.getString("title");
-                        if (title != null) addItemToLayout(doc.getId(), title);
+                        if (title != null) addItemToLayout(doc.getId(), title, doc.getTimestamp("timestamp"));
                     }
                 });
     }

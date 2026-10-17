@@ -10,6 +10,7 @@
                 <action android:name="com.keziah.spiritualtracker.test.SNAPSHOT" />
                 <action android:name="com.keziah.spiritualtracker.test.SHIFT" />
                 <action android:name="com.keziah.spiritualtracker.test.CLEANUP" />
+                <action android:name="com.keziah.spiritualtracker.test.PRAYER" />
             </intent-filter>
         </receiver>
     </application>

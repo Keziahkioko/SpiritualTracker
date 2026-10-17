@@ -387,6 +387,12 @@ public class MySpaceFragment extends Fragment {
                                         .setDuration(80).withEndAction(() -> onTap.onAction(pr))));
             }
 
+            // Weekly reminder bell while the prayer is still waiting for an answer.
+            boolean remindable = !pr.isAnswered() && pr.getRequestId() != null;
+            h.bell.setVisibility(remindable ? View.VISIBLE : View.GONE);
+            if (!remindable) h.reminderDay.setVisibility(View.GONE);
+            else PrayerReminders.bind(h.bell, h.reminderDay, PrayerReminders.PERSONAL + pr.getRequestId(), pr.getTimestamp());
+
             h.card.setOnClickListener(v -> onTap.onAction(pr));
             h.card.setOnLongClickListener(v -> { onLongTap.onAction(pr); return true; });
         }
@@ -399,7 +405,8 @@ public class MySpaceFragment extends Fragment {
         void setAnsweredCount(int count) { answeredCount = count; }
 
         static class VH extends RecyclerView.ViewHolder {
-            TextView tvTitle, tvDescription, tvDate, tvSection, tvTestimony, answeredLabel;
+            TextView tvTitle, tvDescription, tvDate, tvSection, tvTestimony, answeredLabel, reminderDay;
+            android.widget.ImageView bell;
             View stripeView, answeredBadge, testimonyBox, card;
             android.widget.ImageView answeredIcon;
 
@@ -416,6 +423,8 @@ public class MySpaceFragment extends Fragment {
                 tvDate       = v.findViewById(R.id.tvPersonalDate);
                 stripeView   = v.findViewById(R.id.viewAccentStripe);
                 answeredBadge = v.findViewById(R.id.personalAnsweredBadge);
+                bell         = v.findViewById(R.id.personalReminderBell);
+                reminderDay  = v.findViewById(R.id.personalReminderDay);
             }
         }
     }

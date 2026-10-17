@@ -30,7 +30,13 @@ final class DailySchedule {
      */
     static void bookNext(Context context, String name, Class<? extends ListenableWorker> worker,
                          int dayOfWeek, int hour, Data input) {
-        Calendar next = nextAt(dayOfWeek, hour, System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1));
+        bookNext(context, name, worker, dayOfWeek, hour, 0, input);
+    }
+
+    /** As above, at {@code hour}:{@code minute}. */
+    static void bookNext(Context context, String name, Class<? extends ListenableWorker> worker,
+                         int dayOfWeek, int hour, int minute, Data input) {
+        Calendar next = nextAt(dayOfWeek, hour, minute, System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1));
         long delay = Math.max(0, next.getTimeInMillis() - System.currentTimeMillis());
         // One name per slot, so the run that's finishing can book tomorrow's without replacing itself.
         WorkManager.getInstance(context).enqueueUniqueWork(
@@ -50,10 +56,14 @@ final class DailySchedule {
 
     /** Next {@code hour}:00 after {@code afterMillis}, optionally on a given weekday (-1 = any day). */
     static Calendar nextAt(int dayOfWeek, int hour, long afterMillis) {
+        return nextAt(dayOfWeek, hour, 0, afterMillis);
+    }
+
+    static Calendar nextAt(int dayOfWeek, int hour, int minute, long afterMillis) {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(afterMillis);
         c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.MINUTE, minute);
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
         while (c.getTimeInMillis() <= afterMillis

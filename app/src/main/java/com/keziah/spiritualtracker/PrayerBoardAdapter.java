@@ -63,6 +63,15 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
         }
         holder.tvAuthor.setText(authorLine);
 
+        // Weekly reminder bell, on the board only (answered requests have left it).
+        if (holder.bell != null) {
+            boolean remindable = !isVaultView && !request.isAnswered() && request.getRequestId() != null;
+            holder.bell.setVisibility(remindable ? View.VISIBLE : View.GONE);
+            if (holder.reminderDay != null && !remindable) holder.reminderDay.setVisibility(View.GONE);
+            if (remindable) PrayerReminders.bind(holder.bell, holder.reminderDay,
+                    PrayerReminders.SHARED + request.getRequestId(), request.getTimestamp());
+        }
+
         // ─── PERMISSION CHECK: Only show answered badge if user is the author ───
         if (isVaultView) {
             if (holder.badgeContainer != null) {
@@ -112,8 +121,9 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
     }
 
     public static class PrayerBoardViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvDescription, tvAuthor;
+        TextView tvTitle, tvDescription, tvAuthor, reminderDay;
         View badgeContainer;
+        android.widget.ImageView bell;
 
         public PrayerBoardViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -121,6 +131,8 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
             tvDescription = itemView.findViewById(R.id.tvRequestDescription);
             tvAuthor = itemView.findViewById(R.id.tvRequestAuthor);
             badgeContainer = itemView.findViewById(R.id.answeredBadge);
+            bell = itemView.findViewById(R.id.requestReminderBell);
+            reminderDay = itemView.findViewById(R.id.requestReminderDay);
         }
     }
 }

@@ -113,6 +113,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 intent = new Intent(context, PrayerActivity.class);
                 break;
 
+            case "prayer_reminder":
+                // docId carries the tab: 1 = Shared, 2 = My Space.
+                intent = new Intent(context, PrayerActivity.class);
+                try { intent.putExtra(PrayerActivity.EXTRA_TAB, Integer.parseInt(docId)); } catch (Exception ignored) { }
+                break;
+
             case "history":
                 intent = new Intent(context, HistoryActivity.class);
                 break;
