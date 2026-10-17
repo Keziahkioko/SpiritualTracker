@@ -123,7 +123,7 @@ public class MySpaceFragment extends Fragment {
                 });
     }
 
-    private void savePersonalPrayer(String title, String desc) {
+    private void savePersonalPrayer(String title, String desc, int reminderDay) {
         if (currentUserId == null) return;
 
         Map<String, Object> data = new HashMap<>();
@@ -133,9 +133,10 @@ public class MySpaceFragment extends Fragment {
         data.put("isAnswered", false);
         data.put("timestamp", FieldValue.serverTimestamp());
 
-        db.collection("users").document(currentUserId)
-                .collection("personal_prayers")
-                .add(data)
+        com.google.firebase.firestore.DocumentReference newRef = db.collection("users").document(currentUserId)
+                .collection("personal_prayers").document();
+        PrayerReminders.setDay(requireContext(), PrayerReminders.PERSONAL + newRef.getId(), reminderDay);
+        newRef.set(data)
                 .addOnSuccessListener(ref ->
                         Toast.makeText(getContext(), "Prayer added 🙏", Toast.LENGTH_SHORT).show());
     }
@@ -183,13 +184,14 @@ public class MySpaceFragment extends Fragment {
                 .inflate(R.layout.dialog_add_personal_prayer, null);
         TextInputEditText etTitle = dialogView.findViewById(R.id.etPersonalTitle);
         TextInputEditText etDesc  = dialogView.findViewById(R.id.etPersonalDescription);
+        PrayerReminders.DayPicker day = PrayerReminders.addPickerTo(dialogView);
 
         new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setView(dialogView)
                 .setPositiveButton("Add Prayer", (d, w) -> {
                     String title = etTitle.getText() != null ? etTitle.getText().toString().trim() : "";
                     String desc  = etDesc.getText()  != null ? etDesc.getText().toString().trim()  : "";
-                    if (!title.isEmpty()) savePersonalPrayer(title, desc);
+                    if (!title.isEmpty()) savePersonalPrayer(title, desc, day.day());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

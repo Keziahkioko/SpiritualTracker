@@ -19,11 +19,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 12:30 every day: the unanswered prayer requests whose weekday it is (see PrayerReminders),
+ * 6:30 every morning: the unanswered prayer requests whose chosen day it is (see PrayerReminders),
  * from the shared board (both of ours), the joint focus list and my personal list, gathered
  * into one notification. Requests with their bell switched off are left out.
  */
@@ -62,12 +63,14 @@ public class PrayerReminderWorker extends Worker {
         if (partnerId != null && partnerId.isEmpty()) partnerId = null;
         String partner = PartnerName.get(context);
 
+        // Your bells and chosen days: from your account, or the phone's copy if that can't be read.
         Set<String> muted = PrayerReminders.muted(context);
+        Map<String, Integer> days = PrayerReminders.days(context);
         try {
-            Object list = await(PrayerReminders.cloudRef().get()).get("muted");
-            if (list instanceof List) {
-                muted = new HashSet<>();
-                for (Object o : (List<?>) list) if (o instanceof String) muted.add((String) o);
+            DocumentSnapshot choices = await(PrayerReminders.cloudRef().get());
+            if (choices.exists()) {
+                muted = PrayerReminders.mutedIn(choices);
+                days = PrayerReminders.daysIn(choices);
             }
         } catch (Exception e) {
             Log.w(TAG, "Using the phone's copy of the bells", e);
@@ -80,7 +83,7 @@ public class PrayerReminderWorker extends Worker {
         QuerySnapshot shared = await(db.collection("shared_prayers")
                 .whereIn("authorId", partnerId != null ? Arrays.asList(uid, partnerId) : Arrays.asList(uid)).get());
         for (DocumentSnapshot d : shared.getDocuments()) {
-            if (!due(d, PrayerReminders.SHARED, muted, today)) continue;
+            if (!due(d, PrayerReminders.SHARED, muted, days, today)) continue;
             lines.add(uid.equals(d.getString("authorId"))
                     ? "Keep praying about your request: " + shorten(d.getString("title"))
                     : "Pray for " + partner + " concerning: " + shorten(d.getString("title")));
@@ -92,7 +95,7 @@ public class PrayerReminderWorker extends Worker {
             String pair = uid.compareTo(partnerId) < 0 ? uid + "_" + partnerId : partnerId + "_" + uid;
             QuerySnapshot joint = await(db.collection("partnerships").document(pair).collection("joint_list").get());
             for (DocumentSnapshot d : joint.getDocuments()) {
-                if (!due(d, PrayerReminders.JOINT, muted, today)) continue;
+                if (!due(d, PrayerReminders.JOINT, muted, days, today)) continue;
                 lines.add("Pray together for: " + shorten(d.getString("title")));
                 if (tab == 0) tab = SHARED_TAB;
             }
@@ -101,7 +104,7 @@ public class PrayerReminderWorker extends Worker {
         // My personal list.
         QuerySnapshot personal = await(db.collection("users").document(uid).collection("personal_prayers").get());
         for (DocumentSnapshot d : personal.getDocuments()) {
-            if (!due(d, PrayerReminders.PERSONAL, muted, today)) continue;
+            if (!due(d, PrayerReminders.PERSONAL, muted, days, today)) continue;
             lines.add("Remember to pray for: " + shorten(d.getString("title")));
             if (tab == 0) tab = MY_SPACE_TAB;
         }
@@ -121,12 +124,21 @@ public class PrayerReminderWorker extends Worker {
         return lines.size();
     }
 
-    private static boolean due(DocumentSnapshot d, String kind, Set<String> muted, Calendar today) {
+    private static boolean due(DocumentSnapshot d, String kind, Set<String> muted, Map<String, Integer> days,
+                               Calendar today) {
         if (Boolean.TRUE.equals(d.getBoolean("isAnswered"))) return false;
+        String key = kind + d.getId();
         String title = d.getString("title");
-        if (title == null || title.trim().isEmpty() || muted.contains(kind + d.getId())) return false;
+        if (title == null || title.trim().isEmpty() || muted.contains(key)) return false;
         Timestamp posted = d.getTimestamp("timestamp");
-        return PrayerReminders.dueOn(posted, today);
+        Integer chosen = days.get(key);
+        int weekday = chosen != null ? chosen : -1;
+        if (weekday <= 0 && posted != null) {
+            Calendar p = Calendar.getInstance();
+            p.setTime(posted.toDate());
+            weekday = p.get(Calendar.DAY_OF_WEEK);
+        }
+        return PrayerReminders.dueOn(weekday, posted, today);
     }
 
     /** First line of a title, kept short: a focus item can be several paragraphs long. */

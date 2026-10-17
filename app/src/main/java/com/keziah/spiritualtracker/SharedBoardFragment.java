@@ -127,13 +127,14 @@ public class SharedBoardFragment extends Fragment {
         PartnerName.apply(dialogView);
         TextInputEditText etTitle = dialogView.findViewById(R.id.etRequestTitle);
         TextInputEditText etDesc  = dialogView.findViewById(R.id.etRequestDescription);
+        PrayerReminders.DayPicker day = PrayerReminders.addPickerTo(dialogView);
 
         new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setView(dialogView)
                 .setPositiveButton("Post Request", (d, w) -> {
                     String title = etTitle.getText() != null ? etTitle.getText().toString().trim() : "";
                     String desc  = etDesc.getText()  != null ? etDesc.getText().toString().trim()  : "";
-                    if (!title.isEmpty()) saveRequestToFirebase(title, desc);
+                    if (!title.isEmpty()) saveRequestToFirebase(title, desc, day.day());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -167,12 +168,13 @@ public class SharedBoardFragment extends Fragment {
         View dialogView = LayoutInflater.from(getContext())
                 .inflate(R.layout.dialog_add_focus_item, null);
         TextInputEditText et = dialogView.findViewById(R.id.etFocusItem);
+        PrayerReminders.DayPicker day = PrayerReminders.addPickerTo(dialogView);
 
         new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setView(dialogView)
                 .setPositiveButton("Add", (d, w) -> {
                     String item = et.getText() != null ? et.getText().toString().trim() : "";
-                    if (!item.isEmpty()) saveJointItem(item);
+                    if (!item.isEmpty()) saveJointItem(item, day.day());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -370,14 +372,16 @@ public class SharedBoardFragment extends Fragment {
                 });
     }
 
-    private void saveJointItem(String title) {
+    private void saveJointItem(String title, int reminderDay) {
         String pId = getPartnershipId();
         if (pId == null) return;
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("isChecked", false);
         data.put("timestamp", FieldValue.serverTimestamp());
-        db.collection("partnerships").document(pId).collection("joint_list").add(data);
+        DocumentReference ref = db.collection("partnerships").document(pId).collection("joint_list").document();
+        PrayerReminders.setDay(requireContext(), PrayerReminders.JOINT + ref.getId(), reminderDay);
+        ref.set(data);
         incrementPartnerUnread("unreadPrayer");
         notifyPartner("New Focus Item ✨", myName + " added a new focus item", "prayer_update");
     }
@@ -401,10 +405,12 @@ public class SharedBoardFragment extends Fragment {
         notifyPartner("Prayer Answered! 🎉", myName + " marked a prayer as answered", "prayer_update");
     }
 
-    private void saveRequestToFirebase(String title, String desc) {
+    private void saveRequestToFirebase(String title, String desc, int reminderDay) {
+        android.content.Context context = requireContext().getApplicationContext();
         db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
             myName = UserProfile.displayName(doc);
             DocumentReference ref = db.collection("shared_prayers").document();
+            PrayerReminders.setDay(context, PrayerReminders.SHARED + ref.getId(), reminderDay);
             PrayerRequest pr = new PrayerRequest(ref.getId(), title, desc, currentUserId, myName,
                     new Timestamp(new Date()), false);
             ref.set(pr).addOnSuccessListener(v -> {
