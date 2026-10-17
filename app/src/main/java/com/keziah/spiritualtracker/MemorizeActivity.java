@@ -982,9 +982,21 @@ public class MemorizeActivity extends AppCompatActivity {
         for (int line = 0; line < check.lines.size(); line++) {
             String[] m = meaning.get(line);
             if (check.notExactOn(line) == 0 || m == null || "same".equals(m[0])) continue;
-            String verse = check.verseNumber(line);
-            notes.append("\n• ").append(verse != null ? "Verse " + verse : "Line " + (line + 1)).append(": ")
-                 .append(!m[1].isEmpty() ? m[1] : "missing".equals(m[0]) ? "mostly missing" : "the meaning changed");
+            // Verses missing one after another make one line ("Verses 6–21: not said"), so a
+            // long passage recited only in part doesn't push the buttons off the screen.
+            int end = line;
+            if ("missing".equals(m[0])) {
+                while (end + 1 < check.lines.size() && meaning.get(end + 1) != null
+                        && "missing".equals(meaning.get(end + 1)[0]) && check.notExactOn(end + 1) > 0) end++;
+            }
+            String first = check.verseNumber(line), last = check.verseNumber(end);
+            String label = end > line
+                    ? (first != null && last != null ? "Verses " + first + "–" + last : "Lines " + (line + 1) + "–" + (end + 1))
+                    : (first != null ? "Verse " + first : "Line " + (line + 1));
+            notes.append("\n• ").append(label).append(": ")
+                 .append(end > line ? "not said" : !m[1].isEmpty() ? m[1]
+                         : "missing".equals(m[0]) ? "mostly missing" : "the meaning changed");
+            line = end;
         }
         if (notes.length() == 0) {
             return out.append(pct >= 90 ? "\nSame meaning. That's a Got it!"
