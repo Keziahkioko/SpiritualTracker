@@ -89,50 +89,65 @@
                         android:orientation="vertical"
                         android:padding="22dp">
 
-                        <!-- Card header row -->
-                        <RelativeLayout
+                        <!-- Card header row: title, how many, and a small menu (Clear all) -->
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="14dp">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp">
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:text="Prayer Focus"
                                 android:textColor="#1C1C1E"
                                 android:textSize="18sp"
                                 android:fontFamily="serif"
-                                android:textStyle="bold"
-                                android:layout_centerVertical="true"/>
+                                android:textStyle="bold"/>
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnClearJointList"
-                                style="@style/Widget.Material3.Button.TextButton"
+                            <TextView
+                                android:id="@+id/tvJointCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:text="Clear all"
-                                android:textAllCaps="false"
+                                android:textColor="#7E57C2"
                                 android:textSize="12sp"
-                                android:textColor="#5F5F64"
-                                android:paddingEnd="0dp"/>
-                        </RelativeLayout>
+                                android:visibility="gone"/>
 
-                        <!-- Focus items dynamically added here -->
+                            <ImageView
+                                android:id="@+id/btnClearJointList"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:layout_marginStart="4dp"
+                                android:layout_marginEnd="-8dp"
+                                android:padding="6dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="More options"
+                                android:src="@drawable/ic_more_vert"/>
+                        </LinearLayout>
+
+                        <!-- Shown while the list is empty -->
+                        <TextView
+                            android:id="@+id/tvJointEmpty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nothing here yet. Add something you're both praying about."
+                            android:textColor="#8E8A96"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="4dp"
+                            android:visibility="gone"/>
+
+                        <!-- Focus items (rounded tiles) are added here -->
                         <LinearLayout
                             android:id="@+id/layoutJointListItems"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"/>
 
-                        <!-- Divider -->
-                        <View
+                        <Space
                             android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#12000000"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginBottom="10dp"/>
+                            android:layout_height="6dp"/>
 
                         <!-- Add item button -->
                         <com.google.android.material.button.MaterialButton

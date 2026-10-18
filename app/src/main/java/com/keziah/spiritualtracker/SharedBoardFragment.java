@@ -42,6 +42,7 @@ public class SharedBoardFragment extends Fragment {
     private List<PrayerRequest> requestList;
     private ExtendedFloatingActionButton fabAddRequest;
     private LinearLayout layoutJointListItems;
+    private TextView tvJointCount, tvJointEmpty;
     private TextView btnViewVault, tvJointListTitle;
 
     private FirebaseFirestore db;
@@ -80,9 +81,16 @@ public class SharedBoardFragment extends Fragment {
                 .format(new java.util.Date()).toUpperCase();
         if (tvJointListTitle != null) tvJointListTitle.setText(dayOfWeek);
 
-        // Clear all wired through btnClearJointList in layout
+        // "Clear all" lives in the small ⋮ menu, out of the way of the list.
         View btnClear = view.findViewById(R.id.btnClearJointList);
-        if (btnClear != null) btnClear.setOnClickListener(v -> showClearConfirmation());
+        if (btnClear != null) btnClear.setOnClickListener(v -> {
+            android.widget.PopupMenu menu = new android.widget.PopupMenu(requireContext(), v);
+            menu.getMenu().add("Clear all");
+            menu.setOnMenuItemClickListener(item -> { showClearConfirmation(); return true; });
+            menu.show();
+        });
+        tvJointCount = view.findViewById(R.id.tvJointCount);
+        tvJointEmpty = view.findViewById(R.id.tvJointEmpty);
 
         View btnAdd = view.findViewById(R.id.btnAddJointItem);
         if (btnAdd != null) btnAdd.setOnClickListener(v -> showAddJointItemDialog());
@@ -233,77 +241,109 @@ public class SharedBoardFragment extends Fragment {
 
     // ─── Focus list UI ──────────────────────────────────────────
 
+    /**
+     * One focus item as a soft lavender tile: up to two lines (a long note shows its first line in
+     * bold and a one-line preview), with its reminder days and bell at the bottom right. Tap to
+     * read it in full; long-press to remove.
+     */
     private void addItemToLayout(String id, String title, com.google.firebase.Timestamp posted) {
-        int dp10 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-        int dp8  = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,  getResources().getDisplayMetrics());
+        android.content.Context ctx = requireContext();
+        int dp4 = PrayerReminders.dp(ctx, 4), dp8 = PrayerReminders.dp(ctx, 8);
 
-        LinearLayout row = new LinearLayout(getContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp10, 0, dp10);
+        LinearLayout tile = new LinearLayout(ctx);
+        tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setPadding(PrayerReminders.dp(ctx, 14), PrayerReminders.dp(ctx, 12), PrayerReminders.dp(ctx, 10), dp4);
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(Color.parseColor("#F6F2FB"));
+        bg.setCornerRadius(PrayerReminders.dp(ctx, 14));
+        tile.setBackground(bg);
+        android.util.TypedValue ripple = new android.util.TypedValue();
+        ctx.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+        tile.setForeground(androidx.core.content.ContextCompat.getDrawable(ctx, ripple.resourceId));
+        LinearLayout.LayoutParams tileParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tileParams.bottomMargin = dp8;
+        tile.setLayoutParams(tileParams);
 
-        android.view.View dot = new android.view.View(getContext());
-        int dotSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-        LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dotSizePx, dotSizePx);
-        dotParams.setMarginEnd(dp10);
-        dot.setLayoutParams(dotParams);
-        android.graphics.drawable.GradientDrawable dotShape = new android.graphics.drawable.GradientDrawable();
-        dotShape.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-        dotShape.setColor(Color.parseColor("#7E57C2"));
-        dot.setBackground(dotShape);
+        // A note of several lines: its first line as the heading, the rest as a short preview.
+        List<String> lines = new ArrayList<>();
+        for (String l : title.split("\n")) if (!l.trim().isEmpty()) lines.add(l.replaceAll("\\s+", " ").trim());
+        String heading = lines.isEmpty() ? title.trim() : lines.get(0);
+        String preview = lines.size() > 1 ? String.join(" ", lines.subList(1, lines.size())) : null;
 
-        TextView tv = new TextView(getContext());
-        tv.setText(title);
-        tv.setTextColor(Color.parseColor("#1A1A1A"));
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        tv.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView tvHeading = new TextView(ctx);
+        tvHeading.setText(heading);
+        tvHeading.setTextColor(Color.parseColor("#1A1A1A"));
+        tvHeading.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        tvHeading.setTypeface(Typeface.create("sans-serif-medium", preview != null ? Typeface.BOLD : Typeface.NORMAL));
+        tvHeading.setMaxLines(preview != null ? 1 : 2);
+        tvHeading.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        tvHeading.setLineSpacing(PrayerReminders.dp(ctx, 2), 1f);
+        tile.addView(tvHeading);
 
-        row.addView(dot);
-        row.addView(tv);
+        if (preview != null) {
+            TextView tvPreview = new TextView(ctx);
+            tvPreview.setText(preview);
+            tvPreview.setTextColor(Color.parseColor("#5F5F64"));
+            tvPreview.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            tvPreview.setMaxLines(1);
+            tvPreview.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams pp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            pp.topMargin = PrayerReminders.dp(ctx, 2);
+            tile.addView(tvPreview, pp);
+        }
 
-        // Weekly reminder: the day it comes back, and a bell to switch it on or off.
-        TextView day = new TextView(getContext());
+        // Reminder days and bell, tucked bottom right.
+        LinearLayout footer = new LinearLayout(ctx);
+        footer.setOrientation(LinearLayout.HORIZONTAL);
+        footer.setGravity(android.view.Gravity.END | android.view.Gravity.CENTER_VERTICAL);
+        TextView day = new TextView(ctx);
         day.setTextColor(Color.parseColor("#7E57C2"));
         day.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         day.setTypeface(Typeface.DEFAULT_BOLD);
-        day.setPadding(dp8, 0, 0, 0);
-        android.widget.ImageView bell = new android.widget.ImageView(getContext());
-        int bellSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
-        int bellPad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, getResources().getDisplayMetrics());
-        LinearLayout.LayoutParams bellParams = new LinearLayout.LayoutParams(bellSize, bellSize);
-        bellParams.setMarginEnd(-bellPad);
-        bell.setLayoutParams(bellParams);
+        day.setPadding(dp8, dp4, dp4, dp4);
+        android.widget.ImageView bell = new android.widget.ImageView(ctx);
+        int bellSize = PrayerReminders.dp(ctx, 32), bellPad = PrayerReminders.dp(ctx, 6);
+        bell.setLayoutParams(new LinearLayout.LayoutParams(bellSize, bellSize));
         bell.setPadding(bellPad, bellPad, bellPad, bellPad);
-        android.util.TypedValue ripple = new android.util.TypedValue();
-        requireContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
-        bell.setBackgroundResource(ripple.resourceId);
-        row.addView(day);
-        row.addView(bell);
+        android.util.TypedValue round = new android.util.TypedValue();
+        ctx.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, round, true);
+        bell.setBackgroundResource(round.resourceId);
+        footer.addView(day);
+        footer.addView(bell);
+        tile.addView(footer, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         PrayerReminders.bind(bell, day, PrayerReminders.JOINT + id, posted);
 
-        android.view.View divider = new android.view.View(getContext());
-        divider.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        divider.setBackgroundColor(Color.parseColor("#12000000"));
+        tile.setOnClickListener(v -> showFocusItem(id, title));
+        tile.setOnLongClickListener(v -> { confirmRemoveFocusItem(id, heading); return true; });
+        layoutJointListItems.addView(tile);
+    }
 
-        LinearLayout wrapper = new LinearLayout(getContext());
-        wrapper.setOrientation(LinearLayout.VERTICAL);
-        wrapper.addView(row);
-        wrapper.addView(divider);
+    /** The whole focus item, however long, with Remove to hand. */
+    private void showFocusItem(String id, String title) {
+        androidx.appcompat.app.AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+                        .setTitle("Prayer focus")
+                        .setMessage(title.trim())
+                        .setPositiveButton("Close", null)
+                        .setNeutralButton("Remove", (d, w) -> confirmRemoveFocusItem(id,
+                                PrayerReminderWorker.shorten(title)))
+                        .show();
+        android.widget.Button remove = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
+        if (remove != null) remove.setTextColor(Color.parseColor("#C62828"));
+    }
 
-        wrapper.setOnLongClickListener(v -> {
-            new MaterialAlertDialogBuilder(getContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
-                    .setTitle("Remove Item?")
-                    .setMessage("Remove \"" + title + "\" from your focus list?")
-                    .setPositiveButton("Remove", (dialog, which) ->
-                            db.collection("partnerships").document(getPartnershipId())
-                                    .collection("joint_list").document(id).delete())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        });
-
-        layoutJointListItems.addView(wrapper);
+    private void confirmRemoveFocusItem(String id, String heading) {
+        new MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Remove item?")
+                .setMessage("Remove \"" + heading + "\" from your focus list?")
+                .setPositiveButton("Remove", (dialog, which) ->
+                        db.collection("partnerships").document(getPartnershipId())
+                                .collection("joint_list").document(id).delete())
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     // ─── Firestore ───────────────────────────────────────────────
@@ -336,11 +376,20 @@ public class SharedBoardFragment extends Fragment {
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener((value, error) -> {
                     if (error != null || value == null) return;
+                    if (!isAdded()) return;
                     layoutJointListItems.removeAllViews();
+                    int count = 0;
                     for (com.google.firebase.firestore.DocumentSnapshot doc : value.getDocuments()) {
                         String title = doc.getString("title");
-                        if (title != null) addItemToLayout(doc.getId(), title, doc.getTimestamp("timestamp"));
+                        if (title == null || title.trim().isEmpty()) continue;
+                        addItemToLayout(doc.getId(), title, doc.getTimestamp("timestamp"));
+                        count++;
                     }
+                    if (tvJointCount != null) {
+                        tvJointCount.setText(count == 1 ? "1 item" : count + " items");
+                        tvJointCount.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
+                    }
+                    if (tvJointEmpty != null) tvJointEmpty.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
                 });
     }
 
