@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_chat_input"
-    android:backgroundTint="#FFFFFF"
+    android:backgroundTint="@color/st_surface"
     android:elevation="8dp"
     android:orientation="vertical"
     android:paddingVertical="8dp">
@@ -33,14 +33,14 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="4dp"
-            android:background="#E0E0E0" />
+            android:background="@color/st_stroke" />
 
         <TextView
             android:id="@+id/btnEditMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Edit Message"
-            android:textColor="#333333"
+            android:textColor="@color/st_text"
             android:textSize="14sp"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Delete Message"
-            android:textColor="#D32F2F"
+            android:textColor="@color/st_danger"
             android:textSize="14sp"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"

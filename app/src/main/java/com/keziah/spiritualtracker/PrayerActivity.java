@@ -27,7 +27,7 @@ public class PrayerActivity extends AppCompatActivity {
         // Force light-purple indicator pill regardless of dark mode
         try {
             bottomNavigation.setItemActiveIndicatorColor(
-                    ColorStateList.valueOf(Color.parseColor("#EDE7F6")));
+                    ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.st_soft)));
         } catch (Exception ignored) {
             // Older Material version — indicator color handled by theme
         }

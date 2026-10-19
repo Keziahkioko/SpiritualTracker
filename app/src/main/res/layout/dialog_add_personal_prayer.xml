@@ -55,15 +55,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="#FFFFFF">
+        android:background="@color/st_surface">
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Prayer title"
-            app:boxStrokeColor="#7E57C2"
-            app:hintTextColor="#7E57C2"
+            app:boxStrokeColor="@color/st_accent"
+            app:hintTextColor="@color/st_accent"
             android:layout_marginBottom="16dp">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPersonalTitle"
@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
                 android:textSize="15sp"
-                android:textColor="#1A1A1A"/>
+                android:textColor="@color/st_text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -79,8 +79,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Details (optional)"
-            app:boxStrokeColor="#7E57C2"
-            app:hintTextColor="#7E57C2">
+            app:boxStrokeColor="@color/st_accent"
+            app:hintTextColor="@color/st_accent">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPersonalDescription"
                 android:layout_width="match_parent"
@@ -89,7 +89,7 @@
                 android:minLines="3"
                 android:inputType="textMultiLine|textCapSentences"
                 android:textSize="15sp"
-                android:textColor="#1A1A1A"/>
+                android:textColor="@color/st_text"/>
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 </LinearLayout>

@@ -5,17 +5,17 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="4dp"
     android:layout_marginBottom="10dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
-    app:cardMaxElevation="4dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:strokeWidth="1dp"
-    app:strokeColor="#EDE7F6">
+    app:cardCornerRadius="18dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="3dp"
+        android:background="@drawable/bg_card_small">
 
         <!-- Purple left accent stripe -->
         <View
@@ -44,7 +44,7 @@
                     android:layout_toStartOf="@+id/answeredBadge"
                     android:layout_marginEnd="8dp"
                     android:text="Prayer Title"
-                    android:textColor="#1A1A1A"
+                    android:textColor="@color/st_text"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:fontFamily="serif"
@@ -70,7 +70,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Mark answered"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:textSize="11sp"
                         android:textStyle="bold"/>
 
@@ -79,7 +79,7 @@
                         android:layout_height="13dp"
                         android:layout_marginStart="4dp"
                         android:src="@drawable/ic_partner_done"
-                        app:tint="#7E57C2"/>
+                        app:tint="@color/st_accent"/>
                 </LinearLayout>
             </RelativeLayout>
 
@@ -88,7 +88,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Snippet of the prayer request..."
-                android:textColor="#4A4A4E"
+                android:textColor="@color/st_text_2"
                 android:textSize="13sp"
                 android:lineSpacingExtra="3dp"
                 android:maxLines="2"
@@ -108,14 +108,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="By Partner · Apr 08, 2026"
-                    android:textColor="#5F5F64"
+                    android:textColor="@color/st_text_2"
                     android:textSize="11sp"/>
 
                 <TextView
                     android:id="@+id/requestReminderDay"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:paddingVertical="6dp"

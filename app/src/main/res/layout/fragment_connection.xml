@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9">
+    android:background="@color/st_page">
 
     <!-- Slim header matching the Board and My Space tabs -->
     <LinearLayout
@@ -53,17 +53,20 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:layout_margin="4dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#D1C4E9"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="15dp"
+                android:background="@drawable/bg_card_small">
 
                 <!-- Same height as the partner card's header (name + nudge bell), so the
                      checkboxes in both cards line up. -->
@@ -72,7 +75,7 @@
                     android:layout_height="32dp"
                     android:gravity="center_vertical"
                     android:text="My Status"
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -82,7 +85,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Prayed Today"
-                    android:textColor="#424242"
+                    android:textColor="@color/st_text"
                     android:textSize="12sp"
                     android:button="@drawable/cb_mine"
                     android:paddingStart="8dp"
@@ -94,7 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Prayed for Partner"
-                    android:textColor="#424242"
+                    android:textColor="@color/st_text"
                     android:textSize="12sp"
                     android:button="@drawable/cb_mine"
                     android:paddingStart="8dp"
@@ -108,17 +111,20 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:layout_margin="4dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#D1C4E9"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="15dp"
+                android:background="@drawable/bg_card_small">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -131,7 +137,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:text="Partner"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -158,7 +164,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Prayed Today"
-                    android:textColor="#424242"
+                    android:textColor="@color/st_text"
                     android:textSize="12sp"
                     android:clickable="false"
                     android:button="@drawable/cb_partner"
@@ -171,7 +177,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Prayed for me"
-                    android:textColor="#424242"
+                    android:textColor="@color/st_text"
                     android:textSize="12sp"
                     android:clickable="false"
                     android:button="@drawable/cb_partner"
@@ -196,7 +202,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#FAFAFA"
+        android:background="@color/st_surface_alt"
         android:elevation="12dp"
         android:gravity="bottom"
         android:orientation="horizontal"
@@ -214,7 +220,7 @@
                 android:id="@+id/layoutMessagePreview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#F5F5F5"
+                android:background="@color/st_page"
                 android:orientation="horizontal"
                 android:padding="8dp"
                 android:visibility="gone">
@@ -238,7 +244,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Partner"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -248,7 +254,7 @@
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:textColor="#555555"
+                        android:textColor="@color/st_text_2"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -258,7 +264,7 @@
                     android:layout_height="24dp"
                     android:background="?selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    app:tint="#9E9E9E" />
+                    app:tint="@color/st_text_3" />
             </LinearLayout>
 
             <FrameLayout
@@ -273,7 +279,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginBottom="4dp"
                     android:text="Partner is typing..."
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     android:textSize="13sp"
                     android:textStyle="italic"
                     android:visibility="gone" />
@@ -288,8 +294,8 @@
                     android:maxLines="5"
                     android:paddingHorizontal="20dp"
                     android:paddingVertical="12dp"
-                    android:textColor="#1A1A1A"
-                    android:textColorHint="#6E6E73"
+                    android:textColor="@color/st_text"
+                    android:textColorHint="@color/st_text_3"
                     android:textSize="16sp" />
 
                 <LinearLayout
@@ -310,7 +316,7 @@
                         android:layout_gravity="center_vertical"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@android:drawable/ic_menu_delete"
-                        app:tint="#E53935" />
+                        app:tint="@color/st_danger" />
 
                     <TextView
                         android:id="@+id/tvRecordTimer"
@@ -320,7 +326,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="00:00"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 

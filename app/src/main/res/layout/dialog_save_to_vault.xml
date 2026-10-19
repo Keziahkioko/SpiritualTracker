@@ -60,13 +60,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="#FFFFFF">
+        android:background="@color/st_surface">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="How did God answer this prayer?"
-            android:textColor="#4A4A4E"
+            android:textColor="@color/st_text_2"
             android:textSize="13sp"
             android:layout_marginBottom="14dp"/>
 
@@ -75,8 +75,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Write your testimony..."
-            app:boxStrokeColor="#7E57C2"
-            app:hintTextColor="#7E57C2">
+            app:boxStrokeColor="@color/st_accent"
+            app:hintTextColor="@color/st_accent">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTestimony"
                 android:layout_width="match_parent"
@@ -85,7 +85,7 @@
                 android:minLines="4"
                 android:inputType="textMultiLine|textCapSentences"
                 android:textSize="15sp"
-                android:textColor="#1A1A1A"/>
+                android:textColor="@color/st_text"/>
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 </LinearLayout>

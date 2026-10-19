@@ -211,7 +211,7 @@ public class SharedBoardFragment extends Fragment {
         androidx.appcompat.app.AlertDialog dialog = builder.setNegativeButton("Close", null).create();
         dialog.show();
         android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-        if (delete != null) delete.setTextColor(Color.parseColor("#C62828"));
+        if (delete != null) delete.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_danger));
     }
 
     private void showDeleteRequestDialog(PrayerRequest request) {
@@ -254,7 +254,7 @@ public class SharedBoardFragment extends Fragment {
         tile.setOrientation(LinearLayout.VERTICAL);
         tile.setPadding(PrayerReminders.dp(ctx, 14), PrayerReminders.dp(ctx, 12), PrayerReminders.dp(ctx, 10), dp4);
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setColor(Color.parseColor("#F6F2FB"));
+        bg.setColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_soft));
         bg.setCornerRadius(PrayerReminders.dp(ctx, 14));
         tile.setBackground(bg);
         android.util.TypedValue ripple = new android.util.TypedValue();
@@ -273,7 +273,7 @@ public class SharedBoardFragment extends Fragment {
 
         TextView tvHeading = new TextView(ctx);
         tvHeading.setText(heading);
-        tvHeading.setTextColor(Color.parseColor("#1A1A1A"));
+        tvHeading.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_text));
         tvHeading.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         tvHeading.setTypeface(Typeface.create("sans-serif-medium", preview != null ? Typeface.BOLD : Typeface.NORMAL));
         tvHeading.setMaxLines(preview != null ? 1 : 2);
@@ -284,7 +284,7 @@ public class SharedBoardFragment extends Fragment {
         if (preview != null) {
             TextView tvPreview = new TextView(ctx);
             tvPreview.setText(preview);
-            tvPreview.setTextColor(Color.parseColor("#5F5F64"));
+            tvPreview.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_text_2));
             tvPreview.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
             tvPreview.setMaxLines(1);
             tvPreview.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -299,7 +299,7 @@ public class SharedBoardFragment extends Fragment {
         footer.setOrientation(LinearLayout.HORIZONTAL);
         footer.setGravity(android.view.Gravity.END | android.view.Gravity.CENTER_VERTICAL);
         TextView day = new TextView(ctx);
-        day.setTextColor(Color.parseColor("#7E57C2"));
+        day.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_accent));
         day.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         day.setTypeface(Typeface.DEFAULT_BOLD);
         day.setPadding(dp8, dp4, dp4, dp4);
@@ -332,7 +332,7 @@ public class SharedBoardFragment extends Fragment {
                                 PrayerReminderWorker.shorten(title)))
                         .show();
         android.widget.Button remove = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-        if (remove != null) remove.setTextColor(Color.parseColor("#C62828"));
+        if (remove != null) remove.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.st_danger));
     }
 
     private void confirmRemoveFocusItem(String id, String heading) {
@@ -448,7 +448,10 @@ public class SharedBoardFragment extends Fragment {
         updates.put("answeredComment", comment);
         db.collection("shared_prayers").document(request.getRequestId()).update(updates)
                 .addOnSuccessListener(v -> {
-                    if (getContext() != null) Toast.makeText(getContext(), "Moved to Vault!", Toast.LENGTH_SHORT).show();
+                    if (getContext() == null || getView() == null) return;
+                    // An answered prayer is worth celebrating: sparkles from the middle of the screen.
+                    SparkleBurst.play(requireActivity().getWindow().getDecorView(), getView(), 50, 0.8f, 2400, true, true, null);
+                    Toast.makeText(getContext(), "Moved to Vault!", Toast.LENGTH_SHORT).show();
                 });
         incrementPartnerUnread("unreadPrayer");
         notifyPartner("Prayer Answered! 🎉", myName + " marked a prayer as answered", "prayer_update");

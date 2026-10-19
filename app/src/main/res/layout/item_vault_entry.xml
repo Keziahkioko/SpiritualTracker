@@ -11,17 +11,20 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#EDE7F6"
-    app:strokeWidth="1dp">
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:paddingStart="18dp"
+        android:paddingTop="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="21dp"
+        android:background="@drawable/bg_card_small">
 
         <TextView
             android:id="@+id/tvRequestTitle"
@@ -29,7 +32,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="serif"
             android:lineSpacingMultiplier="1.15"
-            android:textColor="#1A1A2E"
+            android:textColor="@color/st_text"
             android:textSize="17sp"
             android:textStyle="bold" />
 
@@ -58,7 +61,7 @@
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.3"
                 android:maxLines="3"
-                android:textColor="#4A148C"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="14sp"
                 android:textStyle="italic" />
         </LinearLayout>
@@ -72,7 +75,7 @@
             android:ellipsize="end"
             android:lineSpacingMultiplier="1.4"
             android:maxLines="2"
-            android:textColor="#616161"
+            android:textColor="@color/st_text_2"
             android:textSize="13sp" />
 
         <TextView
@@ -80,7 +83,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:textColor="#6A4FB0"
+            android:textColor="@color/st_accent"
             android:textSize="12sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

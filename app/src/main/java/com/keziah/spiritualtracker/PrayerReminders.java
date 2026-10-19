@@ -335,7 +335,7 @@ final class PrayerReminders {
             days.addAll(initial);
 
             label = new TextView(context);
-            label.setTextColor(Color.parseColor("#5F5F64"));
+            label.setTextColor(androidx.core.content.ContextCompat.getColor(label.getContext(), R.color.st_text_2));
             label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
             addView(label);
 
@@ -387,9 +387,9 @@ final class PrayerReminders {
                                 new int[]{Color.parseColor("#B58AD3"), Color.parseColor("#6A1B9A")})
                         : new GradientDrawable();
                 bg.setShape(GradientDrawable.OVAL);
-                if (!selected) bg.setColor(Color.parseColor("#EDE7F6"));
+                if (!selected) bg.setColor(androidx.core.content.ContextCompat.getColor(chips[i].getContext(), R.color.st_soft));
                 chips[i].setBackground(bg);
-                chips[i].setTextColor(selected ? Color.WHITE : Color.parseColor("#7E57C2"));
+                chips[i].setTextColor(selected ? Color.WHITE : androidx.core.content.ContextCompat.getColor(chips[i].getContext(), R.color.st_accent));
                 chips[i].setSelected(selected);
             }
         }

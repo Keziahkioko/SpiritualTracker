@@ -17,4 +17,5 @@
     <color name="st_danger">#FF8A80</color>
     <color name="st_success">#7BCB98</color>
     <color name="st_scrim">#99000000</color>
+    <color name="st_bubble_theirs">#332C3D</color>  <!-- the other person's chat bubble -->
 </resources>

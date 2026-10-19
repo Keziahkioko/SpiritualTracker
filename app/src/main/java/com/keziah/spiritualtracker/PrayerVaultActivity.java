@@ -119,7 +119,7 @@ public class PrayerVaultActivity extends AppCompatActivity {
             boolean active = keys[i].equals(activeTab);
             tabs[i].setBackgroundResource(
                     active ? R.drawable.bg_vault_tab_active : android.R.color.transparent);
-            tabs[i].setTextColor(active ? 0xFFFFFFFF : 0xFF7E57C2);
+            tabs[i].setTextColor(active ? 0xFFFFFFFF : androidx.core.content.ContextCompat.getColor(this, R.color.st_accent));
             tabs[i].setTypeface(null, active ? Typeface.BOLD : Typeface.NORMAL);
         }
     }

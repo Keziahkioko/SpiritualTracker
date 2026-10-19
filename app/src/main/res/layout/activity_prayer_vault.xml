@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F4F9">
+    android:background="@color/st_page">
 
     <!-- ===== PURPLE HEADER (matches Board and My Space) ===== -->
     <LinearLayout
@@ -179,7 +179,7 @@
             android:gravity="center"
             android:paddingHorizontal="18dp"
             android:text="Mine"
-            android:textColor="#7E57C2"
+            android:textColor="@color/st_accent"
             android:textSize="13sp" />
 
         <TextView
@@ -189,7 +189,7 @@
             android:gravity="center"
             android:paddingHorizontal="18dp"
             android:text="Partner"
-            android:textColor="#7E57C2"
+            android:textColor="@color/st_accent"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -227,7 +227,7 @@
                 android:layout_marginBottom="12dp"
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_vault_open"
-                app:tint="#B39DDB" />
+                app:tint="@color/st_accent" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -235,7 +235,7 @@
                 android:layout_marginBottom="8dp"
                 android:fontFamily="serif"
                 android:text="Nothing here yet"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -245,7 +245,7 @@
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.5"
                 android:text="When God answers your prayers, they will be kept here as testimonies."
-                android:textColor="#5F5F64"
+                android:textColor="@color/st_text_2"
                 android:textSize="13sp" />
         </LinearLayout>
     </FrameLayout>

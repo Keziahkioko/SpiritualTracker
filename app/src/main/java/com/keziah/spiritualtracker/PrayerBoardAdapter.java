@@ -41,6 +41,7 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
     public PrayerBoardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int layoutId = isVaultView ? R.layout.item_vault_entry : R.layout.item_prayer_request;
         View view = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
+        SpringPress.on(view, 0.97f);
         return new PrayerBoardViewHolder(view);
     }
 

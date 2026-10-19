@@ -64,13 +64,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:background="#FFFFFF">
+        android:background="@color/st_surface">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ORIGINAL PRAYER"
-            android:textColor="#6A4FB0"
+            android:textColor="@color/st_accent"
             android:textSize="10sp"
             android:textStyle="bold"
             android:letterSpacing="0.12"
@@ -81,7 +81,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Prayer description..."
-            android:textColor="#4A4A4E"
+            android:textColor="@color/st_text_2"
             android:textSize="14sp"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="20dp"/>
@@ -89,14 +89,14 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#EDE7F6"
+            android:background="@color/st_soft"
             android:layout_marginBottom="20dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="GOD'S ANSWER"
-            android:textColor="#7E57C2"
+            android:textColor="@color/st_accent"
             android:textSize="10sp"
             android:textStyle="bold"
             android:letterSpacing="0.12"
@@ -106,7 +106,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#F3E5F5"
+            android:background="@color/st_soft"
             android:orientation="horizontal"
             android:padding="14dp"
             android:layout_marginBottom="24dp">
@@ -123,7 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="No testimony recorded yet."
-                android:textColor="#4A148C"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="14sp"
                 android:lineSpacingExtra="4dp"
                 android:fontFamily="serif"
@@ -137,12 +137,12 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="Remove from Vault"
-            android:textColor="#B71C1C"
+            android:textColor="@color/st_danger"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:strokeColor="#FFCDD2"
             app:icon="@android:drawable/ic_menu_delete"
-            app:iconTint="#B71C1C"/>
+            app:iconTint="@color/st_danger"/>
     </LinearLayout>
 </LinearLayout>
 </androidx.core.widget.NestedScrollView>

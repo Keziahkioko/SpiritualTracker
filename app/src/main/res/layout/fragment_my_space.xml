@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9">
+    android:background="@color/st_page">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -79,25 +79,28 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#EDE7F6">
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
+                            android:paddingStart="16dp"
+                            android:paddingTop="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="19dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_card_small">
 
                             <TextView
                                 android:id="@+id/tvActiveCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
-                                android:textColor="#5E35B1"
+                                android:textColor="@color/st_accent_strong"
                                 android:textSize="28sp"
                                 android:textStyle="bold"/>
 
@@ -105,7 +108,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Active"
-                                android:textColor="#6A4FB0"
+                                android:textColor="@color/st_accent"
                                 android:textSize="12sp"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
@@ -117,25 +120,28 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#EDE7F6">
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@android:color/transparent"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
+                            android:paddingStart="16dp"
+                            android:paddingTop="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="19dp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_card_small">
 
                             <TextView
                                 android:id="@+id/tvAnsweredCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0"
-                                android:textColor="#7E57C2"
+                                android:textColor="@color/st_accent"
                                 android:textSize="28sp"
                                 android:textStyle="bold"/>
 
@@ -143,7 +149,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Answered"
-                                android:textColor="#6A4FB0"
+                                android:textColor="@color/st_accent"
                                 android:textSize="12sp"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
@@ -157,7 +163,7 @@
                     android:text="MY PRAYERS"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:textColor="#5F5F64"
+                    android:textColor="@color/st_text_2"
                     android:letterSpacing="0.1"
                     android:layout_marginStart="20dp"
                     android:layout_marginBottom="10dp"/>
@@ -192,7 +198,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Your prayer corner"
-                        android:textColor="#1A1A1A"
+                        android:textColor="@color/st_text"
                         android:textSize="18sp"
                         android:fontFamily="serif"
                         android:textStyle="bold"
@@ -202,7 +208,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Add your personal prayers here. Only you can see them."
-                        android:textColor="#5F5F64"
+                        android:textColor="@color/st_text_2"
                         android:textSize="14sp"
                         android:gravity="center"
                         android:lineSpacingExtra="4dp"/>

@@ -47,6 +47,7 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VH> {
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context)
                 .inflate(R.layout.item_vault_entry, parent, false);
+        SpringPress.on(v, 0.97f);
         return new VH(v);
     }
 

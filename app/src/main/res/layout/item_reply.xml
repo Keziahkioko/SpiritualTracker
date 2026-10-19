@@ -20,7 +20,7 @@
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:text="— UNREAD MESSAGES —"
-        android:textColor="#8E24AA"
+        android:textColor="@color/st_accent"
         android:textSize="12sp"
         android:textStyle="bold"
         android:visibility="gone" />
@@ -64,7 +64,7 @@
                     android:text="Partner"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="#673AB7" />
+                    android:textColor="@color/st_accent" />
 
                 <TextView
                     android:id="@+id/tvQuotedText"
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:text="Quoted text"
                     android:textSize="13sp"
-                    android:textColor="#555555"
+                    android:textColor="@color/st_text_2"
                     android:maxLines="3"
                     android:ellipsize="end" />
             </LinearLayout>
@@ -82,7 +82,7 @@
             android:id="@+id/tvReplyText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/st_text"
             android:textSize="16sp"
             android:visibility="gone" />
 
@@ -140,7 +140,7 @@
                 android:text="00:00"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#673AB7" />
+                android:textColor="@color/st_accent" />
         </LinearLayout>
 
         <LinearLayout
@@ -156,7 +156,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="10sp"
-                android:textColor="#5F5F64" />
+                android:textColor="@color/st_text_2" />
 
             <ImageView
                 android:id="@+id/ivReadReceipt"
@@ -173,12 +173,12 @@
             android:layout_gravity="end"
             android:layout_marginTop="4dp"
             android:background="@drawable/circle_background"
-            android:backgroundTint="#FFFFFF"
+            android:backgroundTint="@color/st_surface"
             android:elevation="2dp"
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
             android:text="❤️"
-            android:textColor="#000000"
+            android:textColor="@color/st_text"
             android:textSize="12sp"
             android:visibility="gone" />
 

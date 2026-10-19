@@ -152,8 +152,12 @@ public class MySpaceFragment extends Fragment {
                 .collection("personal_prayers")
                 .document(pr.getRequestId())
                 .update(updates)
-                .addOnSuccessListener(v ->
-                        Toast.makeText(getContext(), "Marked as answered! ✨", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(v -> {
+                    if (getContext() == null || getView() == null) return;
+                    // An answered prayer is worth celebrating: sparkles from the middle of the screen.
+                    SparkleBurst.play(requireActivity().getWindow().getDecorView(), getView(), 50, 0.8f, 2400, true, true, null);
+                    Toast.makeText(getContext(), "Marked as answered!", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void deletePersonalPrayer(PrayerRequest pr) {
@@ -304,7 +308,7 @@ public class MySpaceFragment extends Fragment {
     /** Short labels so the three buttons sit on one row; Delete in red like the app's other deletes. */
     private static void styleDetailButtons(androidx.appcompat.app.AlertDialog dialog) {
         android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-        if (delete != null) delete.setTextColor(Color.parseColor("#C62828"));
+        if (delete != null) delete.setTextColor(androidx.core.content.ContextCompat.getColor(dialog.getContext(), R.color.st_danger));
     }
 
     // ───── Inner Adapter ─────
@@ -329,6 +333,7 @@ public class MySpaceFragment extends Fragment {
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_personal_prayer, parent, false);
+            SpringPress.on(v, 0.97f);
             return new VH(v);
         }
 
@@ -357,7 +362,7 @@ public class MySpaceFragment extends Fragment {
             }
 
             // Answered prayers are celebrated, not faded: keep the title strong, show God's answer.
-            h.tvTitle.setTextColor(Color.parseColor("#1A1A1A"));
+            h.tvTitle.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_text));
             h.answeredBadge.setVisibility(View.VISIBLE);
             if (pr.isAnswered()) {
                 h.stripeView.setBackgroundColor(Color.parseColor("#9575CD"));
@@ -379,8 +384,8 @@ public class MySpaceFragment extends Fragment {
                 h.stripeView.setBackgroundColor(Color.parseColor("#7E57C2")); // vivid purple
                 h.answeredLabel.setText("Mark answered");
                 h.answeredBadge.setBackgroundResource(R.drawable.bg_answered_pill);
-                h.answeredLabel.setTextColor(Color.parseColor("#7E57C2"));
-                if (h.answeredIcon != null) h.answeredIcon.setColorFilter(Color.parseColor("#7E57C2"));
+                h.answeredLabel.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent));
+                if (h.answeredIcon != null) h.answeredIcon.setColorFilter(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent));
                 h.answeredBadge.setClickable(true);
                 h.testimonyBox.setVisibility(View.GONE);
                 h.answeredBadge.setOnClickListener(v ->

@@ -120,9 +120,10 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
         holder.messageBubble.setLayoutParams(params);
         
         // --- ADAPTIVE PREMIUM COLORS ---
-        int bubbleColor = Color.parseColor(isMine ? "#7E57C2" : "#F0F0F7"); // Softer Purple and cleaner grey
-        int primaryTextColor = isMine ? Color.WHITE : Color.BLACK;
-        int secondaryTextColor = isMine ? Color.parseColor("#E0E0E0") : Color.parseColor("#888888");
+        android.content.Context cx = holder.itemView.getContext();
+        int bubbleColor = isMine ? 0xFF7E57C2 : androidx.core.content.ContextCompat.getColor(cx, R.color.st_bubble_theirs);
+        int primaryTextColor = isMine ? Color.WHITE : androidx.core.content.ContextCompat.getColor(cx, R.color.st_text);
+        int secondaryTextColor = isMine ? Color.parseColor("#E0E0E0") : androidx.core.content.ContextCompat.getColor(cx, R.color.st_text_3);
         int accentColor = Color.parseColor("#7E57C2");
         int iconTintColor = isMine ? accentColor : Color.WHITE;
         int btnBgColor = isMine ? Color.WHITE : accentColor;
@@ -136,7 +137,7 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
         
         holder.seekBarReply.setProgressTintList(ColorStateList.valueOf(isMine ? Color.WHITE : accentColor));
         holder.seekBarReply.setThumbTintList(ColorStateList.valueOf(isMine ? Color.WHITE : accentColor));
-        holder.seekBarReply.setProgressBackgroundTintList(ColorStateList.valueOf(isMine ? Color.parseColor("#80FFFFFF") : Color.LTGRAY));
+        holder.seekBarReply.setProgressBackgroundTintList(ColorStateList.valueOf(isMine ? Color.parseColor("#80FFFFFF") : androidx.core.content.ContextCompat.getColor(cx, R.color.st_stroke)));
 
         if (isMine) {
             holder.ivReadReceipt.setVisibility(View.VISIBLE);
@@ -158,7 +159,7 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
                 holder.tvQuotedText.setTextColor(Color.parseColor("#F5F5F5"));
             } else {
                 holder.tvQuotedSender.setTextColor(accentColor);
-                holder.tvQuotedText.setTextColor(Color.parseColor("#555555"));
+                holder.tvQuotedText.setTextColor(androidx.core.content.ContextCompat.getColor(cx, R.color.st_text_2));
             }
 
             holder.layoutQuotedMessage.setOnClickListener(v -> {
@@ -177,7 +178,7 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
             holder.tvReaction.setText(firstEmoji);
             
             if (isMine) {
-                holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+                holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(cx, R.color.st_surface)));
             } else {
                 holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D1C4E9")));
             }

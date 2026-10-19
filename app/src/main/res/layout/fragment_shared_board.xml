@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9">
+    android:background="@color/st_page">
 
     <!-- Root stack: header banner + scrollable content -->
     <LinearLayout
@@ -76,18 +76,20 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:cardMaxElevation="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#EDE7F6">
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="22dp">
+                        android:paddingStart="22dp"
+                        android:paddingTop="22dp"
+                        android:paddingEnd="22dp"
+                        android:paddingBottom="26dp"
+                        android:background="@drawable/bg_card">
 
                         <!-- Card header row: title, how many, and a small menu (Clear all) -->
                         <LinearLayout
@@ -102,7 +104,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="Prayer Focus"
-                                android:textColor="#1C1C1E"
+                                android:textColor="@color/st_text"
                                 android:textSize="18sp"
                                 android:fontFamily="serif"
                                 android:textStyle="bold"/>
@@ -111,7 +113,7 @@
                                 android:id="@+id/tvJointCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="#7E57C2"
+                                android:textColor="@color/st_accent"
                                 android:textSize="12sp"
                                 android:visibility="gone"/>
 
@@ -133,7 +135,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Nothing here yet. Add something you're both praying about."
-                            android:textColor="#8E8A96"
+                            android:textColor="@color/st_text_3"
                             android:textSize="13sp"
                             android:layout_marginBottom="4dp"
                             android:visibility="gone"/>
@@ -156,7 +158,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="+ Add focus item"
-                            android:textColor="#5E35B1"
+                            android:textColor="@color/st_accent_strong"
                             android:textSize="13sp"
                             android:textAllCaps="false"
                             android:fontFamily="sans-serif-medium"
@@ -178,7 +180,7 @@
                         android:text="ACTIVE REQUESTS"
                         android:textSize="10sp"
                         android:textStyle="bold"
-                        android:textColor="#5F5F64"
+                        android:textColor="@color/st_text_2"
                         android:letterSpacing="0.1"
                         android:layout_centerVertical="true"/>
 
@@ -191,7 +193,7 @@
                         android:text="Prayer Vault  →"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:background="?attr/selectableItemBackground"
                         android:padding="8dp"/>
                 </RelativeLayout>
