@@ -201,7 +201,7 @@
             app:backgroundTint="#7E57C2"
             app:cornerRadius="26dp" />
 
-        <!-- Last step: the same bright green as Got it -->
+        <!-- Last step: the same glossy purple as Got it -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLearnDone"
             android:layout_width="0dp"
@@ -213,7 +213,7 @@
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:letterSpacing="0"
-            android:shadowColor="#4D0B5E2B"
+            android:shadowColor="#59250B4D"
             android:shadowDy="1"
             android:shadowRadius="2"
             android:textAllCaps="false"

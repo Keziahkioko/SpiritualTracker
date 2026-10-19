@@ -404,7 +404,7 @@
                 android:textSize="15sp"
                 android:background="@drawable/bg_got_it"
                 android:elevation="6dp"
-                android:shadowColor="#4D0B5E2B"
+                android:shadowColor="#59250B4D"
                 android:shadowDy="1"
                 android:shadowRadius="2"
                 android:textStyle="bold"

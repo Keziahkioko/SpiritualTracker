@@ -1109,9 +1109,9 @@ public class MemorizeActivity extends AppCompatActivity {
 
         View gotIt = dv.findViewById(R.id.btnGotIt);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            // A green glow under the bright button instead of a grey shadow.
-            gotIt.setOutlineSpotShadowColor(0xFF22A845);
-            gotIt.setOutlineAmbientShadowColor(0xFF22A845);
+            // A purple glow under the glossy button instead of a grey shadow.
+            gotIt.setOutlineSpotShadowColor(0xFF8E44C9);
+            gotIt.setOutlineAmbientShadowColor(0xFF8E44C9);
         }
         gotIt.setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
         dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
@@ -1416,8 +1416,8 @@ public class MemorizeActivity extends AppCompatActivity {
         android.app.Dialog dialog = openScreen(dv, dv.findViewById(R.id.learnTopBar), dv.findViewById(R.id.learnBottomBar));
         dialog.setOnDismissListener(d -> speaker.stop());
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            btnDone.setOutlineSpotShadowColor(0xFF22A845);
-            btnDone.setOutlineAmbientShadowColor(0xFF22A845);
+            btnDone.setOutlineSpotShadowColor(0xFF8E44C9);
+            btnDone.setOutlineAmbientShadowColor(0xFF8E44C9);
         }
 
         // Four segments filling up as the steps go by.
