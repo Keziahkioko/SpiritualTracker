@@ -992,7 +992,7 @@ public class MemorizeActivity extends AppCompatActivity {
             int close = Math.round((check.exact + check.different) * 100f / total);
             out.append(pct >= 90 ? "\nThat's a Got it!"
                     : close >= 90 ? "\nClose! " + check.different + " words were said differently. Your call."
-                    : "\nMaybe give it another go.");
+                    : NOT_YET);
             return out.append("\n(The meaning couldn't be checked just now, so only the words were compared.)");
         }
         StringBuilder notes = new StringBuilder();
@@ -1019,8 +1019,13 @@ public class MemorizeActivity extends AppCompatActivity {
             return out.append(pct >= 90 ? "\nSame meaning. That's a Got it!"
                     : "\nSame meaning, in your own words. That's a Got it!");
         }
-        return out.append("\nMaybe give it another go:").append(notes);
+        // 90% word for word is a Got it even if a verse was flagged; the notes are then just things to watch.
+        if (pct >= 90) return out.append("\nThat's a Got it! Small things to watch:").append(notes);
+        return out.append(NOT_YET).append(notes);
     }
+
+    /** Points at the button, so it isn't read as "type it again". */
+    private static final String NOT_YET = "\nNot quite yet. Tap Try again and it comes back for more practice.";
 
     private static void colored(android.text.SpannableStringBuilder out, String text, int color) {
         int start = out.length();
