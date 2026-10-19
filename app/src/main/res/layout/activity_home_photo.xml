@@ -1,127 +1,371 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Home photo: the frame at the top is exactly the home screen's photo area (same width,
-     height and shading), so the photo is positioned as it will really show. -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Home photo. The frame at the top is the home screen's photo area (same size, shading, and
+     faint copies of the number and icons that sit on it), so the photo is placed as it will show.
+     The panel overlaps the photo the way the home cards do; Save stays at the bottom. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/photoRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
-    android:fillViewport="true">
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/photoContent"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="24dp">
-
-        <FrameLayout
-            android:id="@+id/frameArea"
-            android:layout_width="match_parent"
-            android:layout_height="300dp">
-
-            <com.keziah.spiritualtracker.FramedImageView
-                android:id="@+id/ivFrame"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="Home photo. Pinch to zoom, drag to move." />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_photo_scrim" />
-
-            <ImageView
-                android:id="@+id/btnPhotoBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
-                android:padding="12dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
-                android:src="@drawable/ic_back" />
-
-            <TextView
-                android:id="@+id/tvFrameHint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="52dp"
-                android:background="@drawable/bg_link_partner"
-                android:paddingStart="14dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="6dp"
-                android:text="Pinch to zoom · drag to move"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
-        </FrameLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="24dp"
-            android:paddingEnd="24dp">
+            android:paddingBottom="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="serif"
-                android:text="Home photo"
-                android:textColor="#1C1C1E"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+            <FrameLayout
+                android:id="@+id/frameArea"
+                android:layout_width="match_parent"
+                android:layout_height="300dp">
 
-            <TextView
-                android:id="@+id/tvPhotoInfo"
+                <com.keziah.spiritualtracker.FramedImageView
+                    android:id="@+id/ivFrame"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="Home photo. Pinch to zoom, drag to move." />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_photo_scrim" />
+
+                <!-- Where the home screen's number sits, so faces can be kept clear of it -->
+                <LinearLayout
+                    android:id="@+id/ghostScore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="100dp"
+                    android:alpha="0.6"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.2"
+                        android:shadowColor="#99000000"
+                        android:shadowDy="1"
+                        android:shadowRadius="6"
+                        android:text="@string/days_together"
+                        android:textColor="#E6FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvGhostScore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:shadowColor="#80000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="12"
+                        android:text="@string/default_score"
+                        android:textColor="#FFFFFF"
+                        android:textSize="72sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Faint copies of the camera and account icons, as on the home screen -->
+                <LinearLayout
+                    android:id="@+id/ghostIcons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:alpha="0.5"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:importantForAccessibility="no"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_camera" />
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:importantForAccessibility="no"
+                        android:padding="10dp"
+                        android:src="@android:drawable/ic_lock_power_off"
+                        app:tint="#FFFFFF" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/btnPhotoBack"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="16dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Back"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_back" />
+
+                <TextView
+                    android:id="@+id/tvFrameHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="40dp"
+                    android:background="@drawable/bg_link_partner"
+                    android:paddingStart="14dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="6dp"
+                    android:text="Pinch to zoom · drag to move"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </FrameLayout>
+
+            <!-- Controls, overlapping the photo like the home cards -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="2dp"
-                android:text="The box above is exactly what the top of your home screen shows. Shared with your partner: it changes on both phones."
-                android:textColor="#5F5F64"
-                android:textSize="14sp" />
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="-24dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnChoosePhoto"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="24dp"
-                android:text="Choose a photo"
-                android:textAllCaps="false"
-                android:textColor="#5E35B1"
-                android:textSize="15sp"
-                app:cornerRadius="26dp"
-                app:strokeColor="#B39DDB" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnOriginalPhoto"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="4dp"
-                android:text="Use the original photo"
-                android:textAllCaps="false"
-                android:textColor="#7E57C2"
-                android:textSize="14sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="serif"
+                        android:text="Home photo"
+                        android:textColor="#1C1C1E"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSavePhoto"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="16dp"
-                android:text="Save"
-                android:textAllCaps="false"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:backgroundTint="#673AB7"
-                app:cornerRadius="28dp" />
+                    <TextView
+                        android:id="@+id/tvPhotoInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Shared with your partner · changes on both phones"
+                        android:textColor="#6E6A76"
+                        android:textSize="13sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="4dp"
+                        android:background="#EFEAF5" />
+
+                    <LinearLayout
+                        android:id="@+id/btnChoosePhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:minHeight="64dp"
+                        android:orientation="horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_photo_option">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_add_photo" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Choose a new photo"
+                                android:textColor="#1C1C1E"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="1dp"
+                                android:text="From your gallery"
+                                android:textColor="#6E6A76"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:rotation="180"
+                            android:src="@drawable/ic_back"
+                            app:tint="#B7A8D6" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/btnOriginalPhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:minHeight="64dp"
+                        android:orientation="horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_photo_option">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_restore_photo" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Use the original photo"
+                                android:textColor="#1C1C1E"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="1dp"
+                                android:text="The one the app came with"
+                                android:textColor="#6E6A76"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:rotation="180"
+                            android:src="@drawable/ic_back"
+                            app:tint="#B7A8D6" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="#EFEAF5" />
+
+                    <!-- Zoom: the slider and pinching stay in step -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Zoom"
+                        android:textColor="#5E35B1"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:importantForAccessibility="no"
+                            android:text="−"
+                            android:textColor="#7E57C2"
+                            android:textSize="20sp" />
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderZoom"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:contentDescription="Zoom"
+                            android:stepSize="0"
+                            android:value="1"
+                            android:valueFrom="1"
+                            android:valueTo="5"
+                            app:haloColor="#337E57C2"
+                            app:labelBehavior="gone"
+                            app:thumbColor="#7E57C2"
+                            app:trackColorActive="#7E57C2"
+                            app:trackColorInactive="#E6DCF5" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:importantForAccessibility="no"
+                            android:text="+"
+                            android:textColor="#7E57C2"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Save, always in reach at the bottom -->
+    <FrameLayout
+        android:id="@+id/saveBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSavePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Save"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="#673AB7"
+            app:cornerRadius="28dp" />
+    </FrameLayout>
+</LinearLayout>

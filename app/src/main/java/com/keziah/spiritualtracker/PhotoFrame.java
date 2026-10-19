@@ -48,6 +48,19 @@ final class PhotoFrame {
         return new float[]{after[1] / iw, after[2] / ih, after[3]};
     }
 
+    /** How far in from "as much as fits": 1 to {@link #MAX_ZOOM}. */
+    static float magnification(float iw, float ih, float w, float h, float zoom) {
+        float cover = Math.max(w / iw, h / ih);
+        return fit(iw, ih, w, h, 0.5f, 0.5f, zoom)[0] / cover;
+    }
+
+    /** The zoom (share of the photo's width showing) for a magnification from 1 to {@link #MAX_ZOOM}. */
+    static float zoomFor(float iw, float ih, float w, float h, float magnification) {
+        float cover = Math.max(w / iw, h / ih);
+        float m = Math.max(1f, Math.min(MAX_ZOOM, magnification));
+        return Math.min(1f, (w / (cover * m)) / iw);
+    }
+
     private static float clamp(float v, float lo, float hi) {
         if (lo > hi) return (lo + hi) / 2;
         return Math.max(lo, Math.min(hi, v));

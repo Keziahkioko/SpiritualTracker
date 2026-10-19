@@ -115,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
         HomePhoto.showRemembered(binding.ivHeader);
         binding.ivChangePhoto.setOnClickListener(v -> {
             if (partnerId == null) return;
-            startActivity(new Intent(this, HomePhotoActivity.class).putExtra(HomePhotoActivity.EXTRA_PARTNER, partnerId));
+            startActivity(new Intent(this, HomePhotoActivity.class)
+                    .putExtra(HomePhotoActivity.EXTRA_PARTNER, partnerId)
+                    .putExtra(HomePhotoActivity.EXTRA_SCORE, binding.tvStreak.getText().toString()));
         });
     }
 

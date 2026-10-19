@@ -21,6 +21,9 @@ public class FramedImageView extends AppCompatImageView {
 
     private float cx = 0.5f, cy = 0.5f, zoom = 1f;
     private boolean editable;
+    /** Told when the person moves or zooms the photo (not when it's set in code). */
+    public interface OnFrameChanged { void changed(); }
+    private OnFrameChanged onChanged;
     /** The photo load now showing (see HomePhoto), released when a newer one replaces it. */
     com.bumptech.glide.request.target.CustomTarget<Drawable> loading;
     private final ScaleGestureDetector scaler;
@@ -47,12 +50,32 @@ public class FramedImageView extends AppCompatImageView {
             @Override public boolean onDoubleTap(MotionEvent e) {
                 // Double tap: back to the whole photo, centred.
                 setFrame(0.5f, 0.5f, 1f);
+                if (onChanged != null) onChanged.changed();
                 return true;
             }
         });
     }
 
     public void setEditable(boolean editable) { this.editable = editable; }
+    public void setOnFrameChanged(OnFrameChanged listener) { onChanged = listener; }
+
+    /** 1 = as much of the photo as fits; up to {@link PhotoFrame#MAX_ZOOM}. */
+    public float magnification() {
+        Drawable d = getDrawable();
+        if (d == null || getWidth() == 0 || d.getIntrinsicWidth() <= 0) return 1f;
+        return PhotoFrame.magnification(d.getIntrinsicWidth(), d.getIntrinsicHeight(), getWidth(), getHeight(), zoom);
+    }
+
+    /** Zooms about the centre of what's showing (for a slider). */
+    public void setMagnification(float m) {
+        Drawable d = getDrawable();
+        if (d == null || getWidth() == 0 || d.getIntrinsicWidth() <= 0) return;
+        float[] now = PhotoFrame.fit(d.getIntrinsicWidth(), d.getIntrinsicHeight(), getWidth(), getHeight(), cx, cy, zoom);
+        cx = now[1] / d.getIntrinsicWidth();
+        cy = now[2] / d.getIntrinsicHeight();
+        zoom = PhotoFrame.zoomFor(d.getIntrinsicWidth(), d.getIntrinsicHeight(), getWidth(), getHeight(), m);
+        reframe();
+    }
 
     public float frameX() { return cx; }
     public float frameY() { return cy; }
@@ -74,6 +97,7 @@ public class FramedImageView extends AppCompatImageView {
         cy = next[1];
         zoom = next[2];
         reframe();
+        if (onChanged != null) onChanged.changed();
     }
 
     private void reframe() {

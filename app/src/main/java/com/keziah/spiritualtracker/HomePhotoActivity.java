@@ -29,9 +29,13 @@ import java.util.Collections;
 public class HomePhotoActivity extends AppCompatActivity {
 
     public static final String EXTRA_PARTNER = "partnerId";
+    /** The home screen's number, shown faintly where it sits on the photo. */
+    public static final String EXTRA_SCORE = "score";
 
     private FramedImageView frame;
     private MaterialButton btnSave;
+    private com.google.android.material.slider.Slider zoomSlider;
+    private View hint;
     private String me, partnerId;
     /** What will be saved: an uploaded photo's address, a new local file, or null for the built-in photo. */
     private String url, localPath;
@@ -56,8 +60,27 @@ public class HomePhotoActivity extends AppCompatActivity {
         drawBehindStatusBar();
 
         ((android.widget.TextView) findViewById(R.id.tvPhotoInfo)).setText(
-                "The box above is exactly what the top of your home screen shows. Shared with "
-                        + PartnerName.get(this) + ": it changes on both phones.");
+                "Shared with " + PartnerName.get(this) + " · changes on both phones");
+        String score = getIntent().getStringExtra(EXTRA_SCORE);
+        if (score != null) ((android.widget.TextView) findViewById(R.id.tvGhostScore)).setText(score);
+
+        // Pinching and the slider stay in step; the hint goes once the photo has been moved.
+        hint = findViewById(R.id.tvFrameHint);
+        zoomSlider = findViewById(R.id.sliderZoom);
+        zoomSlider.setValueTo(PhotoFrame.MAX_ZOOM);
+        zoomSlider.addOnChangeListener((s, value, fromUser) -> {
+            if (!fromUser) return;
+            frame.setMagnification(value);
+            changed = true;
+            hideHint();
+        });
+        frame.setOnFrameChanged(() -> {
+            changed = true;
+            hideHint();
+            syncSlider();
+        });
+        // Whenever a photo arrives (or the frame is laid out), put the slider where the photo is.
+        frame.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> syncSlider());
 
         com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(me).get()
                 .addOnSuccessListener(doc -> myName = UserProfile.displayName(doc));
@@ -68,6 +91,7 @@ public class HomePhotoActivity extends AppCompatActivity {
             if (changed || isFinishing()) return;
             url = doc.exists() ? doc.getString(HomePhoto.URL) : null;
             HomePhoto.show(frame, doc);
+            frame.postDelayed(this::syncSlider, 300);
         });
 
         findViewById(R.id.btnPhotoBack).setOnClickListener(v -> finish());
@@ -78,6 +102,7 @@ public class HomePhotoActivity extends AppCompatActivity {
             url = null;
             localPath = null;
             HomePhoto.show(frame, null, 0.5f, 0.5f, 1f);
+            syncSlider();
         });
         btnSave.setOnClickListener(v -> save());
     }
@@ -96,6 +121,7 @@ public class HomePhotoActivity extends AppCompatActivity {
             changed = true;
             localPath = path;
             HomePhoto.show(frame, path, 0.5f, 0.5f, 1f);
+            frame.postDelayed(this::syncSlider, 300);
         });
     }
 
@@ -136,23 +162,39 @@ public class HomePhotoActivity extends AppCompatActivity {
                 });
     }
 
+    private void syncSlider() {
+        float m = Math.max(1f, Math.min(PhotoFrame.MAX_ZOOM, frame.magnification()));
+        if (Math.abs(zoomSlider.getValue() - m) > 0.001f) zoomSlider.setValue(m);
+    }
+
+    private void hideHint() {
+        if (hint.getVisibility() != View.VISIBLE) return;
+        hint.animate().alpha(0f).setDuration(200).withEndAction(() -> hint.setVisibility(View.GONE));
+    }
+
     /** Same as the home screen: the photo runs up behind the status bar, so the frame is that tall too. */
     private void drawBehindStatusBar() {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightStatusBars(false);
         View area = findViewById(R.id.frameArea);
-        View back = findViewById(R.id.btnPhotoBack);
-        View content = findViewById(R.id.photoContent);
+        // Everything on the photo moves down by the status bar's height, as on the home screen.
+        View[] pushedDown = {findViewById(R.id.btnPhotoBack), findViewById(R.id.ghostScore), findViewById(R.id.ghostIcons)};
+        int[] tops = new int[pushedDown.length];
+        for (int i = 0; i < pushedDown.length; i++) {
+            tops[i] = ((android.view.ViewGroup.MarginLayoutParams) pushedDown[i].getLayoutParams()).topMargin;
+        }
+        View saveBar = findViewById(R.id.saveBar);
         int height = area.getLayoutParams().height;
-        int backTop = ((android.view.ViewGroup.MarginLayoutParams) back.getLayoutParams()).topMargin;
-        int bottom = content.getPaddingBottom();
+        int bottom = saveBar.getPaddingBottom();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.photoRoot), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             area.getLayoutParams().height = height + bars.top;
-            ((android.view.ViewGroup.MarginLayoutParams) back.getLayoutParams()).topMargin = backTop + bars.top;
-            content.setPadding(content.getPaddingLeft(), content.getPaddingTop(), content.getPaddingRight(), bottom + bars.bottom);
-            content.requestLayout();
+            for (int i = 0; i < pushedDown.length; i++) {
+                ((android.view.ViewGroup.MarginLayoutParams) pushedDown[i].getLayoutParams()).topMargin = tops[i] + bars.top;
+            }
+            saveBar.setPadding(saveBar.getPaddingLeft(), saveBar.getPaddingTop(), saveBar.getPaddingRight(), bottom + bars.bottom);
+            area.requestLayout();
             return insets;
         });
     }
