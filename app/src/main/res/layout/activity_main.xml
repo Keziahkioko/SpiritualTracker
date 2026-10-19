@@ -143,14 +143,18 @@
                         android:duplicateParentState="true"
                         android:paddingBottom="6dp">
                         <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_icon_glow"
+                            android:padding="12dp"
                             android:src="@drawable/holy_bible"
                             app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="0dp"
+                            android:shadowColor="#CC9F6BFF"
+                            android:shadowRadius="14"
                             android:text="@string/label_bible"
                             android:textSize="18sp"
                             android:textStyle="bold"
@@ -193,14 +197,18 @@
                         android:duplicateParentState="true"
                         android:paddingBottom="6dp">
                         <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_icon_glow"
+                            android:padding="12dp"
                             android:src="@drawable/prayer"
                             app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="0dp"
+                            android:shadowColor="#CC9F6BFF"
+                            android:shadowRadius="14"
                             android:text="@string/label_prayer"
                             android:textSize="18sp"
                             android:textStyle="bold"
@@ -243,14 +251,18 @@
                         android:gravity="center"
                         android:orientation="vertical">
                         <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_icon_glow"
+                            android:padding="12dp"
                             android:src="@drawable/journal"
                             app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="0dp"
+                            android:shadowColor="#CC9F6BFF"
+                            android:shadowRadius="14"
                             android:text="@string/label_journal"
                             android:textColor="#ffffff"
                             android:textSize="18sp"
@@ -293,14 +305,18 @@
                         android:duplicateParentState="true"
                         android:paddingBottom="6dp">
                         <ImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_icon_glow"
+                            android:padding="12dp"
                             android:src="@drawable/memorize"
                             app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="0dp"
+                            android:shadowColor="#CC9F6BFF"
+                            android:shadowRadius="14"
                             android:text="@string/label_memorize"
                             android:textSize="18sp"
                             android:textStyle="bold"
