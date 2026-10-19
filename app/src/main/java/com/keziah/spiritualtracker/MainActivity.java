@@ -102,6 +102,13 @@ public class MainActivity extends AppCompatActivity {
             resetUnreadCount("unreadPrayer");
             startActivity(new Intent(this, PrayerActivity.class));
         });
+        // A purple glow under the glossy tiles instead of a grey shadow.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory}) {
+                tile.setOutlineSpotShadowColor(0xFF8E44C9);
+                tile.setOutlineAmbientShadowColor(0xFF8E44C9);
+            }
+        }
         binding.cardMemory.setOnClickListener(v ->
                 startActivity(new Intent(this, MemorizeActivity.class)));
 
