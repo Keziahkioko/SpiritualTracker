@@ -176,19 +176,33 @@
                 android:textSize="14sp"
                 android:visibility="gone" />
 
-            <!-- Hint with gaps or first-letter tiles (Day 3+, or "Show first letters"); tap one to peek -->
-            <TextView
-                android:id="@+id/tvQuizHint"
+            <!-- Hint with gaps or first-letter tiles (Day 3+, or "First letters"); tap one to peek.
+                 While typing it's capped to about a third of the page and scrolls in its own box. -->
+            <com.keziah.spiritualtracker.CappedScrollView
+                android:id="@+id/hintScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:background="@drawable/bg_learn_text"
-                android:fontFamily="serif"
-                android:lineSpacingMultiplier="1.5"
-                android:padding="18dp"
-                android:textColor="#1A1A2E"
-                android:textSize="17sp"
-                android:visibility="gone" />
+                android:clipToPadding="true"
+                android:fadeScrollbars="false"
+                android:paddingStart="18dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="16dp"
+                android:scrollbarStyle="insideOverlay"
+                android:scrollbars="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvQuizHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="serif"
+                    android:lineSpacingMultiplier="1.5"
+                    android:textColor="#1A1A2E"
+                    android:textSize="17sp" />
+            </com.keziah.spiritualtracker.CappedScrollView>
 
             <!-- Revealed full text (or the checked recitation, coloured) -->
             <TextView

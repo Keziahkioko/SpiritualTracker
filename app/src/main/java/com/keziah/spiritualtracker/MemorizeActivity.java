@@ -831,6 +831,7 @@ public class MemorizeActivity extends AppCompatActivity {
                                   Runnable onGotIt, Runnable onTryAgain, Runnable learnFirst) {
         View dv = LayoutInflater.from(this).inflate(R.layout.dialog_verse_quiz, null);
         TextView       tvHint         = dv.findViewById(R.id.tvQuizHint);
+        CappedScrollView hintBox      = dv.findViewById(R.id.hintScroll);
         TextView       tvText         = dv.findViewById(R.id.tvQuizText);
         MaterialButton btnFirstLetter = dv.findViewById(R.id.btnFirstLetter);
         MaterialButton btnReveal      = dv.findViewById(R.id.btnReveal);
@@ -859,7 +860,7 @@ public class MemorizeActivity extends AppCompatActivity {
         View intro = dv.findViewById(R.id.cardRecallIntro);
         if (autoHint >= 0) {
             showHint[0].run();
-            tvHint.setVisibility(View.VISIBLE);
+            hintBox.setVisibility(View.VISIBLE);
             intro.setVisibility(View.GONE);
         }
 
@@ -875,7 +876,7 @@ public class MemorizeActivity extends AppCompatActivity {
         btnFirstLetter.setOnClickListener(fv -> {
             hintMode[0] = LearnText.FIRST_LETTERS;
             showHint[0].run();
-            tvHint.setVisibility(View.VISIBLE);
+            hintBox.setVisibility(View.VISIBLE);
             intro.setVisibility(View.GONE);
             btnFirstLetter.setVisibility(View.GONE);
         });
@@ -887,7 +888,7 @@ public class MemorizeActivity extends AppCompatActivity {
             btnReveal.setVisibility(View.GONE);
             dv.findViewById(R.id.rowHints).setVisibility(View.GONE);
             btnLearnFirst.setVisibility(View.GONE);
-            tvHint.setVisibility(View.GONE);
+            hintBox.setVisibility(View.GONE);
             int peeked = hint.peeked();
             if (peeked > 0) {
                 TextView tvPeeks = dv.findViewById(R.id.tvQuizPeeks);
@@ -939,8 +940,14 @@ public class MemorizeActivity extends AppCompatActivity {
         View scroll = dv.findViewById(R.id.reviewScroll);
         scroll.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             if (tilTypeIt.getVisibility() != View.VISIBLE) return;
+            // First letters showing above a long passage: keep them to about a third of the page
+            // (they scroll in their own box), so the typing box still gets most of the room.
+            if (hintBox.getVisibility() == View.VISIBLE) {
+                int cap = Math.max(dp(120), Math.round(v.getHeight() * 0.32f));
+                hintBox.post(() -> hintBox.setMaxHeight(cap));
+            }
             int room = v.getHeight() - tilTypeIt.getTop() - etTypeIt.getTop() - dp(56);
-            int min = Math.max(dp(160), room);
+            int min = Math.max(dp(200), room);
             if (Math.abs(etTypeIt.getMinimumHeight() - min) > 2) {
                 etTypeIt.setMinHeight(min);
                 etTypeIt.post(etTypeIt::requestLayout);
