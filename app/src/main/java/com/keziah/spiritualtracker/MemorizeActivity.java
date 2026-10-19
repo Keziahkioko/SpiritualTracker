@@ -837,6 +837,14 @@ public class MemorizeActivity extends AppCompatActivity {
         MaterialButton btnLearnFirst  = dv.findViewById(R.id.btnLearnFirst);
         View           layoutActions  = dv.findViewById(R.id.layoutQuizActions);
 
+        // "Exodus 15:1-3 (Part 1 of 7)": the reference is the title, the part a chip beside the Day.
+        java.util.regex.Matcher part = java.util.regex.Pattern.compile("\\s*\\((Part \\d+ of \\d+)\\)\\s*$").matcher(title);
+        TextView tvPart = dv.findViewById(R.id.tvQuizPart);
+        if (part.find()) {
+            tvPart.setText(part.group(1));
+            tvPart.setVisibility(View.VISIBLE);
+            title = title.substring(0, part.start());
+        }
         ((TextView) dv.findViewById(R.id.tvQuizReference)).setText(title);
         ((TextView) dv.findViewById(R.id.tvQuizProgress)).setText(pill);
         if (prompt != null) ((TextView) dv.findViewById(R.id.tvQuizPrompt)).setText(prompt);
@@ -926,6 +934,18 @@ public class MemorizeActivity extends AppCompatActivity {
             etTypeIt.requestFocus();
             keyboard.showSoftInput(etTypeIt, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
         });
+        // The typing box fills the page down to the bottom bar (with or without the keyboard),
+        // so a long recitation has room; past that, the page scrolls.
+        View scroll = dv.findViewById(R.id.reviewScroll);
+        scroll.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (tilTypeIt.getVisibility() != View.VISIBLE) return;
+            int room = v.getHeight() - tilTypeIt.getTop() - etTypeIt.getTop() - dp(56);
+            int min = Math.max(dp(160), room);
+            if (Math.abs(etTypeIt.getMinimumHeight() - min) > 2) {
+                etTypeIt.setMinHeight(min);
+                etTypeIt.post(etTypeIt::requestLayout);
+            }
+        });
         // Back (the arrow or the phone's): typing takes a while, so ask before throwing it away.
         Runnable leave = () -> {
             boolean typing = tilTypeIt.getVisibility() == View.VISIBLE && etTypeIt.getText() != null
@@ -982,6 +1002,10 @@ public class MemorizeActivity extends AppCompatActivity {
      * edge: the top bar is padded for the status bar, the bottom bar for the navigation bar or,
      * while typing, the keyboard.
      */
+    private int dp(float v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
     private android.app.Dialog openScreen(View content, View topBar, View bottomBar) {
         android.app.Dialog dialog = new android.app.Dialog(this, R.style.Theme_SpiritualTracker_Screen);
         dialog.setContentView(content);
@@ -994,7 +1018,7 @@ public class MemorizeActivity extends AppCompatActivity {
             w.setNavigationBarColor(android.graphics.Color.WHITE);
             androidx.core.view.WindowInsetsControllerCompat bars =
                     androidx.core.view.WindowCompat.getInsetsController(w, w.getDecorView());
-            bars.setAppearanceLightStatusBars(false);
+            bars.setAppearanceLightStatusBars(true);
             bars.setAppearanceLightNavigationBars(true);
         }
         int top = topBar.getPaddingTop(), bottom = bottomBar.getPaddingBottom();
@@ -1048,9 +1072,14 @@ public class MemorizeActivity extends AppCompatActivity {
         int total = check.total();
         int pct = total == 0 ? 0 : Math.round(check.exact * 100f / total);
         android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
-        out.append("You got " + check.exact + " of " + total + " words exactly (" + pct + "%)");
+        out.append(pct + "%");
+        out.setSpan(new android.text.style.RelativeSizeSpan(2f), 0, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.setSpan(new android.text.style.ForegroundColorSpan(0xFF4A2C8F), 0, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        int words = out.length();
+        out.append("  " + check.exact + " of " + total + " words exactly");
         out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, out.length(),
                 android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.setSpan(new android.text.style.ForegroundColorSpan(0xFF4A4458), words, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         if (check.different > 0) colored(out.append("\n"), check.different + " said differently", SAID_DIFFERENTLY);
         if (check.missed > 0) colored(out.append(check.different > 0 ? " · " : "\n"), check.missed + " missed", MISSED_WORD);
 
