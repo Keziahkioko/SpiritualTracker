@@ -1148,6 +1148,7 @@ public class MemorizeActivity extends AppCompatActivity {
     private android.app.Dialog openScreen(View content, View topBar, View bottomBar) {
         android.app.Dialog dialog = new android.app.Dialog(this, R.style.Theme_SpiritualTracker_Screen);
         dialog.setContentView(content);
+        SpringPress.onAllButtons(content); // every button sinks and springs back, with a light tap
         android.view.Window w = dialog.getWindow();
         if (w != null) {
             w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

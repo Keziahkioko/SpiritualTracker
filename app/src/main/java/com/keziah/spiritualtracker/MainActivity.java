@@ -104,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, PrayerActivity.class));
         });
         applyLook();
+        // Tiles and cards sink and spring back as they're pressed, with a light tap.
+        for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory,
+                binding.cardProgress, binding.cardWeek}) {
+            SpringPress.on(tile, 0.95f);
+        }
         binding.cardMemory.setOnClickListener(v ->
                 startActivity(new Intent(this, MemorizeActivity.class)));
 
