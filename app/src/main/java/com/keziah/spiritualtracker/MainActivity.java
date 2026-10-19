@@ -655,6 +655,22 @@ public class MainActivity extends AppCompatActivity {
         setDot(binding.progressMemorizeMe,      dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate"));
         setDot(binding.progressMemorizePartner, hasPartner && (dayFlag(partnerDayDoc, "memorize") || userDate(partnerUserDoc, "memorizedTodayDate")));
 
+        // All eight (both of us, all four practices): the golden card.
+        boolean[] mine = {
+                bibleDone(currentUserId, myDayDoc),
+                dayFlag(myDayDoc, "prayed") || userDate(myUserDoc, "prayedTodayDate"),
+                dayFlag(myDayDoc, "journal") || userDate(myUserDoc, "journaledTodayDate"),
+                dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate")};
+        boolean[] theirs = {
+                hasPartner && bibleDone(partnerId, partnerDayDoc),
+                hasPartner && (dayFlag(partnerDayDoc, "prayed") || userDate(partnerUserDoc, "prayedTodayDate")),
+                hasPartner && (dayFlag(partnerDayDoc, "journal") || userDate(partnerUserDoc, "journaledTodayDate")),
+                hasPartner && (dayFlag(partnerDayDoc, "memorize") || userDate(partnerUserDoc, "memorizedTodayDate"))};
+        boolean all = hasPartner;
+        for (int k = 0; k < 4; k++) all &= mine[k] && theirs[k];
+        if (BuildConfig.DEBUG && getSharedPreferences("test_tools", MODE_PRIVATE).getBoolean("pretendBothDone", false)) all = true;
+        showBothDone(all);
+
         // The tiles light up for what I've done today.
         lightTile(0, binding.cardBible,   binding.tileFaceBible,   bibleDone(currentUserId, myDayDoc));
         lightTile(1, binding.cardPrayer,  binding.tileFacePrayer,
@@ -704,6 +720,33 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean userDate(DocumentSnapshot userDoc, String field) {
         return userDoc != null && todayDate.equals(userDoc.getString(field));
+    }
+
+    // ─── You both finished today ─────────────────────────────────────────────
+
+    private Boolean bothDoneShown;
+
+    /**
+     * The golden card when both of us have done all four practices today. The first time it
+     * appears on a given day it pops in with a sparkle burst; after that it just stays.
+     */
+    private void showBothDone(boolean all) {
+        View card = binding.cardBothDone;
+        if (bothDoneShown != null && bothDoneShown == all) return;
+        bothDoneShown = all;
+        if (!all) { card.setVisibility(View.GONE); return; }
+        binding.tvBothDoneTitle.setText("You and " + PartnerName.get(this) + " both finished today");
+        card.setVisibility(View.VISIBLE);
+        android.content.SharedPreferences prefs = getSharedPreferences("celebrations", MODE_PRIVATE);
+        if (todayDate.equals(prefs.getString("bothDone", null))) return;
+        prefs.edit().putString("bothDone", todayDate).apply();
+        card.setScaleX(0.85f);
+        card.setScaleY(0.85f);
+        card.setAlpha(0f);
+        card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(450).setStartDelay(250)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
+                .withEndAction(() -> SparkleBurst.play(getWindow().getDecorView(), card, null))
+                .start();
     }
 
     // ─── Light sweep across the tiles ─────────────────────────────────────────

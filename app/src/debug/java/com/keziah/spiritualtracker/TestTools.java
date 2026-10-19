@@ -28,6 +28,8 @@ import java.util.Map;
  *   CLEANUP   deletes the TEST verses and takes them out of today's history, restoring the snapshot
  *   PRAYER    shows the 6:30 prayer reminder now, as it would be on the next given weekday
  *             (--ei weekday 1-7, Sunday = 1); reads only, nothing is saved
+ *   BOTHDONE  shows the "You both finished today" card as if both had done everything
+ *             (--ez on false to stop); changes nothing saved
  *   PUSHCHECK checks why partner notifications might not arrive: this phone's push token against
  *             both profiles, notification permission and background limits; reads only, sends nothing
  * Nothing else is touched. Results go to logcat under "TestTools".
@@ -165,6 +167,16 @@ public class TestTools extends BroadcastReceiver {
                         });
                     });
                 });
+                break;
+
+            case "BOTHDONE":
+                // --ez on true|false: show the golden card as if both had done everything today
+                // (and let it celebrate again).
+                boolean on = intent.getBooleanExtra("on", true);
+                prefs.edit().putBoolean("pretendBothDone", on).apply();
+                context.getSharedPreferences("celebrations", Context.MODE_PRIVATE).edit().remove("bothDone").apply();
+                Log.i(TAG, "BOTHDONE " + on);
+                pending.finish();
                 break;
 
             default:
