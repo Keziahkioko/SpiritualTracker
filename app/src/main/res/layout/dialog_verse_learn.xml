@@ -1,129 +1,226 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Learn window: four short steps from reading the verse to first letters only. -->
+<!-- Learn screen: four short steps from reading the verse to first letters only. Same frame as
+     the review: back and chips at the top, the reference as the title with the step progress,
+     the verse in a card, and Back / Next in a bar at the bottom. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingTop="24dp"
-    android:paddingEnd="24dp"
-    android:paddingBottom="16dp">
+    android:layout_height="match_parent"
+    android:background="#F7F4FB"
+    android:orientation="vertical">
 
-    <!-- Reference + step pill -->
     <LinearLayout
+        android:id="@+id/learnTopBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="20dp">
 
-        <TextView
-            android:id="@+id/tvLearnReference"
+        <ImageView
+            android:id="@+id/btnLearnClose"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="12dp"
+            android:src="@drawable/ic_back"
+            app:tint="#4A2C8F" />
+
+        <Space
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="serif"
-            android:textColor="#1A1A2E"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
         <TextView
-            android:id="@+id/tvLearnStep"
+            android:id="@+id/tvLearnPart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_chip_outline"
+            android:paddingStart="12dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="5dp"
+            android:textColor="#6A4FB0"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvLearnChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@drawable/progress_pill_bg"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:textColor="#7E57C2"
-            android:textSize="11sp"
+            android:paddingStart="12dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="5dp"
+            android:text="Learn"
+            android:textColor="#5E35B1"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
-
-    <!-- Last verse of the part before, as a lead-in (parts 2 onwards) -->
-    <TextView
-        android:id="@+id/tvLearnLeadIn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:textColor="#8A8494"
-        android:textSize="13sp"
-        android:textStyle="italic"
-        android:lineSpacingMultiplier="1.3"
-        android:visibility="gone" />
-
-    <TextView
-        android:id="@+id/tvLearnTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:textColor="#5E35B1"
-        android:textSize="15sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvLearnTip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="12dp"
-        android:textColor="#5F5F64"
-        android:textSize="13sp" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/bg_learn_text"
-        android:layout_marginBottom="14dp">
+        android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/tvLearnText"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:fontFamily="serif"
-            android:lineSpacingMultiplier="1.5"
-            android:textColor="#1A1A2E"
-            android:textSize="16sp" />
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp">
+
+            <TextView
+                android:id="@+id/tvLearnReference"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.1"
+                android:textColor="#1C1C1E"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <!-- Step progress: four segments -->
+            <LinearLayout
+                android:id="@+id/learnSteps"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal" />
+
+            <TextView
+                android:id="@+id/tvLearnStep"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textColor="#7E57C2"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLearnTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="serif"
+                android:textColor="#1C1C1E"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLearnTip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="18dp"
+                android:lineSpacingMultiplier="1.25"
+                android:textColor="#7A7385"
+                android:textSize="14sp" />
+
+            <!-- Last verse of the part before, as a lead-in (parts 2 onwards) -->
+            <TextView
+                android:id="@+id/tvLearnLeadIn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:lineSpacingMultiplier="1.3"
+                android:textColor="#8A8494"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvLearnText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_review_card"
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.55"
+                android:minHeight="160dp"
+                android:padding="20dp"
+                android:textColor="#1A1A2E"
+                android:textSize="18sp" />
+
+            <include
+                android:id="@+id/learnListen"
+                layout="@layout/view_listen_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <include
-        android:id="@+id/learnListen"
-        layout="@layout/view_listen_controls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp" />
-
     <LinearLayout
+        android:id="@+id/learnBottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:background="@drawable/bg_review_bottom"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLearnBack"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAllCaps="false"
-            android:textColor="#4A4A4A"
-            android:textSize="14sp" />
-
-        <View
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            android:layout_height="52dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:letterSpacing="0"
+            android:textAllCaps="false"
+            android:textColor="#5E35B1"
+            android:textSize="15sp"
+            app:cornerRadius="26dp"
+            app:strokeColor="#B39DDB"
+            app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLearnNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="120dp"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1.4"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:letterSpacing="0"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="14sp"
+            android:textSize="15sp"
             app:backgroundTint="#7E57C2"
-            app:cornerRadius="12dp" />
+            app:cornerRadius="26dp" />
+
+        <!-- Last step: the same bright green as Got it -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLearnDone"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1.4"
+            android:background="@drawable/bg_got_it"
+            android:elevation="6dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:letterSpacing="0"
+            android:shadowColor="#4D0B5E2B"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:backgroundTint="@null" />
     </LinearLayout>
 </LinearLayout>

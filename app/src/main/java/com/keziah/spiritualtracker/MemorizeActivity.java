@@ -838,15 +838,7 @@ public class MemorizeActivity extends AppCompatActivity {
         MaterialButton btnLearnFirst  = dv.findViewById(R.id.btnLearnFirst);
         View           layoutActions  = dv.findViewById(R.id.layoutQuizActions);
 
-        // "Exodus 15:1-3 (Part 1 of 7)": the reference is the title, the part a chip beside the Day.
-        java.util.regex.Matcher part = java.util.regex.Pattern.compile("\\s*\\((Part \\d+ of \\d+)\\)\\s*$").matcher(title);
-        TextView tvPart = dv.findViewById(R.id.tvQuizPart);
-        if (part.find()) {
-            tvPart.setText(part.group(1));
-            tvPart.setVisibility(View.VISIBLE);
-            title = title.substring(0, part.start());
-        }
-        ((TextView) dv.findViewById(R.id.tvQuizReference)).setText(title);
+        ((TextView) dv.findViewById(R.id.tvQuizReference)).setText(withPartChip(title, dv.findViewById(R.id.tvQuizPart)));
         ((TextView) dv.findViewById(R.id.tvQuizProgress)).setText(pill);
         if (prompt != null) ((TextView) dv.findViewById(R.id.tvQuizPrompt)).setText(prompt);
         showLeadIn(dv.findViewById(R.id.tvQuizLeadIn), leadIn);
@@ -1021,6 +1013,18 @@ public class MemorizeActivity extends AppCompatActivity {
      * edge: the top bar is padded for the status bar, the bottom bar for the navigation bar or,
      * while typing, the keyboard.
      */
+    /**
+     * "Exodus 15:1-3 (Part 1 of 7)": returns the reference for the title and shows the part in
+     * {@code chip}; a reference without a part leaves the chip hidden.
+     */
+    private static String withPartChip(String title, TextView chip) {
+        java.util.regex.Matcher part = java.util.regex.Pattern.compile("\\s*\\((Part \\d+ of \\d+)\\)\\s*$").matcher(title);
+        if (!part.find()) return title;
+        chip.setText(part.group(1));
+        chip.setVisibility(View.VISIBLE);
+        return title.substring(0, part.start());
+    }
+
     private int dp(float v) {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
@@ -1291,44 +1295,72 @@ public class MemorizeActivity extends AppCompatActivity {
         MaterialButton btnBack = dv.findViewById(R.id.btnLearnBack);
         MaterialButton btnNext = dv.findViewById(R.id.btnLearnNext);
 
-        tvRef.setText(verse.shownReference());
+        MaterialButton btnDone = dv.findViewById(R.id.btnLearnDone);
+        tvRef.setText(withPartChip(verse.shownReference(), dv.findViewById(R.id.tvLearnPart)));
+        ((TextView) dv.findViewById(R.id.tvLearnChip)).setText(practice ? "Practise" : "Learn");
         showLeadIn(dv.findViewById(R.id.tvLearnLeadIn), leadInFor(verse));
         tvText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvText.setHighlightColor(android.graphics.Color.TRANSPARENT);
         speaker.bind(dv.findViewById(R.id.learnListen), verse.getReference(), verse.getText());
 
-        androidx.appcompat.app.AlertDialog dialog =
-                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                        .setView(dv).create();
-        // A stray tap outside shouldn't throw away the steps done so far.
-        dialog.setCanceledOnTouchOutside(false);
+        android.app.Dialog dialog = openScreen(dv, dv.findViewById(R.id.learnTopBar), dv.findViewById(R.id.learnBottomBar));
         dialog.setOnDismissListener(d -> speaker.stop());
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            btnDone.setOutlineSpotShadowColor(0xFF22C55E);
+            btnDone.setOutlineAmbientShadowColor(0xFF22C55E);
+        }
+
+        // Four segments filling up as the steps go by.
+        LinearLayout segments = dv.findViewById(R.id.learnSteps);
+        for (int i = 0; i < LEARN_TITLES.length; i++) {
+            View seg = new View(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+            if (i > 0) lp.setMarginStart(dp(6));
+            segments.addView(seg, lp);
+        }
 
         LearnText learnText = new LearnText(verse.getText());
         int[] step = {0};
         Runnable[] show = new Runnable[1];
         show[0] = () -> {
             int s = step[0];
-            tvStep.setText("Step " + (s + 1) + " of " + LEARN_TITLES.length);
+            boolean last = s == LEARN_TITLES.length - 1;
+            for (int i = 0; i < segments.getChildCount(); i++) {
+                android.graphics.drawable.GradientDrawable bar = new android.graphics.drawable.GradientDrawable();
+                bar.setCornerRadius(dp(3));
+                bar.setColor(i <= s ? 0xFF7E57C2 : 0xFFE6DCF5);
+                segments.getChildAt(i).setBackground(bar);
+            }
+            tvStep.setText("STEP " + (s + 1) + " OF " + LEARN_TITLES.length);
             tvTitle.setText(LEARN_TITLES[s]);
             tvTip.setText(LEARN_TIPS[s]);
             tvText.setText(learnText.render(s, show[0]));
             btnBack.setText(s == 0 ? "Close" : "Back");
-            btnNext.setText(s < LEARN_TITLES.length - 1 ? "Next" : practice ? "Done" : "I've learned it");
+            btnNext.setText("Next");
+            btnNext.setVisibility(last ? View.GONE : View.VISIBLE);
+            btnDone.setVisibility(last ? View.VISIBLE : View.GONE);
+            btnDone.setText(practice ? "Done \u2713" : "I've learned it \u2713");
         };
-        btnBack.setOnClickListener(b -> {
+        Runnable stepBack = () -> {
             if (step[0] == 0) { dialog.dismiss(); return; }
             step[0]--;
             learnText.hideAgain();
             show[0].run();
+        };
+        btnBack.setOnClickListener(b -> stepBack.run());
+        dv.findViewById(R.id.btnLearnClose).setOnClickListener(b -> dialog.dismiss());
+        // The phone's Back goes back a step (and closes from the first).
+        dialog.setOnKeyListener((d, keyCode, event) -> {
+            if (keyCode != android.view.KeyEvent.KEYCODE_BACK) return false;
+            if (event.getAction() == android.view.KeyEvent.ACTION_UP) stepBack.run();
+            return true;
         });
         btnNext.setOnClickListener(b -> {
-            if (step[0] < LEARN_TITLES.length - 1) {
-                step[0]++;
-                learnText.hideAgain();
-                show[0].run();
-                return;
-            }
+            step[0]++;
+            learnText.hideAgain();
+            show[0].run();
+        });
+        btnDone.setOnClickListener(b -> {
             dialog.dismiss();
             if (practice) {
                 logPractice(verse.getReference());
