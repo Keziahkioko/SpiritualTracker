@@ -750,9 +750,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * The celebration, unhurried: the four tiles bounce together; the ticks in Today's progress
-     * bounce one after another, then all together; then sparkles burst out of every tile and every
-     * circle across the whole screen.
+     * The celebration, unhurried: the four tiles fill up like balloons together; the ticks in
+     * Today's progress fill up one after another, then all of them and the tiles at once; then
+     * sparkles burst out of every tile and every circle across the whole screen.
      */
     private void celebrateDashboard() {
         View[] tiles = {binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory};
@@ -767,6 +767,7 @@ public class MainActivity extends AppCompatActivity {
         // 3. Then all of them at once.
         long together = start + dots.length * 330L + 1100;
         for (View d : dots) balloon(d, together, 1.6f, 550);
+        for (View t : tiles) balloon(t, together, 1.12f, 550); // the tiles fill up with them
         // 4. Sparkles out of every tile and every circle, over the whole screen.
         View screen = getWindow().getDecorView();
         screen.postDelayed(() -> {
