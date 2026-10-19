@@ -105,7 +105,8 @@ final class SparkleBurst {
         public void draw(@NonNull Canvas canvas) {
             float s = t * duration / 1000f;            // seconds
             float gravity = 520 * dp * (DURATION / (float) duration) * (DURATION / (float) duration);
-            int alpha = (int) (255 * Math.max(0f, 1f - t * t));
+            // Full brightness for most of the flight, then a gentle fade at the end.
+            int alpha = t < 0.6f ? 255 : (int) (255 * Math.max(0f, 1f - (t - 0.6f) / 0.4f));
             for (int i = 0; i < count; i++) {
                 float x = cx + vx[i] * s;
                 float y = cy + vy[i] * s + 0.5f * gravity * s * s;

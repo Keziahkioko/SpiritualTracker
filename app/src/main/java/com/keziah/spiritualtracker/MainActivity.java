@@ -773,9 +773,9 @@ public class MainActivity extends AppCompatActivity {
         screen.postDelayed(() -> {
             if (isFinishing()) return;
             screen.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM);
-            for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.6f, 2500, true, false, null);
-            for (View d : dots) SparkleBurst.play(screen, d, 8, 0.5f, 2400, true, false, null);
-            SparkleBurst.play(screen, binding.cardBothDone, 24, 0.7f, 2600, true, false, null);
+            for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.6f, 3600, true, false, null);
+            for (View d : dots) SparkleBurst.play(screen, d, 8, 0.5f, 3400, true, false, null);
+            SparkleBurst.play(screen, binding.cardBothDone, 24, 0.7f, 3800, true, false, null);
         }, together + 550 + 340); // the moment the full balloons let go: inflate 550 ms + wobble 340 ms
     }
 
