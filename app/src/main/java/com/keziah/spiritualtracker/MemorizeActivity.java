@@ -1113,16 +1113,17 @@ public class MemorizeActivity extends AppCompatActivity {
             gotIt.setOutlineSpotShadowColor(0xFF8E44C9);
             gotIt.setOutlineAmbientShadowColor(0xFF8E44C9);
         }
-        gotIt.setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
+        // Got it: saved straight away, then a burst of sparkles before the screen closes.
+        gotIt.setOnClickListener(gv -> {
+            gv.setEnabled(false);
+            dv.findViewById(R.id.btnTryAgain).setEnabled(false);
+            onGotIt.run();
+            SparkleBurst.play(dv, gv, dialog::dismiss);
+        });
         dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
         dialog.show();
     }
 
-    /**
-     * Shows {@code content} as a full screen over this one (used for the review), drawn edge to
-     * edge: the top bar is padded for the status bar, the bottom bar for the navigation bar or,
-     * while typing, the keyboard.
-     */
     /**
      * "Exodus 15:1-3 (Part 1 of 7)": returns the reference for the title and shows the part in
      * {@code chip}; a reference without a part leaves the chip hidden.
@@ -1139,6 +1140,11 @@ public class MemorizeActivity extends AppCompatActivity {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 
+    /**
+     * Shows {@code content} as a full screen over this one (review, learn, add passage, details),
+     * drawn edge to edge: the top bar is padded for the status bar, the bottom bar for the
+     * navigation bar or, while typing, the keyboard.
+     */
     private android.app.Dialog openScreen(View content, View topBar, View bottomBar) {
         android.app.Dialog dialog = new android.app.Dialog(this, R.style.Theme_SpiritualTracker_Screen);
         dialog.setContentView(content);
@@ -1471,7 +1477,9 @@ public class MemorizeActivity extends AppCompatActivity {
             show[0].run();
         });
         btnDone.setOnClickListener(b -> {
-            dialog.dismiss();
+            b.setEnabled(false);
+            btnBack.setEnabled(false);
+            SparkleBurst.play(dv, b, dialog::dismiss);
             if (practice) {
                 logPractice(verse.getReference());
                 Toast.makeText(this, "Practice counted. Your schedule stays the same.", Toast.LENGTH_LONG).show();
