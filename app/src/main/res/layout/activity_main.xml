@@ -148,17 +148,15 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/holy_bible"
-                            app:tint="#FFFFFF" />
+                            app:tint="#6A3CC8" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
-                            android:shadowColor="#739F6BFF"
-                            android:shadowRadius="10"
                             android:text="@string/label_bible"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#ffffff" />
+                            android:textColor="#4A2C8F" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgeBible"
@@ -202,17 +200,15 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/prayer"
-                            app:tint="#FFFFFF" />
+                            app:tint="#6A3CC8" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
-                            android:shadowColor="#739F6BFF"
-                            android:shadowRadius="10"
                             android:text="@string/label_prayer"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#ffffff" />
+                            android:textColor="#4A2C8F" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgePrayer"
@@ -256,15 +252,13 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/journal"
-                            app:tint="#FFFFFF" />
+                            app:tint="#6A3CC8" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
-                            android:shadowColor="#739F6BFF"
-                            android:shadowRadius="10"
                             android:text="@string/label_journal"
-                            android:textColor="#ffffff"
+                            android:textColor="#4A2C8F"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -310,17 +304,15 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/memorize"
-                            app:tint="#FFFFFF" />
+                            app:tint="#6A3CC8" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
-                            android:shadowColor="#739F6BFF"
-                            android:shadowRadius="10"
                             android:text="@string/label_memorize"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#ffffff" />
+                            android:textColor="#4A2C8F" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgeMemory"

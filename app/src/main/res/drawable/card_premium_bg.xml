@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dashboard tiles, "Obsidian glow": the original charcoal made glossy, with purple light rising
-     from the bottom, a lavender rim, a shine and a sparkle, on a near-black side for thickness.
-     Pressed, the face sinks towards its side. (card_royal_bg.xml keeps the purple version.) -->
+<!-- Dashboard tiles, "Pearl": airy white with a soft rainbow sheen (lavender, sky blue, blush),
+     a shine, a sparkle and a white rim, on a soft lilac side for thickness; purple icons and labels.
+     Pressed, the face sinks towards its side. (card_obsidian_bg.xml and card_royal_bg.xml keep the
+     Obsidian glow and purple versions.) -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
         <layer-list>
-            <!-- The tile's side, showing below the face: near-black, gives it thickness -->
+            <!-- The tile's side, showing below the face: soft lilac, gives it thickness -->
             <item>
                 <shape android:shape="rectangle">
-                    <solid android:color="#0E0C12" />
+                    <gradient android:angle="0" android:startColor="#D6C8EE" android:endColor="#E7CFE8" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
-            <!-- The face: charcoal, lit from above -->
+            <!-- The face: pearl white with a soft rainbow sheen -->
             <item android:top="4dp" android:bottom="2dp">
                 <shape android:shape="rectangle">
-                    <gradient android:angle="270" android:startColor="#4C4754" android:endColor="#25212B" />
+                    <gradient
+                        android:angle="315"
+                        android:startColor="#FFFFFF"
+                        android:centerColor="#EFE6FF"
+                        android:endColor="#E3F1FF" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
-            <!-- Purple light rising from the bottom of the face -->
+            <!-- A blush of pink from the bottom right -->
             <item android:top="4dp" android:bottom="2dp">
                 <shape android:shape="rectangle">
                     <gradient
                         android:type="radial"
-                        android:centerX="0.5"
-                        android:centerY="1.15"
+                        android:centerX="1.0"
+                        android:centerY="1.0"
                         android:gradientRadius="120dp"
-                        android:startColor="#80A23FB5"
-                        android:centerColor="#297E45C4"
-                        android:endColor="#007E45C4" />
+                        android:startColor="#80FBE3F2"
+                        android:endColor="#00FBE3F2" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
             <!-- Shine over the upper half -->
             <item android:top="6dp" android:left="2dp" android:right="2dp" android:bottom="72dp">
                 <shape android:shape="rectangle">
-                    <gradient android:angle="270" android:startColor="#33FFFFFF" android:endColor="#00FFFFFF" />
+                    <gradient android:angle="270" android:startColor="#E6FFFFFF" android:endColor="#00FFFFFF" />
                     <corners android:topLeftRadius="14dp" android:topRightRadius="14dp"
                         android:bottomLeftRadius="40dp" android:bottomRightRadius="40dp" />
                 </shape>
@@ -44,13 +48,13 @@
             <!-- Sparkle near the top left -->
             <item android:top="11dp" android:left="18dp" android:width="42dp" android:height="6dp">
                 <shape android:shape="oval">
-                    <solid android:color="#8CFFFFFF" />
+                    <solid android:color="#FFFFFFFF" />
                 </shape>
             </item>
-            <!-- Lavender rim light around the face -->
+            <!-- White rim around the face -->
             <item android:top="4dp" android:bottom="2dp">
                 <shape android:shape="rectangle">
-                    <stroke android:width="1dp" android:color="#73C9A0FF" />
+                    <stroke android:width="1dp" android:color="#FFFFFFFF" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
@@ -58,38 +62,41 @@
     </item>
     <item>
         <layer-list>
-            <!-- The tile's side, showing below the face: near-black, gives it thickness -->
+            <!-- The tile's side, showing below the face: soft lilac, gives it thickness -->
             <item>
                 <shape android:shape="rectangle">
-                    <solid android:color="#0E0C12" />
+                    <gradient android:angle="0" android:startColor="#D6C8EE" android:endColor="#E7CFE8" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
-            <!-- The face: charcoal, lit from above -->
+            <!-- The face: pearl white with a soft rainbow sheen -->
             <item android:top="0dp" android:bottom="6dp">
                 <shape android:shape="rectangle">
-                    <gradient android:angle="270" android:startColor="#4C4754" android:endColor="#25212B" />
+                    <gradient
+                        android:angle="315"
+                        android:startColor="#FFFFFF"
+                        android:centerColor="#EFE6FF"
+                        android:endColor="#E3F1FF" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
-            <!-- Purple light rising from the bottom of the face -->
+            <!-- A blush of pink from the bottom right -->
             <item android:top="0dp" android:bottom="6dp">
                 <shape android:shape="rectangle">
                     <gradient
                         android:type="radial"
-                        android:centerX="0.5"
-                        android:centerY="1.15"
+                        android:centerX="1.0"
+                        android:centerY="1.0"
                         android:gradientRadius="120dp"
-                        android:startColor="#80A23FB5"
-                        android:centerColor="#297E45C4"
-                        android:endColor="#007E45C4" />
+                        android:startColor="#80FBE3F2"
+                        android:endColor="#00FBE3F2" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
             <!-- Shine over the upper half -->
             <item android:top="2dp" android:left="2dp" android:right="2dp" android:bottom="72dp">
                 <shape android:shape="rectangle">
-                    <gradient android:angle="270" android:startColor="#33FFFFFF" android:endColor="#00FFFFFF" />
+                    <gradient android:angle="270" android:startColor="#E6FFFFFF" android:endColor="#00FFFFFF" />
                     <corners android:topLeftRadius="14dp" android:topRightRadius="14dp"
                         android:bottomLeftRadius="40dp" android:bottomRightRadius="40dp" />
                 </shape>
@@ -97,13 +104,13 @@
             <!-- Sparkle near the top left -->
             <item android:top="7dp" android:left="18dp" android:width="42dp" android:height="6dp">
                 <shape android:shape="oval">
-                    <solid android:color="#8CFFFFFF" />
+                    <solid android:color="#FFFFFFFF" />
                 </shape>
             </item>
-            <!-- Lavender rim light around the face -->
+            <!-- White rim around the face -->
             <item android:top="0dp" android:bottom="6dp">
                 <shape android:shape="rectangle">
-                    <stroke android:width="1dp" android:color="#73C9A0FF" />
+                    <stroke android:width="1dp" android:color="#FFFFFFFF" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
