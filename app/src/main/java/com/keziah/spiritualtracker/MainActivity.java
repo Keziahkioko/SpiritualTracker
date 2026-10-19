@@ -768,7 +768,7 @@ public class MainActivity extends AppCompatActivity {
         long together = start + dots.length * 330L + 1100;
         for (View d : dots) balloon(d, together, 1.6f, 550);
         for (View t : tiles) balloon(t, together, 1.12f, 550); // the tiles fill up with them
-        // 4. Sparkles out of every tile and every circle, over the whole screen.
+        // 4. As the full balloons let go, sparkles burst out of every tile and every circle.
         View screen = getWindow().getDecorView();
         screen.postDelayed(() -> {
             if (isFinishing()) return;
@@ -776,7 +776,7 @@ public class MainActivity extends AppCompatActivity {
             for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.6f, 2500, true, false, null);
             for (View d : dots) SparkleBurst.play(screen, d, 8, 0.5f, 2400, true, false, null);
             SparkleBurst.play(screen, binding.cardBothDone, 24, 0.7f, 2600, true, false, null);
-        }, together + 1500);
+        }, together + 550 + 340); // the moment the full balloons let go: inflate 550 ms + wobble 340 ms
     }
 
     /**
