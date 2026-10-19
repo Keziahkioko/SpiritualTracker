@@ -173,19 +173,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="12sp"
                         android:visibility="gone" />
-                    <ImageView
-                        android:id="@+id/doneBible"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_progress_done"
-                        android:contentDescription="Done today"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_check_double"
-                        android:visibility="gone"
-                        app:tint="#FFFFFF" />
                 </FrameLayout>
             </androidx.cardview.widget.CardView>
 
@@ -241,19 +228,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="12sp"
                         android:visibility="gone" />
-                    <ImageView
-                        android:id="@+id/donePrayer"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_progress_done"
-                        android:contentDescription="Done today"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_check_double"
-                        android:visibility="gone"
-                        app:tint="#FFFFFF" />
                 </FrameLayout>
             </androidx.cardview.widget.CardView>
 
@@ -309,19 +283,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="12sp"
                         android:visibility="gone" />
-                    <ImageView
-                        android:id="@+id/doneJournal"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_progress_done"
-                        android:contentDescription="Done today"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_check_double"
-                        android:visibility="gone"
-                        app:tint="#FFFFFF" />
                 </FrameLayout>
             </androidx.cardview.widget.CardView>
 
@@ -377,19 +338,6 @@
                         android:textColor="#FFFFFF"
                         android:textSize="12sp"
                         android:visibility="gone" />
-                    <ImageView
-                        android:id="@+id/doneMemory"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="bottom|end"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_progress_done"
-                        android:contentDescription="Done today"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_check_double"
-                        android:visibility="gone"
-                        app:tint="#FFFFFF" />
                 </FrameLayout>
             </androidx.cardview.widget.CardView>
 
