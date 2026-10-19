@@ -992,7 +992,13 @@ public class MemorizeActivity extends AppCompatActivity {
         });
         dialog.setOnDismissListener(d -> speaker.stop());
 
-        dv.findViewById(R.id.btnGotIt).setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
+        View gotIt = dv.findViewById(R.id.btnGotIt);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            // A green glow under the bright button instead of a grey shadow.
+            gotIt.setOutlineSpotShadowColor(0xFF22C55E);
+            gotIt.setOutlineAmbientShadowColor(0xFF22C55E);
+        }
+        gotIt.setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
         dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
         dialog.show();
     }

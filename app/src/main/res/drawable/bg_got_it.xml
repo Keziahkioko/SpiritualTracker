@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Got it": a bright, luminous green with a glossy sheen on its top half, and a press ripple. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#40FFFFFF">
+    <item>
+        <layer-list>
+            <!-- Body: vivid green, lighter at the top -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#5CF08F"
+                        android:centerColor="#2BD46A"
+                        android:endColor="#18B553" />
+                    <corners android:radius="26dp" />
+                </shape>
+            </item>
+            <!-- Gloss: a soft white sheen over the upper half -->
+            <item android:bottom="24dp" android:left="2dp" android:right="2dp" android:top="2dp">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#73FFFFFF"
+                        android:endColor="#08FFFFFF" />
+                    <corners
+                        android:topLeftRadius="24dp"
+                        android:topRightRadius="24dp"
+                        android:bottomLeftRadius="12dp"
+                        android:bottomRightRadius="12dp" />
+                </shape>
+            </item>
+            <!-- A thin bright rim -->
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke android:width="1dp" android:color="#8CFFB4" />
+                    <corners android:radius="26dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</ripple>
