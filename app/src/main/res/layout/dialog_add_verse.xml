@@ -21,7 +21,7 @@
         android:id="@+id/tvAddVerseSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You'll be reviewed daily using spaced repetition."
+        android:text="Learn it today, then five short reviews over the next week."
         android:textColor="#5F5F64"
         android:textSize="13sp"
         android:layout_marginBottom="20dp"/>

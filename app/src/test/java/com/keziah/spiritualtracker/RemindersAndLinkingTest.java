@@ -1,5 +1,6 @@
 package com.keziah.spiritualtracker;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -100,6 +101,36 @@ public class RemindersAndLinkingTest {
     public void slotExactlyNowMovesOn() {
         long sixThirty = date(2026, 10, 19, 6, 30).getTimeInMillis();
         assertEquals(20, DailySchedule.nextAt(-1, 6, 30, sixThirty).get(Calendar.DAY_OF_MONTH));
+    }
+
+    // ── Memorize schedule ───────────────────────────────────────────────
+
+    @Test
+    public void fiveReviewsOverAWeek() {
+        // Learned on day 0: reviews on days 1, 3, 5, 6 and 7.
+        int day = 0;
+        int[] reviewDays = new int[ProgressMath.REVIEW_GAPS.length];
+        for (int i = 0; i < reviewDays.length; i++) reviewDays[i] = day += ProgressMath.REVIEW_GAPS[i];
+        assertArrayEquals(new int[]{1, 3, 5, 6, 7}, reviewDays);
+    }
+
+    @Test
+    public void slowOldDatesAreBroughtForward() {
+        // Reviewed on 19 Oct while waiting for review 4 (index 3): due by 20 Oct, not 26 Oct.
+        java.util.Date old = date(2026, 10, 26, 12, 0).getTime();
+        java.util.Date earlier = ProgressMath.pulledForward(old, "2026-10-19", 3);
+        Calendar c = Calendar.getInstance();
+        c.setTime(earlier);
+        assertEquals(20, c.get(Calendar.DAY_OF_MONTH));
+    }
+
+    @Test
+    public void datesOnScheduleAreLeftAlone() {
+        // Due on the right day, at any hour, or sooner: nothing to change.
+        assertEquals(null, ProgressMath.pulledForward(date(2026, 10, 21, 20, 0).getTime(), "2026-10-19", 1));
+        assertEquals(null, ProgressMath.pulledForward(date(2026, 10, 20, 9, 0).getTime(), "2026-10-19", 1));
+        assertEquals(null, ProgressMath.pulledForward(null, "2026-10-19", 1));
+        assertEquals(null, ProgressMath.pulledForward(date(2026, 10, 26, 9, 0).getTime(), "not a date", 1));
     }
 
     // ── Verse references for parts of a passage ─────────────────────────

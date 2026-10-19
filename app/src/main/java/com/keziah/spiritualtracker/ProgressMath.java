@@ -78,6 +78,36 @@ public final class ProgressMath {
         return n;
     }
 
+    /**
+     * Days before each of a verse's five reviews, counted from the review (or learning) before it.
+     * Learned on day 0, it's reviewed on days 1, 3, 5, 6 and 7; a Got it on the fifth masters it,
+     * so a verse takes a week.
+     */
+    public static final int[] REVIEW_GAPS = {1, 2, 2, 1, 1};
+
+    /**
+     * Where a verse waiting for review number {@code idx} (0-based) should be due, given the day it
+     * was last reviewed: never later than that day plus its gap. Returns the earlier date when the
+     * stored one is later (dates set by an older, slower schedule), or null when it's fine as it is.
+     */
+    public static Date pulledForward(Date nextReview, String lastReviewedDay, int idx) {
+        if (nextReview == null || lastReviewedDay == null || idx < 0 || idx >= REVIEW_GAPS.length) return null;
+        Date last;
+        try {
+            last = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(lastReviewedDay);
+        } catch (ParseException e) {
+            return null;
+        }
+        if (last == null) return null;
+        Calendar latest = Calendar.getInstance();
+        latest.setTime(last);
+        latest.add(Calendar.DAY_OF_YEAR, REVIEW_GAPS[idx]);
+        // Compare whole days: due "on" the latest day is fine whatever the hour.
+        Calendar dayAfter = (Calendar) latest.clone();
+        dayAfter.add(Calendar.DAY_OF_YEAR, 1);
+        return nextReview.before(dayAfter.getTime()) ? null : latest.getTime();
+    }
+
     /** A verse is due any time on or after its review day (not only after the exact minute). */
     public static boolean isDueOn(Date nextReview, Date now) {
         if (nextReview == null) return false;

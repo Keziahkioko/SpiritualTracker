@@ -49,8 +49,8 @@ import okhttp3.RequestBody;
 
 public class MemorizeActivity extends AppCompatActivity {
 
-    private static final int[]  INTERVALS    = {1, 2, 4, 7, 30};
-    private static final int    MASTERED_IDX = 4;
+    /** Days before each of the five reviews: days 1, 3, 5, 6 and 7 after learning (see ProgressMath). */
+    private static final int[]  INTERVALS    = ProgressMath.REVIEW_GAPS;
     /** Mastered verses come back for a refresh this often, or sooner after a "Try again". */
     private static final int    REFRESH_DAYS       = 30;
     private static final int    REFRESH_AGAIN_DAYS = 7;
@@ -225,6 +225,7 @@ public class MemorizeActivity extends AppCompatActivity {
                         }
                     }
 
+                    bringForward();
                     buildTogether();
                     for (Together t : togetherList) if (t.due()) due++;
                     myDueCount = due;
@@ -637,9 +638,11 @@ public class MemorizeActivity extends AppCompatActivity {
             return;
         }
         if (gotIt) {
+            // A Got it on the fifth review masters it; it then stays on the last index.
+            boolean mastered = currentIdx + 1 >= INTERVALS.length;
             nextIdx  = Math.min(currentIdx + 1, INTERVALS.length - 1);
-            newStage = (nextIdx >= MASTERED_IDX) ? "mastered"
-                    : (nextIdx >= 2)             ? "reviewing"
+            newStage = mastered        ? "mastered"
+                    : (nextIdx >= 2)   ? "reviewing"
                     : "learning";
         } else {
             nextIdx  = Math.max(0, currentIdx - 1);
@@ -714,6 +717,25 @@ public class MemorizeActivity extends AppCompatActivity {
                 if (ready && unlocking.add(part.getId())) unlock(part);
                 break; // only the first locked part of a passage can be next
             }
+        }
+    }
+
+    /** Verses already asked about this session, so a write in flight isn't sent twice. */
+    private final java.util.Set<String> broughtForward = new java.util.HashSet<>();
+
+    /**
+     * Reviews used to be up to a week apart; a verse still waiting longer than the current
+     * schedule allows is brought forward to its new day (or today, if that has passed).
+     */
+    private void bringForward() {
+        for (MemoryVerse v : activeList) {
+            if (v.getId() == null || v.getNextReviewDate() == null || isLocked(v) || needsLearning(v)) continue;
+            int idx = v.getIntervalIndex() != null ? v.getIntervalIndex() : 0;
+            Date earlier = ProgressMath.pulledForward(v.getNextReviewDate().toDate(), v.getLastReviewedDate(), idx);
+            if (earlier == null || !broughtForward.add(v.getId())) continue;
+            db.collection("users").document(currentUserId)
+                    .collection("memory_verses").document(v.getId())
+                    .update("nextReviewDate", new Timestamp(earlier));
         }
     }
 
@@ -1225,7 +1247,7 @@ public class MemorizeActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /** Learned: first test tomorrow, then the usual 1, 2, 4, 7, 30 days. */
+    /** Learned: first test tomorrow, then days 3, 5, 6 and 7 (mastered after a week). */
     private void finishLearning(MemoryVerse verse) {
         if (verse.getId() == null) return;
         logPractice(verse.getReference());
@@ -1437,7 +1459,7 @@ public class MemorizeActivity extends AppCompatActivity {
         private static final int   TYPE_HEADER = 1;
         private static final int   TYPE_LOCKED = 2;
         private static final int   TYPE_TOGETHER = 3;
-        private static final int[] INTERVALS   = {1, 2, 4, 7, 30};
+        private static final int[] INTERVALS   = ProgressMath.REVIEW_GAPS;
 
         private final List<Object>                              list;
         private final java.util.function.Consumer<MemoryVerse> onTap, onLong;
