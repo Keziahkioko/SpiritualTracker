@@ -129,7 +129,7 @@
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="10dp"
                 app:cardBackgroundColor="@android:color/transparent">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -139,7 +139,9 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:background="@drawable/card_premium_bg">
+                        android:background="@drawable/card_premium_bg"
+                        android:duplicateParentState="true"
+                        android:paddingBottom="6dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -177,7 +179,7 @@
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="10dp"
                 app:cardBackgroundColor="@android:color/transparent">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -187,7 +189,9 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:background="@drawable/card_premium_bg">
+                        android:background="@drawable/card_premium_bg"
+                        android:duplicateParentState="true"
+                        android:paddingBottom="6dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -225,7 +229,7 @@
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="10dp"
                 app:cardBackgroundColor="@android:color/transparent">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -234,6 +238,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@drawable/card_premium_bg"
+                        android:duplicateParentState="true"
+                        android:paddingBottom="6dp"
                         android:gravity="center"
                         android:orientation="vertical">
                         <ImageView
@@ -273,7 +279,7 @@
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="10dp"
                 app:cardBackgroundColor="@android:color/transparent">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -283,7 +289,9 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:background="@drawable/card_premium_bg">
+                        android:background="@drawable/card_premium_bg"
+                        android:duplicateParentState="true"
+                        android:paddingBottom="6dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"

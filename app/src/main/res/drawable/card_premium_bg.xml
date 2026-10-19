@@ -1,17 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-
-    <gradient
-        android:angle="315"
-        android:startColor="#4A4A4A"
-        android:endColor="#2C2C2C"
-        android:type="linear" />
-
-    <corners android:radius="16dp" />
-
-    <stroke
-        android:width="1dp"
-        android:color="#555555" />
-
-</shape>
+<!-- Dashboard tiles (Bible, Prayer, Journal, Memorize) as raised 3D tiles: a dark side below the
+     face for thickness, the face lit from above with a gloss and a bright top rim. Pressed, the
+     face sinks towards its side, like a button pushed in. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <layer-list>
+            <!-- The tile's side, showing below the face: gives it thickness -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient android:angle="270" android:startColor="#1F1F1F" android:endColor="#0E0E0E" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+            <!-- The face, lit from above -->
+            <item android:top="4dp" android:bottom="2dp">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#5E5E5E"
+                        android:centerColor="#3E3E3E"
+                        android:endColor="#2A2A2A" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+            <!-- Gloss over the upper half of the face -->
+            <item android:top="5dp" android:left="1dp" android:right="1dp" android:bottom="72dp">
+                <shape android:shape="rectangle">
+                    <gradient android:angle="270" android:startColor="#38FFFFFF" android:endColor="#00FFFFFF" />
+                    <corners android:topLeftRadius="15dp" android:topRightRadius="15dp"
+                        android:bottomLeftRadius="40dp" android:bottomRightRadius="40dp" />
+                </shape>
+            </item>
+            <!-- Thin bright rim along the top edge -->
+            <item android:top="4dp" android:left="16dp" android:right="16dp" android:height="1dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#59FFFFFF" />
+                </shape>
+            </item>
+            <!-- Fine outline of the face -->
+            <item android:top="4dp" android:bottom="2dp">
+                <shape android:shape="rectangle">
+                    <stroke android:width="1dp" android:color="#22FFFFFF" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <!-- The tile's side, showing below the face: gives it thickness -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient android:angle="270" android:startColor="#1F1F1F" android:endColor="#0E0E0E" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+            <!-- The face, lit from above -->
+            <item android:top="0dp" android:bottom="6dp">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#5E5E5E"
+                        android:centerColor="#3E3E3E"
+                        android:endColor="#2A2A2A" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+            <!-- Gloss over the upper half of the face -->
+            <item android:top="1dp" android:left="1dp" android:right="1dp" android:bottom="72dp">
+                <shape android:shape="rectangle">
+                    <gradient android:angle="270" android:startColor="#38FFFFFF" android:endColor="#00FFFFFF" />
+                    <corners android:topLeftRadius="15dp" android:topRightRadius="15dp"
+                        android:bottomLeftRadius="40dp" android:bottomRightRadius="40dp" />
+                </shape>
+            </item>
+            <!-- Thin bright rim along the top edge -->
+            <item android:top="0dp" android:left="16dp" android:right="16dp" android:height="1dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#59FFFFFF" />
+                </shape>
+            </item>
+            <!-- Fine outline of the face -->
+            <item android:top="0dp" android:bottom="6dp">
+                <shape android:shape="rectangle">
+                    <stroke android:width="1dp" android:color="#22FFFFFF" />
+                    <corners android:radius="16dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

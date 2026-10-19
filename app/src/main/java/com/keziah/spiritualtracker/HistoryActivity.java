@@ -348,8 +348,14 @@ public class HistoryActivity extends AppCompatActivity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(24), dp(8), dp(24), 0);
 
-        addPersonSection(box, "Me", myDays.get(key));
-        if (partnerId != null) addPersonSection(box, partnerName, partnerDays.get(key));
+        // Whose tab it is comes first. "Prayed for" names the other person: me for them, them for me.
+        if (showingPartner && partnerId != null) {
+            addPersonSection(box, partnerName, partnerDays.get(key), "you");
+            addPersonSection(box, "You", myDays.get(key), partnerName);
+        } else {
+            addPersonSection(box, "You", myDays.get(key), partnerName);
+            if (partnerId != null) addPersonSection(box, partnerName, partnerDays.get(key), "you");
+        }
 
         Date date = parseKey(key);
         String title = date != null
@@ -362,7 +368,7 @@ public class HistoryActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void addPersonSection(LinearLayout box, String who, HistoryRepository.DayRecord r) {
+    private void addPersonSection(LinearLayout box, String who, HistoryRepository.DayRecord r, String prayedFor) {
         TextView name = text(who, 15, 0xFF4527A0, true);
         name.setPadding(0, dp(12), 0, dp(4));
         box.addView(name);
@@ -378,9 +384,9 @@ public class HistoryActivity extends AppCompatActivity {
         box.addView(detailLine(r.bible ? COLORS[0] : 0xFFBDBDBD, bible));
 
         String prayer;
-        if (r.prayed && r.prayedForPartner) prayer = "Prayed, and prayed for " + partnerName;
+        if (r.prayed && r.prayedForPartner) prayer = "Prayed, and prayed for " + prayedFor;
         else if (r.prayed)                  prayer = "Prayed";
-        else if (r.prayedForPartner)        prayer = "Prayed for " + partnerName;
+        else if (r.prayedForPartner)        prayer = "Prayed for " + prayedFor;
         else                                prayer = "Didn't mark prayer";
         box.addView(detailLine(r.prayed || r.prayedForPartner ? COLORS[1] : 0xFFBDBDBD, prayer));
 
