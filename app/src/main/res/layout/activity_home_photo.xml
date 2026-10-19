@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Home photo. The frame at the top is the home screen's photo area (same size, shading, and
      faint copies of the number and icons that sit on it), so the photo is placed as it will show.
-     The panel overlaps the photo the way the home cards do; Save stays at the bottom. -->
+     The controls sit below it; Save stays at the bottom. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/photoRoot"
@@ -116,7 +116,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="40dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_link_partner"
                     android:paddingStart="14dp"
                     android:paddingTop="6dp"
@@ -127,12 +127,12 @@
                     android:textSize="12sp" />
             </FrameLayout>
 
-            <!-- Controls, overlapping the photo like the home cards -->
+            <!-- Controls, below the photo -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="-24dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
