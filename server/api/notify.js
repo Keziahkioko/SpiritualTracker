@@ -4,7 +4,7 @@ import { db, messaging, mutualPartner, verifyCaller } from '../lib/firebase.js';
 // Notification types the app knows how to route (see MyFirebaseMessagingService).
 const TYPES = new Set([
   'bible_nudge', 'bible_update', 'journal_new', 'journal_chat',
-  'prayer_nudge', 'prayer_chat', 'prayer_update', 'memorize', 'reminder',
+  'prayer_nudge', 'prayer_chat', 'prayer_update', 'memorize', 'reminder', 'home_photo',
 ]);
 
 const clip = (value, max) => String(value ?? '').slice(0, max);

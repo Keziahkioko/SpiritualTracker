@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private ListenerRegistration myDayListener;
     private ListenerRegistration partnerListener;
     private ListenerRegistration partnerDayListener;
+    private ListenerRegistration homePhotoListener;
     private ListenerRegistration legacyBibleListener;
 
     // Each tick combines the day log with the older per-user date fields, so a partner
@@ -109,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
         binding.cardProgress.setOnClickListener(openHistory);
         binding.tvViewHistory.setOnClickListener(openHistory);
         binding.tvLinkPartner.setOnClickListener(v -> showLinkPartnerDialog());
+
+        // The couple's photo (shared, set from the camera button); the last one seen shows at once.
+        HomePhoto.showRemembered(binding.ivHeader);
+        binding.ivChangePhoto.setOnClickListener(v -> {
+            if (partnerId == null) return;
+            startActivity(new Intent(this, HomePhotoActivity.class).putExtra(HomePhotoActivity.EXTRA_PARTNER, partnerId));
+        });
     }
 
     private void showAccountMenu() {
@@ -308,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
         String name = PartnerName.get(this);
         PartnerName.save(this, null);
         PartnerName.setNickname(this, null);
+        HomePhoto.forget(binding.ivHeader);
         namePartnerAsked = false;
         if (isFinishing()) return;
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
@@ -325,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
     private void signOut() {
         PartnerName.save(this, null);
         PartnerName.setNickname(this, null);
+        HomePhoto.forget(binding.ivHeader);
         Map<String, Object> clear = new HashMap<>();
         clear.put("fcmToken", com.google.firebase.firestore.FieldValue.delete());
         boolean[] done = {false};
@@ -371,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
                 .setAppearanceLightStatusBars(false);
 
-        View[] pushedDown = {binding.ivLogout, binding.tvLinkPartner, binding.tvStreakTitle};
+        View[] pushedDown = {binding.ivLogout, binding.ivChangePhoto, binding.tvLinkPartner, binding.tvStreakTitle};
         int[] baseMargins = new int[pushedDown.length];
         for (int i = 0; i < pushedDown.length; i++) {
             baseMargins[i] = ((android.view.ViewGroup.MarginLayoutParams) pushedDown[i].getLayoutParams()).topMargin;
@@ -604,13 +614,22 @@ public class MainActivity extends AppCompatActivity {
                     partnerDayDoc = e == null ? snap : null;
                     refreshProgressCard();
                 });
+
+        binding.ivChangePhoto.setVisibility(View.VISIBLE);
+        homePhotoListener = HomePhoto.ref(currentUserId, partnerId)
+                .addSnapshotListener((snap, e) -> {
+                    if (e == null && snap != null) HomePhoto.show(binding.ivHeader, snap);
+                });
     }
 
     private void stopPartnerListeners() {
         if (partnerListener    != null) partnerListener.remove();
         if (partnerDayListener != null) partnerDayListener.remove();
+        if (homePhotoListener  != null) homePhotoListener.remove();
         partnerListener = null;
         partnerDayListener = null;
+        homePhotoListener = null;
+        if (partnerId == null) binding.ivChangePhoto.setVisibility(View.GONE);
         partnerUserDoc = null;
         partnerDayDoc = null;
         refreshProgressCard();
@@ -783,6 +802,7 @@ public class MainActivity extends AppCompatActivity {
         if (legacyBibleListener != null) legacyBibleListener.remove();
         if (partnerListener     != null) partnerListener.remove();
         if (partnerDayListener  != null) partnerDayListener.remove();
+        if (homePhotoListener   != null) homePhotoListener.remove();
         if (inviteListener      != null) inviteListener.remove();
     }
 

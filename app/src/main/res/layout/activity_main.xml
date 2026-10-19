@@ -14,11 +14,11 @@
         android:paddingBottom="40dp">
 
         <!-- Header Image -->
-        <ImageView
+        <!-- The couple's photo, framed as they chose (see HomePhotoActivity) -->
+        <com.keziah.spiritualtracker.FramedImageView
             android:id="@+id/ivHeader"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:scaleType="centerCrop"
             android:src="@drawable/header_bg"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,6 +42,20 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="#FFFFFF"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Change or reposition the home photo (shown once a partner is linked) -->
+        <ImageView
+            android:id="@+id/ivChangePhoto"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_camera"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Change home photo"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/ivLogout"
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Shown only while no partner is linked -->

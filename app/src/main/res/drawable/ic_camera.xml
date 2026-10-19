@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camera outline, white, for changing the home photo (sits on the photo beside the account icon). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:pathData="M4,7.5h3l1.6,-2.2c0.2,-0.3 0.5,-0.4 0.8,-0.4h5.2c0.3,0 0.6,0.1 0.8,0.4L17,7.5h3c0.6,0 1,0.4 1,1V18c0,0.6 -0.4,1 -1,1H4c-0.6,0 -1,-0.4 -1,-1V8.5C3,7.9 3.4,7.5 4,7.5z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.8"
+        android:pathData="M12,13.2m-3.4,0a3.4,3.4 0,1 1,6.8 0a3.4,3.4 0,1 1,-6.8 0" />
+</vector>
