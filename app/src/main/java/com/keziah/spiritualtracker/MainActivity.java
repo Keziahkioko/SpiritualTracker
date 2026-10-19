@@ -759,6 +759,13 @@ public class MainActivity extends AppCompatActivity {
         View[] dots = {binding.progressBibleMe, binding.progressBiblePartner, binding.progressPrayerMe,
                 binding.progressPrayerPartner, binding.progressJournalMe, binding.progressJournalPartner,
                 binding.progressMemorizeMe, binding.progressMemorizePartner};
+        // The circles swell beyond their rows; let every row up to the card show them whole.
+        for (View d : dots) {
+            for (android.view.ViewParent p = d.getParent(); p instanceof ViewGroup && p != binding.cardProgress; p = p.getParent()) {
+                ((ViewGroup) p).setClipChildren(false);
+                ((ViewGroup) p).setClipToPadding(false);
+            }
+        }
         // 1. All four tiles together.
         for (View t : tiles) balloon(t, 300, 1.12f, 750);
         // 2. The ticks one by one, down the list.
