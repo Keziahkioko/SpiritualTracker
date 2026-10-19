@@ -1,4 +1,4 @@
-import { verifyCaller } from '../lib/firebase.js';
+import { mutualPartner, verifyCaller } from '../lib/firebase.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Groq retires models now and then, so take the first of these it still offers.
@@ -38,14 +38,16 @@ Reply with JSON only: {"verses":[{"n":1,"verdict":"same","note":""}]} with one e
  * POST /api/check-meaning   Authorization: Bearer <Firebase ID token>
  * Body: { verses: [{ n, text }], typed }
  *
- * Asks Groq whether a typed recitation keeps the meaning of each verse. Only signed-in app
- * users can call it, and sizes are capped, so the Groq key can't be used for anything else.
+ * Asks Groq whether a typed recitation keeps the meaning of each verse. Only linked app users
+ * can call it (anyone can create an account, so sign-in alone would let strangers use up the
+ * Groq quota), and sizes are capped, so the key can't be used for anything else.
  */
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const uid = await verifyCaller(req);
   if (!uid) return res.status(401).json({ error: 'Sign-in required' });
+  if (!(await mutualPartner(uid))) return res.status(403).json({ error: 'No linked partner' });
 
   const key = process.env.GROQ_API_KEY;
   if (!key) return res.status(503).json({ error: 'Meaning check is not set up' });
@@ -77,12 +79,12 @@ export default async function handler(req, res) {
       const detail = (await r.text()).slice(0, 300);
       if (r.status === 404 || r.status === 400) chosen = null; // look again next time
       console.warn('Groq refused', r.status, detail);
-      return res.status(502).json({ error: r.status === 429 ? 'Daily limit reached' : 'Meaning check failed', groqStatus: r.status, detail });
+      return res.status(502).json({ error: r.status === 429 ? 'Daily limit reached' : 'Meaning check failed', groqStatus: r.status });
     }
     reply = JSON.parse((await r.json()).choices?.[0]?.message?.content || '{}');
   } catch (err) {
     console.warn('Groq call failed', err);
-    return res.status(502).json({ error: 'Meaning check failed', detail: String(err?.message || err).slice(0, 300) });
+    return res.status(502).json({ error: 'Meaning check failed' });
   }
 
   // Keep only well-formed answers for the verses we asked about.

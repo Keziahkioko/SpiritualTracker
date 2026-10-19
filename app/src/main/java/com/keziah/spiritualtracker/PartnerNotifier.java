@@ -34,21 +34,51 @@ public final class PartnerNotifier {
 
     private PartnerNotifier() {}
 
+    /**
+     * Bumps a badge on the partner's home screen. A screen that hasn't finished loading the
+     * partner passes null; then the partner is looked up here, so the bump isn't lost.
+     */
     public static void incrementUnread(String partnerId, String field) {
-        if (partnerId == null || partnerId.isEmpty()) return;
+        if (partnerId == null || partnerId.isEmpty()) {
+            String me = FirebaseAuth.getInstance().getUid();
+            if (me == null) return;
+            FirebaseFirestore.getInstance().collection("users").document(me).get().addOnSuccessListener(doc -> {
+                String pid = doc.getString("partnerId");
+                if (pid != null && !pid.isEmpty()) incrementUnread(pid, field);
+            });
+            return;
+        }
         FirebaseFirestore.getInstance().collection("users").document(partnerId)
                 .update(field, FieldValue.increment(1))
                 .addOnFailureListener(e -> Log.w(TAG, "Unread bump failed", e));
     }
 
-    /** {@code type} must be one the relay accepts; it decides which screen the tap opens. */
+    /** What the relay said about one push (for the debug test tool). */
+    public interface Outcome { void done(int httpCode, String body); }
+
+    /**
+     * {@code type} must be one the relay accepts; it decides which screen the tap opens.
+     * {@code partnerId} may still be null if the screen hasn't loaded it yet: the relay finds the
+     * partner itself (and refuses if there is none), so the push goes out either way.
+     */
     public static void notifyPartner(String partnerId, String title, String body, String type, String docId) {
-        if (partnerId == null || partnerId.isEmpty()) return;
+        send(title, body, type, docId, null);
+    }
+
+    /**
+     * Posts the push to the relay, which finds the partner itself. The relay's answer
+     * (e.g. "Partner has no device registered") is logged, so a missing notification can be traced.
+     */
+    static void send(String title, String body, String type, String docId, Outcome outcome) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String relay = BuildConfig.RELAY_URL;
-        if (user == null) return;
+        if (user == null) {
+            if (outcome != null) outcome.done(0, "not signed in");
+            return;
+        }
         if (relay == null || relay.isEmpty()) {
             Log.w(TAG, "relay.url is not set in local.properties; skipping push");
+            if (outcome != null) outcome.done(0, "relay.url not set");
             return;
         }
         user.getIdToken(false).addOnSuccessListener(result -> {
@@ -66,15 +96,27 @@ public final class PartnerNotifier {
                 CLIENT.newCall(request).enqueue(new Callback() {
                     @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
                         Log.w(TAG, "Push request failed", e);
+                        if (outcome != null) outcome.done(0, String.valueOf(e.getMessage()));
                     }
                     @Override public void onResponse(@NonNull Call call, @NonNull Response response) {
-                        if (!response.isSuccessful()) Log.w(TAG, "Relay refused push: HTTP " + response.code());
+                        String reply = "";
+                        try { if (response.body() != null) reply = response.body().string(); } catch (IOException ignored) { }
                         response.close();
+                        if (!response.isSuccessful() || !reply.contains("\"sent\":true")) {
+                            Log.w(TAG, "Push not delivered (" + type + "): HTTP " + response.code() + " " + reply);
+                        } else {
+                            Log.i(TAG, "Push sent (" + type + ")");
+                        }
+                        if (outcome != null) outcome.done(response.code(), reply);
                     }
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Could not build push request", e);
+                if (outcome != null) outcome.done(0, String.valueOf(e.getMessage()));
             }
-        }).addOnFailureListener(e -> Log.w(TAG, "Couldn't get sign-in token for push", e));
+        }).addOnFailureListener(e -> {
+            Log.w(TAG, "Couldn't get sign-in token for push", e);
+            if (outcome != null) outcome.done(0, "no sign-in token: " + e.getMessage());
+        });
     }
 }

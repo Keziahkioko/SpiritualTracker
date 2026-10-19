@@ -116,14 +116,21 @@ service cloud.firestore {
 
     // ── Partner invite codes ─────────────────────────────────────────────
     // The joiner may only stamp themselves as acceptedBy, once; each person then sets
-    // their own partnerId. Codes are random and expire after 24 hours (checked in the app).
+    // their own partnerId. Codes are random and expire after 24 hours (checked here and in the app).
     match /invites/{code} {
       allow get: if signedIn();
       allow list: if signedIn() && resource.data.ownerId == me();
+      // createdAt must be (about) now, so a code can't be backdated or made to last forever;
+      // an hour of slack allows for a phone clock that is a little off.
       allow create: if signedIn()
           && request.resource.data.ownerId == me()
-          && request.resource.data.keys().hasOnly(['ownerId', 'createdAt']);
+          && request.resource.data.keys().hasOnly(['ownerId', 'createdAt'])
+          && request.resource.data.createdAt is timestamp
+          && request.resource.data.createdAt > request.time - duration.value(60, 'm')
+          && request.resource.data.createdAt < request.time + duration.value(60, 'm');
+      // A code can only be used within 24 hours of being made (enforced here, not just in the app).
       allow update: if signedIn()
+          && request.time < resource.data.createdAt + duration.value(24, 'h')
           && resource.data.ownerId != me()
           && !('acceptedBy' in resource.data)
           && onlyChanges(['acceptedBy'])

@@ -200,10 +200,18 @@ public class BibleActivity extends AppCompatActivity {
             ActivityLog.setBible(currentUserId, isChecked, etVerse.getText().toString());
             if (isChecked) {
                 Toast.makeText(this, "Marked as Read!", Toast.LENGTH_SHORT).show();
-                checkIfTeamIsDone();
-                PartnerNotifier.incrementUnread(partnerId, "unreadBible");
-                PartnerNotifier.notifyPartner(partnerId, "Goal Completed! ✅",
-                        myName + " just finished their reading for today!", "bible_update", "");
+                if (partnerId != null) {
+                    tellPartnerIRead();
+                } else {
+                    // Tapped before the profile loaded: look the partner up first, so the push isn't lost.
+                    db.collection("users").document(currentUserId).get().addOnSuccessListener(me -> {
+                        String pid = me.getString("partnerId");
+                        if (pid == null || pid.isEmpty()) return;
+                        partnerId = pid;
+                        myName = UserProfile.displayName(me);
+                        tellPartnerIRead();
+                    });
+                }
             }
         });
 
@@ -224,6 +232,13 @@ public class BibleActivity extends AppCompatActivity {
                     myName + " is reminding you to read the Word! 📖", "bible_nudge", "");
             Toast.makeText(this, "Nudge sent! ✨", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void tellPartnerIRead() {
+        checkIfTeamIsDone();
+        PartnerNotifier.incrementUnread(partnerId, "unreadBible");
+        PartnerNotifier.notifyPartner(partnerId, "Goal Completed! ✅",
+                myName + " just finished their reading for today!", "bible_update", "");
     }
 
     /**

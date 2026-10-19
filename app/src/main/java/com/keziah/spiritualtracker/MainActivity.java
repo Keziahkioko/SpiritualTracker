@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         currentUserId = mAuth.getCurrentUser().getUid();
         todayDate = ActivityLog.today();
 
-        saveFcmToken();
         requestNotificationPermission();
         DailyVerseReminderWorker.schedule(this);
         ReminderWorker.schedule(this);
@@ -319,18 +318,38 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Before signing out, take this phone's push token off the account; otherwise the account's
+     * notifications keep arriving here (and, if someone else signs in, both accounts share it).
+     */
     private void signOut() {
         PartnerName.save(this, null);
         PartnerName.setNickname(this, null);
-        mAuth.signOut();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+        Map<String, Object> clear = new HashMap<>();
+        clear.put("fcmToken", com.google.firebase.firestore.FieldValue.delete());
+        boolean[] done = {false};
+        Runnable finishSignOut = () -> {
+            if (done[0]) return;
+            done[0] = true;
+            // A fresh token for whoever signs in next.
+            FirebaseMessaging.getInstance().deleteToken();
+            mAuth.signOut();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        };
+        db.collection("users").document(currentUserId).update(clear)
+                .addOnCompleteListener(t -> finishSignOut.run());
+        // Offline, the write waits for a connection; don't keep the person waiting for it.
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(finishSignOut, 3000);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (currentUserId == null) return;
+        // Every time: the relay drops a token that stopped working, and this puts the current one back.
+        saveFcmToken();
+        checkNotificationsCanArrive();
         // The app can stay open past midnight; move the "today" listeners to the new day.
         String now = ActivityLog.today();
         if (!now.equals(todayDate)) {
@@ -390,8 +409,65 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
+            getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean("notifAsked", true).apply();
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 300);
         }
+    }
+
+    private static final String PREFS = "notification_checks";
+    /** Once per app start is enough; the person can always say "Not now". */
+    private static boolean notificationCheckShown = false;
+
+    /**
+     * Partner updates and reminders only arrive if notifications are allowed, and (on phones that
+     * close apps in the background, like vivo and Samsung) if the app may run in the background.
+     * Without either, they fail silently, so say so once.
+     */
+    private void checkNotificationsCanArrive() {
+        if (notificationCheckShown || isFinishing()) return;
+        android.content.SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        boolean allowed = androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled();
+        if (!allowed) {
+            // Android's own permission question comes first; only step in once it has been asked.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !prefs.getBoolean("notifAsked", false)) return;
+            notificationCheckShown = true;
+            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                    .setTitle("Notifications are off")
+                    .setMessage("You won't hear when " + PartnerName.get(this) + " reads, prays or posts, "
+                            + "and your reminders won't show. Turn notifications on for this app?")
+                    .setPositiveButton("Turn on", (d, w) -> {
+                        Intent i = new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName());
+                        try { startActivity(i); } catch (Exception e) {
+                            startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    android.net.Uri.fromParts("package", getPackageName(), null)));
+                        }
+                    })
+                    .setNegativeButton("Not now", null)
+                    .show();
+            return;
+        }
+        android.os.PowerManager pm = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+        if (pm == null || pm.isIgnoringBatteryOptimizations(getPackageName())
+                || prefs.getBoolean("batteryAsked", false)) return;
+        notificationCheckShown = true;
+        prefs.edit().putBoolean("batteryAsked", true).apply();
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Get updates when the app is closed")
+                .setMessage("Your phone may stop this app in the background to save battery, and then "
+                        + PartnerName.get(this) + "'s updates and your reminders don't arrive. "
+                        + "Allow it to run in the background? It uses very little battery.")
+                .setPositiveButton("Allow", (d, w) -> {
+                    try {
+                        startActivity(new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                android.net.Uri.parse("package:" + getPackageName())));
+                    } catch (Exception e) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                android.net.Uri.fromParts("package", getPackageName(), null)));
+                    }
+                })
+                .setNegativeButton("Not now", null)
+                .show();
     }
 
     /** Without a name, partners see "null posted a prayer request" — ask once and store it. */

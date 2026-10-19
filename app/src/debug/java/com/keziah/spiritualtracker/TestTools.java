@@ -26,8 +26,10 @@ import java.util.Map;
  *   SNAPSHOT  remembers whether today's Memorize was already done, before testing starts
  *   SHIFT     moves the TEST verses' dates back (--ei days N, default 1), as if days had passed
  *   CLEANUP   deletes the TEST verses and takes them out of today's history, restoring the snapshot
- *   PRAYER    shows the 12:30 prayer reminder now, as it would be on the next given weekday
+ *   PRAYER    shows the 6:30 prayer reminder now, as it would be on the next given weekday
  *             (--ei weekday 1-7, Sunday = 1); reads only, nothing is saved
+ *   PUSHCHECK checks why partner notifications might not arrive: this phone's push token against
+ *             both profiles, notification permission and background limits; reads only, sends nothing
  * Nothing else is touched. Results go to logcat under "TestTools".
  */
 public class TestTools extends BroadcastReceiver {
@@ -134,9 +136,45 @@ public class TestTools extends BroadcastReceiver {
                 }).start();
                 break;
 
+            case "PUSHCHECK":
+                boolean allowed = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled();
+                android.os.PowerManager pm = (android.os.PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                boolean unrestricted = pm != null && pm.isIgnoringBatteryOptimizations(context.getPackageName());
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken().addOnCompleteListener(tk -> {
+                    String device = tk.isSuccessful() ? tk.getResult() : null;
+                    db.collection("users").document(uid).get().addOnCompleteListener(u -> {
+                        DocumentSnapshot me = u.isSuccessful() ? u.getResult() : null;
+                        String mine = me != null ? me.getString("fcmToken") : null;
+                        String pid = me != null ? me.getString("partnerId") : null;
+                        String head = "PUSHCHECK notificationsAllowed=" + allowed + " backgroundUnrestricted=" + unrestricted
+                                + " deviceToken=" + tail(device) + " myProfileToken=" + tail(mine)
+                                + " myProfileMatchesDevice=" + (device != null && device.equals(mine));
+                        if (pid == null || pid.isEmpty()) {
+                            Log.i(TAG, head + " partner=none");
+                            pending.finish();
+                            return;
+                        }
+                        db.collection("users").document(pid).get().addOnCompleteListener(p -> {
+                            DocumentSnapshot partner = p.isSuccessful() ? p.getResult() : null;
+                            String theirs = partner != null ? partner.getString("fcmToken") : null;
+                            Log.i(TAG, head + " partnerLinkedBack=" + (partner != null && uid.equals(partner.getString("partnerId")))
+                                    + " partnerToken=" + tail(theirs)
+                                    + " partnerTokenIsThisPhone=" + (theirs != null && theirs.equals(device))
+                                    + (p.getException() != null ? " error=" + p.getException() : ""));
+                            pending.finish();
+                        });
+                    });
+                });
+                break;
+
             default:
                 pending.finish();
         }
+    }
+
+    /** Enough of a token to compare, without printing it whole. */
+    private static String tail(String token) {
+        return token == null ? "none" : "…" + token.substring(Math.max(0, token.length() - 8));
     }
 
     private interface Docs { void got(List<DocumentSnapshot> docs); }
