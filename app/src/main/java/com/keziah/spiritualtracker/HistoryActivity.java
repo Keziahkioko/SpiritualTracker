@@ -683,7 +683,7 @@ public class HistoryActivity extends AppCompatActivity {
         sb.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), at, sb.length(), 0);
     }
 
-    /** One paired ring per practice for the last 7 days: outer ring me, inner ring my partner. */
+    /** One paired ring per practice for this week (Monday to today): outer ring me, inner ring my partner. */
     private void renderRings() {
         LinearLayout row = findViewById(R.id.ringsRow);
         LinearLayout legend = findViewById(R.id.ringsLegend);
@@ -693,8 +693,7 @@ public class HistoryActivity extends AppCompatActivity {
         boolean both = partnerId != null && !partnerDays.isEmpty();
         Calendar c = Calendar.getInstance();
         String to = ActivityLog.dayKey(c.getTime());
-        c.add(Calendar.DAY_OF_YEAR, -6);
-        String from = ActivityLog.dayKey(c.getTime());
+        String from = ActivityLog.dayKey(ProgressMath.weekStart(c).getTime());
 
         for (int i = 0; i < LABELS.length; i++) {
             int mine = ProgressMath.countBetween(myDays, from, to, i);
@@ -732,14 +731,13 @@ public class HistoryActivity extends AppCompatActivity {
         if (both) legend.addView(legendItem(partnerName, PairedRingView.PARTNER, "inner"));
     }
 
-    /** One person's last 7 days: a ring per practice in that practice's colour. */
+    /** One person's week so far (Monday to today): a ring per practice in that practice's colour. */
     private void renderPersonRings(TreeMap<String, HistoryRepository.DayRecord> days) {
         LinearLayout row = findViewById(R.id.personRingsRow);
         row.removeAllViews();
         Calendar c = Calendar.getInstance();
         String to = ActivityLog.dayKey(c.getTime());
-        c.add(Calendar.DAY_OF_YEAR, -6);
-        String from = ActivityLog.dayKey(c.getTime());
+        String from = ActivityLog.dayKey(ProgressMath.weekStart(c).getTime());
         int[] tracks = {0xFFEDE7F6, 0xFFE0F2F1, 0xFFFFF3E0, 0xFFFCE4EC};
 
         for (int i = 0; i < LABELS.length; i++) {

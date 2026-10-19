@@ -108,6 +108,14 @@ public final class ProgressMath {
         return nextReview.before(dayAfter.getTime()) ? null : latest.getTime();
     }
 
+    /** The Monday of the week {@code day} is in (weeks run Monday to Sunday, as on the home screen). */
+    public static Calendar weekStart(Calendar day) {
+        Calendar c = (Calendar) day.clone();
+        int back = (c.get(Calendar.DAY_OF_WEEK) + 5) % 7; // Monday 0 … Sunday 6
+        c.add(Calendar.DAY_OF_YEAR, -back);
+        return c;
+    }
+
     /** A verse is due any time on or after its review day (not only after the exact minute). */
     public static boolean isDueOn(Date nextReview, Date now) {
         if (nextReview == null) return false;

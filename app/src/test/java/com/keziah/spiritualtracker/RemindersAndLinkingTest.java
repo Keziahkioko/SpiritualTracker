@@ -133,6 +133,16 @@ public class RemindersAndLinkingTest {
         assertEquals(null, ProgressMath.pulledForward(date(2026, 10, 26, 9, 0).getTime(), "not a date", 1));
     }
 
+    // ── This week (History) ──────────────────────────────────────────────
+
+    @Test
+    public void weekStartsOnMonday() {
+        assertEquals(19, ProgressMath.weekStart(date(2026, 10, 19, 9, 0)).get(Calendar.DAY_OF_MONTH)); // Monday itself
+        assertEquals(19, ProgressMath.weekStart(date(2026, 10, 22, 9, 0)).get(Calendar.DAY_OF_MONTH)); // Thursday
+        assertEquals(19, ProgressMath.weekStart(date(2026, 10, 25, 9, 0)).get(Calendar.DAY_OF_MONTH)); // Sunday
+        assertEquals(26, ProgressMath.weekStart(date(2026, 10, 26, 9, 0)).get(Calendar.DAY_OF_MONTH)); // next Monday
+    }
+
     // ── Verse references for parts of a passage ─────────────────────────
 
     private static MemoryVerse part(String reference, String text) {

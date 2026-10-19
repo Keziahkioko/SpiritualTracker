@@ -102,7 +102,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Me / Partner: that person's last 7 days, one ring per practice. -->
+        <!-- Me / Partner: that person's week so far (Monday to today), one ring per practice. -->
         <LinearLayout
             android:id="@+id/personRings"
             android:layout_width="match_parent"
@@ -112,7 +112,7 @@
 
             <TextView
                 style="@style/HistorySectionTitle"
-                android:text="LAST 7 DAYS" />
+                android:text="THIS WEEK" />
 
             <LinearLayout
                 android:id="@+id/personRingsRow"
@@ -286,10 +286,10 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-            <!-- Last 7 days: one paired ring per practice (outer me, inner partner). -->
+            <!-- This week (Monday to today): one paired ring per practice (outer me, inner partner). -->
             <TextView
                 style="@style/HistorySectionTitle"
-                android:text="LAST 7 DAYS" />
+                android:text="THIS WEEK" />
 
             <LinearLayout
                 android:id="@+id/ringsCard"
