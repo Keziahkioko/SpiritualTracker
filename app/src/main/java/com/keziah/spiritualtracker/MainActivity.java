@@ -362,6 +362,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startSweeps();
         if (currentUserId == null) return;
         // Every time: the relay drops a token that stopped working, and this puts the current one back.
         saveFcmToken();
@@ -703,6 +704,31 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean userDate(DocumentSnapshot userDoc, String field) {
         return userDoc != null && todayDate.equals(userDoc.getString(field));
+    }
+
+    // ─── Light sweep across the tiles ─────────────────────────────────────────
+
+    private final java.util.List<android.animation.ValueAnimator> sweeps = new java.util.ArrayList<>();
+
+    /** A soft band of light glides across the four tiles in turn, every few seconds. */
+    private void startSweeps() {
+        stopSweeps();
+        View[] faces = {binding.tileFaceBible, binding.tileFacePrayer, binding.tileFaceJournal, binding.tileFaceMemory};
+        for (int i = 0; i < faces.length; i++) {
+            android.animation.ValueAnimator a = LightSweep.start(faces[i], 600 + i * 180L, 16, 6);
+            if (a != null) sweeps.add(a);
+        }
+    }
+
+    private void stopSweeps() {
+        for (android.animation.ValueAnimator a : sweeps) a.cancel();
+        sweeps.clear();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopSweeps();
     }
 
     // ─── Look: dark (Obsidian) or light (Pearl) ─────────────────────────────
