@@ -1,118 +1,229 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Review (recall) screen: a purple top bar with the reference, the verse work in the middle
+     (it scrolls), and the actions in a bar at the bottom that stays above the keyboard. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/reviewRoot"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:layout_height="match_parent"
+    android:background="#F7F4FB"
+    android:orientation="vertical">
 
-    <!-- Reference + Day progress pill -->
+    <!-- Top bar: back, reference, Day pill -->
     <LinearLayout
+        android:id="@+id/reviewTopBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:background="@drawable/bg_header_gradient"
         android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
+        android:minHeight="64dp"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btnReviewBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="12dp"
+            android:src="@drawable/ic_back" />
 
         <TextView
             android:id="@+id/tvQuizReference"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="12dp"
             android:layout_weight="1"
-            android:textColor="#1A1A2E"
+            android:ellipsize="end"
+            android:fontFamily="serif"
+            android:maxLines="2"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:fontFamily="serif"/>
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvQuizProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/progress_pill_bg"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:textColor="#7E57C2"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
+            android:background="@drawable/bg_review_pill"
+            android:paddingStart="12dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="5dp"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/reviewScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:maxHeight="300dp"
-        android:layout_marginBottom="12dp">
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp">
 
             <!-- Last verse of the part before, as a lead-in (parts 2 onwards) -->
             <TextView
                 android:id="@+id/tvQuizLeadIn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="14dp"
+                android:lineSpacingMultiplier="1.3"
                 android:textColor="#8A8494"
                 android:textSize="13sp"
                 android:textStyle="italic"
-                android:lineSpacingMultiplier="1.3"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
-            <!-- Prompt -->
             <TextView
                 android:id="@+id/tvQuizPrompt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="serif"
                 android:text="Can you recall this verse?"
-                android:textColor="#5F5F64"
-                android:textSize="13sp"
-                android:layout_marginBottom="12dp"/>
+                android:textColor="#1C1C1E"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- Before anything is shown: where the verse will appear, and what to do -->
+            <LinearLayout
+                android:id="@+id/cardRecallIntro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_review_card"
+                android:gravity="center_horizontal"
+                android:minHeight="220dp"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingTop="32dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="28dp">
+
+                <FrameLayout
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_photo_option">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/memorize"
+                        app:tint="#7E57C2" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="Say it from memory"
+                    android:textColor="#1C1C1E"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:lineSpacingMultiplier="1.3"
+                    android:text="Out loud or in your head. Then reveal it to check yourself, or type it out and the app will check it for you."
+                    android:textColor="#6E6A76"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- After Check: the score, the suggestion and what differed -->
+            <TextView
+                android:id="@+id/tvCheckSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_learn_text"
+                android:lineSpacingMultiplier="1.3"
+                android:padding="16dp"
+                android:textColor="#1A1A2E"
+                android:textSize="14sp"
+                android:visibility="gone" />
 
             <!-- Hint with gaps or first-letter tiles (Day 3+, or "Show first letters"); tap one to peek -->
             <TextView
                 android:id="@+id/tvQuizHint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
                 android:background="@drawable/bg_learn_text"
-                android:padding="16dp"
-                android:textColor="#1A1A2E"
-                android:textSize="16sp"
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.5"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone"/>
+                android:padding="18dp"
+                android:textColor="#1A1A2E"
+                android:textSize="17sp"
+                android:visibility="gone" />
 
-            <!-- Revealed full text -->
+            <!-- Revealed full text (or the checked recitation, coloured) -->
             <TextView
                 android:id="@+id/tvQuizText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#1A1A2E"
-                android:textSize="16sp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_review_card"
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.5"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone"/>
+                android:padding="18dp"
+                android:textColor="#1A1A2E"
+                android:textIsSelectable="false"
+                android:textSize="17sp"
+                android:visibility="gone" />
 
-            <!-- Type it out: the recitation from memory, typed or said with the keyboard's mic -->
+            <!-- After Reveal: how many words were peeked at, to help mark yourself honestly -->
+            <TextView
+                android:id="@+id/tvQuizPeeks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_horizontal"
+                android:textColor="#6A4FB0"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <!-- Listen: only after Reveal, so it never gives the answer away -->
+            <include
+                android:id="@+id/quizListen"
+                layout="@layout/view_listen_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- Type it out: typed (or said with the keyboard's mic). It grows with the text; the page scrolls. -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilTypeIt"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:hint="Type it from memory"
                 android:textColorHint="#6E6880"
                 android:visibility="gone"
-                app:boxBackgroundColor="#F8F5FF"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
                 app:boxStrokeColor="#7E57C2"
                 app:helperText="Tip: tap the mic on your keyboard to say it instead."
                 app:helperTextTextColor="#6E6880"
@@ -124,153 +235,147 @@
                     android:layout_height="wrap_content"
                     android:gravity="top|start"
                     android:inputType="textMultiLine|textCapSentences"
-                    android:maxLines="5"
-                    android:minLines="4"
-                    android:scrollbars="vertical"
+                    android:lineSpacingMultiplier="1.25"
+                    android:minLines="6"
                     android:textColor="#1A1A2E"
-                    android:textSize="15sp" />
+                    android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Day 1 only: do the learn steps instead of being tested on something not learned yet -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCheck"
-                android:layout_width="match_parent"
+                android:id="@+id/btnLearnFirst"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Check"
+                android:layout_gravity="center_horizontal"
+                android:letterSpacing="0"
+                android:text="Not learned yet? Learn it first"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF"
-                android:visibility="gone"
-                app:backgroundTint="#7E57C2"
-                app:cornerRadius="12dp" />
-
+                android:textColor="#5E35B1"
+                android:textSize="14sp"
+                android:visibility="gone" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Hints: first letters, or type it out and have it checked -->
+    <!-- Actions, always at the bottom (above the keyboard while typing) -->
     <LinearLayout
-        android:id="@+id/rowHints"
+        android:id="@+id/reviewBottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal">
+        android:background="@drawable/bg_review_bottom"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <!-- Hints: first letters, or type it out and have it checked -->
+        <LinearLayout
+            android:id="@+id/rowHints"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFirstLetter"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:letterSpacing="0"
+                android:text="First letters"
+                android:textAllCaps="false"
+                android:textColor="#5E35B1"
+                android:textSize="14sp"
+                app:cornerRadius="24dp"
+                app:strokeColor="#B39DDB"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeIt"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:letterSpacing="0"
+                android:text="Type it out"
+                android:textAllCaps="false"
+                android:textColor="#5E35B1"
+                android:textSize="14sp"
+                app:cornerRadius="24dp"
+                app:strokeColor="#B39DDB"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFirstLetter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Show first letters"
-            android:textAllCaps="false"
+            android:id="@+id/btnReveal"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
             android:letterSpacing="0"
-            android:textSize="13sp"
-            android:textColor="#5E35B1"
-            android:layout_marginEnd="8dp"
-            app:strokeColor="#9575CD"
-            app:strokeWidth="1dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="20dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTypeIt"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:letterSpacing="0"
-            android:text="Type it out"
+            android:text="Reveal verse"
             android:textAllCaps="false"
-            android:textColor="#5E35B1"
-            android:textSize="13sp"
-            app:cornerRadius="20dp"
-            app:strokeColor="#9575CD"
-            app:strokeWidth="1dp" />
-    </LinearLayout>
-
-    <!-- Day 1 only: do the learn steps instead of being tested on something not learned yet -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLearnFirst"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:text="Not learned yet? Learn it first"
-        android:letterSpacing="0"
-        android:textAllCaps="false"
-        android:textColor="#5E35B1"
-        android:textSize="13sp"
-        android:visibility="gone" />
-
-    <!-- Reveal -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnReveal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Reveal verse"
-        android:textColor="#FFFFFF"
-        app:backgroundTint="#7E57C2"
-        app:cornerRadius="12dp"/>
-
-    <!-- Listen: only after Reveal, so it never gives the answer away -->
-    <include
-        android:id="@+id/quizListen"
-        layout="@layout/view_listen_controls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
-
-    <!-- After Check: the score, the suggestion and what differed -->
-    <TextView
-        android:id="@+id/tvCheckSummary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="6dp"
-        android:lineSpacingMultiplier="1.25"
-        android:textColor="#1A1A2E"
-        android:textSize="13sp"
-        android:visibility="gone"/>
-
-    <!-- After Reveal: how many words were peeked at, to help mark yourself honestly -->
-    <TextView
-        android:id="@+id/tvQuizPeeks"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:gravity="center_horizontal"
-        android:textColor="#6A4FB0"
-        android:textSize="13sp"
-        android:visibility="gone"/>
-
-    <!-- Got it / Try again -->
-    <LinearLayout
-        android:id="@+id/layoutQuizActions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="4dp"
-        android:visibility="gone">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTryAgain"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Try again"
-            android:textAllCaps="false"
-            android:letterSpacing="0"
-            app:strokeColor="#B39DDB"
-            app:strokeWidth="1dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="12dp"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGotIt"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Got it! ✓"
             android:textColor="#FFFFFF"
-            app:backgroundTint="#4CAF50"
-            app:cornerRadius="12dp"/>
-    </LinearLayout>
+            android:textSize="15sp"
+            app:backgroundTint="#7E57C2"
+            app:cornerRadius="26dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheck"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:letterSpacing="0"
+            android:text="Check"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:visibility="gone"
+            app:backgroundTint="#7E57C2"
+            app:cornerRadius="26dp" />
+
+        <!-- Got it / Try again -->
+        <LinearLayout
+            android:id="@+id/layoutQuizActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTryAgain"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:letterSpacing="0"
+                android:text="Try again"
+                android:textAllCaps="false"
+                android:textColor="#5E35B1"
+                android:textSize="15sp"
+                app:cornerRadius="26dp"
+                app:strokeColor="#B39DDB"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGotIt"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:letterSpacing="0"
+                android:text="Got it"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:backgroundTint="#4CAF50"
+                app:cornerRadius="26dp"
+                app:icon="@drawable/ic_check_white"
+                app:iconGravity="textStart"
+                app:iconSize="18dp" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

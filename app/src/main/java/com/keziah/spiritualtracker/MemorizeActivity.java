@@ -821,9 +821,10 @@ public class MemorizeActivity extends AppCompatActivity {
     }
 
     /**
-     * The recall window: hints (rounded gaps or letter tiles, tap one to peek), Reveal, then
-     * Listen and Got it / Try again. Peeks are counted and shown after Reveal; they don't
-     * affect the marking. {@code autoHint} is a LearnText mode shown straight away, or -1.
+     * The recall screen (full screen, over the list): hints (rounded gaps or letter tiles, tap one
+     * to peek), Reveal, then Listen and Got it / Try again. Peeks are counted and shown after
+     * Reveal; they don't affect the marking. {@code autoHint} is a LearnText mode shown straight
+     * away, or -1.
      */
     private void openRecallWindow(String title, String pill, String prompt, CharSequence leadIn,
                                   String listenRef, String text, int autoHint,
@@ -847,14 +848,14 @@ public class MemorizeActivity extends AppCompatActivity {
         showHint[0] = () -> tvHint.setText(hint.render(hintMode[0], showHint[0]));
         tvHint.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
         tvHint.setHighlightColor(android.graphics.Color.TRANSPARENT);
+        View intro = dv.findViewById(R.id.cardRecallIntro);
         if (autoHint >= 0) {
             showHint[0].run();
             tvHint.setVisibility(View.VISIBLE);
+            intro.setVisibility(View.GONE);
         }
 
-        androidx.appcompat.app.AlertDialog dialog =
-                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                        .setView(dv).setCancelable(true).create();
+        android.app.Dialog dialog = openScreen(dv, dv.findViewById(R.id.reviewTopBar), dv.findViewById(R.id.reviewBottomBar));
 
         if (learnFirst != null) {
             btnLearnFirst.setVisibility(View.VISIBLE);
@@ -867,9 +868,12 @@ public class MemorizeActivity extends AppCompatActivity {
             hintMode[0] = LearnText.FIRST_LETTERS;
             showHint[0].run();
             tvHint.setVisibility(View.VISIBLE);
+            intro.setVisibility(View.GONE);
             btnFirstLetter.setVisibility(View.GONE);
         });
         Runnable showAnswer = () -> {
+            intro.setVisibility(View.GONE);
+            ((TextView) dv.findViewById(R.id.tvQuizPrompt)).setText("How did you do?");
             tvText.setText(text);
             tvText.setVisibility(View.VISIBLE);
             btnReveal.setVisibility(View.GONE);
@@ -912,25 +916,32 @@ public class MemorizeActivity extends AppCompatActivity {
             return false;
         });
         btnTypeIt.setOnClickListener(b -> {
-            btnTypeIt.setVisibility(View.GONE);
+            // While typing, the bottom bar holds just Check.
+            dv.findViewById(R.id.rowHints).setVisibility(View.GONE);
+            btnReveal.setVisibility(View.GONE);
+            intro.setVisibility(View.GONE);
+            btnLearnFirst.setVisibility(View.GONE);
             tilTypeIt.setVisibility(View.VISIBLE);
             btnCheck.setVisibility(View.VISIBLE);
             etTypeIt.requestFocus();
             keyboard.showSoftInput(etTypeIt, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
-            // Typing takes a while, so a stray tap outside or Back shouldn't throw it away.
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.setOnKeyListener((d, keyCode, event) -> {
-                if (keyCode != android.view.KeyEvent.KEYCODE_BACK || tilTypeIt.getVisibility() != View.VISIBLE
-                        || etTypeIt.getText() == null || etTypeIt.getText().toString().trim().isEmpty()) return false;
-                if (event.getAction() == android.view.KeyEvent.ACTION_UP) {
-                    new MaterialAlertDialogBuilder(this)
-                            .setMessage("Leave without checking? What you typed will be lost.")
-                            .setPositiveButton("Leave", (x, y) -> dialog.dismiss())
-                            .setNegativeButton("Keep typing", null)
-                            .show();
-                }
-                return true;
-            });
+        });
+        // Back (the arrow or the phone's): typing takes a while, so ask before throwing it away.
+        Runnable leave = () -> {
+            boolean typing = tilTypeIt.getVisibility() == View.VISIBLE && etTypeIt.getText() != null
+                    && !etTypeIt.getText().toString().trim().isEmpty();
+            if (!typing) { dialog.dismiss(); return; }
+            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                    .setMessage("Leave without checking? What you typed will be lost.")
+                    .setPositiveButton("Leave", (x, y) -> dialog.dismiss())
+                    .setNegativeButton("Keep typing", null)
+                    .show();
+        };
+        dv.findViewById(R.id.btnReviewBack).setOnClickListener(v -> leave.run());
+        dialog.setOnKeyListener((d, keyCode, event) -> {
+            if (keyCode != android.view.KeyEvent.KEYCODE_BACK) return false;
+            if (event.getAction() == android.view.KeyEvent.ACTION_UP) leave.run();
+            return true;
         });
         btnCheck.setOnClickListener(b -> {
             String typed = etTypeIt.getText() != null ? etTypeIt.getText().toString().trim() : "";
@@ -945,6 +956,9 @@ public class MemorizeActivity extends AppCompatActivity {
             btnCheck.setVisibility(View.GONE);
             tvText.setText(renderCheck(check, null));
             tvSummary.setVisibility(View.VISIBLE);
+            // The result is at the top of the page.
+            ((androidx.core.widget.NestedScrollView) dv.findViewById(R.id.reviewScroll)).post(() ->
+                    ((androidx.core.widget.NestedScrollView) dv.findViewById(R.id.reviewScroll)).smoothScrollTo(0, 0));
             if (check.exact == check.total()) {
                 tvSummary.setText(checkSummary(check, null, false));
                 return;
@@ -961,6 +975,38 @@ public class MemorizeActivity extends AppCompatActivity {
         dv.findViewById(R.id.btnGotIt).setOnClickListener(gv -> { onGotIt.run(); dialog.dismiss(); });
         dv.findViewById(R.id.btnTryAgain).setOnClickListener(tv -> { onTryAgain.run(); dialog.dismiss(); });
         dialog.show();
+    }
+
+    /**
+     * Shows {@code content} as a full screen over this one (used for the review), drawn edge to
+     * edge: the top bar is padded for the status bar, the bottom bar for the navigation bar or,
+     * while typing, the keyboard.
+     */
+    private android.app.Dialog openScreen(View content, View topBar, View bottomBar) {
+        android.app.Dialog dialog = new android.app.Dialog(this, R.style.Theme_SpiritualTracker_Screen);
+        dialog.setContentView(content);
+        android.view.Window w = dialog.getWindow();
+        if (w != null) {
+            w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            w.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(w, false);
+            w.setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            w.setNavigationBarColor(android.graphics.Color.WHITE);
+            androidx.core.view.WindowInsetsControllerCompat bars =
+                    androidx.core.view.WindowCompat.getInsetsController(w, w.getDecorView());
+            bars.setAppearanceLightStatusBars(false);
+            bars.setAppearanceLightNavigationBars(true);
+        }
+        int top = topBar.getPaddingTop(), bottom = bottomBar.getPaddingBottom();
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(content, (v, insets) -> {
+            androidx.core.graphics.Insets sys = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+            androidx.core.graphics.Insets ime = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime());
+            topBar.setPadding(topBar.getPaddingLeft(), top + sys.top, topBar.getPaddingRight(), topBar.getPaddingBottom());
+            bottomBar.setPadding(bottomBar.getPaddingLeft(), bottomBar.getPaddingTop(), bottomBar.getPaddingRight(),
+                    bottom + Math.max(sys.bottom, ime.bottom));
+            return androidx.core.view.WindowInsetsCompat.CONSUMED;
+        });
+        return dialog;
     }
 
     // ─── Type it out ─────────────────────────────────────────────────────────

@@ -35,6 +35,20 @@
 
     <style name="Theme.SpiritualTracker" parent="Base.Theme.SpiritualTracker" />
 
+    <!-- A window that fills the screen like a page (Memorize review): same look as the app,
+         drawn edge to edge; the code pads it for the status bar, navigation bar and keyboard. -->
+    <style name="Theme.SpiritualTracker.Screen" parent="Base.Theme.SpiritualTracker">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@style/ScreenAnimation</item>
+    </style>
+
+    <style name="ScreenAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
     <style name="PrayerBottomNavTheme">
         <item name="colorSecondaryContainer">#EDE7F6</item>
         <item name="colorOnSecondaryContainer">#5E35B1</item>
