@@ -879,6 +879,16 @@ public class MemorizeActivity extends AppCompatActivity {
         TextView          tvSummary = dv.findViewById(R.id.tvCheckSummary);
         android.view.inputmethod.InputMethodManager keyboard =
                 (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        // The box scrolls inside a scrolling window, which would otherwise take every drag:
+        // while there's more of a long recitation to see, the drag scrolls the box itself.
+        etTypeIt.setOnTouchListener((v, e) -> {
+            if (v.canScrollVertically(1) || v.canScrollVertically(-1)) {
+                v.getParent().requestDisallowInterceptTouchEvent(
+                        e.getActionMasked() != android.view.MotionEvent.ACTION_UP
+                                && e.getActionMasked() != android.view.MotionEvent.ACTION_CANCEL);
+            }
+            return false;
+        });
         btnTypeIt.setOnClickListener(b -> {
             btnTypeIt.setVisibility(View.GONE);
             tilTypeIt.setVisibility(View.VISIBLE);
