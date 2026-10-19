@@ -743,7 +743,7 @@ public class MainActivity extends AppCompatActivity {
         card.setScaleX(0.85f);
         card.setScaleY(0.85f);
         card.setAlpha(0f);
-        card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(700).setStartDelay(300)
+        card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(1000).setStartDelay(400)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.4f))
                 .withEndAction(this::celebrateDashboard)
                 .start();
@@ -760,22 +760,22 @@ public class MainActivity extends AppCompatActivity {
                 binding.progressPrayerPartner, binding.progressJournalMe, binding.progressJournalPartner,
                 binding.progressMemorizeMe, binding.progressMemorizePartner};
         // 1. All four tiles together.
-        for (View t : tiles) bounce(t, 200, 1.06f, 380, 700);
+        for (View t : tiles) bounce(t, 300, 1.06f, 550, 1000);
         // 2. The ticks one by one, down the list.
-        long start = 1300;
-        for (int i = 0; i < dots.length; i++) bounce(dots[i], start + i * 220L, 1.35f, 220, 420);
+        long start = 1950;
+        for (int i = 0; i < dots.length; i++) bounce(dots[i], start + i * 330L, 1.35f, 330, 620);
         // 3. Then all of them at once.
-        long together = start + dots.length * 220L + 350;
-        for (View d : dots) bounce(d, together, 1.35f, 260, 520);
+        long together = start + dots.length * 330L + 550;
+        for (View d : dots) bounce(d, together, 1.35f, 400, 780);
         // 4. Sparkles out of every tile and every circle, over the whole screen.
         View screen = getWindow().getDecorView();
         screen.postDelayed(() -> {
             if (isFinishing()) return;
             screen.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM);
-            for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.75f, 1800, true, false, null);
-            for (View d : dots) SparkleBurst.play(screen, d, 8, 0.6f, 1700, true, false, null);
-            SparkleBurst.play(screen, binding.cardBothDone, 24, 0.85f, 1900, true, false, null);
-        }, together + 450);
+            for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.6f, 2500, true, false, null);
+            for (View d : dots) SparkleBurst.play(screen, d, 8, 0.5f, 2400, true, false, null);
+            SparkleBurst.play(screen, binding.cardBothDone, 24, 0.7f, 2600, true, false, null);
+        }, together + 700);
     }
 
     /** Grows to {@code peak} over {@code up} ms, then springs back over {@code down} ms. */
