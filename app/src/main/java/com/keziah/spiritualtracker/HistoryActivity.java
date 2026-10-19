@@ -708,6 +708,7 @@ public class HistoryActivity extends AppCompatActivity {
             ring.setLayoutParams(new LinearLayout.LayoutParams(dp(62), dp(62)));
             ring.setValues(mine / 7f, both ? theirs / 7f : -1f);
             col.addView(ring);
+            makePickable(col, i, this::renderRings);
 
             TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
             name.setGravity(Gravity.CENTER);
@@ -729,6 +730,15 @@ public class HistoryActivity extends AppCompatActivity {
 
         legend.addView(legendItem("You", PairedRingView.ME, "outer"));
         if (both) legend.addView(legendItem(partnerName, PairedRingView.PARTNER, "inner"));
+
+        LinearLayout detail = findViewById(R.id.usWeekDetail);
+        detail.removeAllViews();
+        detail.setVisibility(weekPick >= 0 ? View.VISIBLE : View.GONE);
+        if (weekPick >= 0) {
+            detail.addView(weekHeading(weekPick));
+            detail.addView(weekStrip("You", myDays, weekPick, PairedRingView.ME));
+            if (both) detail.addView(weekStrip(partnerName, partnerDays, weekPick, PairedRingView.PARTNER));
+        }
     }
 
     /** One person's week so far (Monday to today): a ring per practice in that practice's colour. */
@@ -764,8 +774,129 @@ public class HistoryActivity extends AppCompatActivity {
             TextView of = text(done + " of 7 days", 11, 0xFF5F5F64, false);
             of.setGravity(Gravity.CENTER);
             col.addView(of);
+            makePickable(col, i, () -> renderPersonRings(days));
             row.addView(col);
         }
+
+        LinearLayout detail = findViewById(R.id.personWeekDetail);
+        detail.removeAllViews();
+        detail.setVisibility(weekPick >= 0 ? View.VISIBLE : View.GONE);
+        if (weekPick >= 0) {
+            detail.addView(weekHeading(weekPick));
+            detail.addView(weekStrip(null, days, weekPick, COLORS[weekPick]));
+        }
+    }
+
+    // ─── This week, day by day ───────────────────────────────────────────────
+
+    /** The practice whose days are open under the rings, or -1. Kept when switching tabs. */
+    private int weekPick = -1;
+
+    /** Tapping a ring opens (or closes) its days; the chosen one gets a soft highlight. */
+    private void makePickable(LinearLayout col, int discipline, Runnable redraw) {
+        col.setPadding(0, dp(6), 0, dp(6));
+        if (weekPick == discipline) {
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(0xFFF6F2FB);
+            bg.setCornerRadius(dp(16));
+            col.setBackground(bg);
+        }
+        TypedValue ripple = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+        col.setForeground(androidx.core.content.ContextCompat.getDrawable(this, ripple.resourceId));
+        col.setContentDescription(LABELS[discipline] + ": show this week day by day");
+        col.setOnClickListener(v -> {
+            weekPick = weekPick == discipline ? -1 : discipline;
+            redraw.run();
+        });
+    }
+
+    private View weekHeading(int discipline) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        View line = new View(this);
+        line.setBackgroundColor(0xFFF0EBF6);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+        lp.setMargins(dp(8), dp(10), dp(8), 0);
+        box.addView(line, lp);
+        TextView t = text(LABELS[discipline] + " this week", 13, TEXT_COLORS[discipline], true);
+        t.setPadding(dp(12), dp(14), dp(12), dp(2));
+        box.addView(t);
+        return box;
+    }
+
+    /**
+     * Monday to Sunday for one person: a filled circle with a tick where the practice was done,
+     * an empty one where it was missed, and a faint one for days still to come. {@code who} names
+     * the row (Us tab), or null.
+     */
+    private View weekStrip(String who, TreeMap<String, HistoryRepository.DayRecord> days, int discipline, int color) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(8), dp(6), dp(8), dp(6));
+
+        Calendar today = Calendar.getInstance();
+        String todayKey = ActivityLog.dayKey(today.getTime());
+        Calendar c = ProgressMath.weekStart(today);
+        int done = 0, missed = 0;
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        SimpleDateFormat dayName = new SimpleDateFormat("EEE", Locale.getDefault());
+        for (int d = 0; d < 7; d++, c.add(Calendar.DAY_OF_YEAR, 1)) {
+            String key = ActivityLog.dayKey(c.getTime());
+            boolean future = key.compareTo(todayKey) > 0, isToday = key.equals(todayKey);
+            boolean did = ProgressMath.isDone(days.get(key), discipline);
+            if (did) done++;
+            else if (!future && !isToday) missed++;
+
+            LinearLayout col = new LinearLayout(this);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setGravity(Gravity.CENTER_HORIZONTAL);
+            TextView name = text(dayName.format(c.getTime()), 11, isToday ? 0xFF4527A0 : 0xFF8A8494, isToday);
+            name.setGravity(Gravity.CENTER);
+            col.addView(name);
+
+            TextView mark = new TextView(this);
+            mark.setGravity(Gravity.CENTER);
+            mark.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            mark.setTypeface(null, Typeface.BOLD);
+            GradientDrawable circle = new GradientDrawable();
+            circle.setShape(GradientDrawable.OVAL);
+            if (did) {
+                circle.setColor(color);
+                mark.setText("\u2713");
+                mark.setTextColor(Color.WHITE);
+            } else if (future) {
+                circle.setColor(0xFFF4F1F8);
+            } else {
+                circle.setColor(Color.WHITE);
+                circle.setStroke(dp(isToday ? 2 : 1), isToday ? color : 0xFFD9D3E3);
+                if (!isToday) {
+                    mark.setText("\u2013");
+                    mark.setTextColor(0xFFB9B2C4);
+                }
+            }
+            mark.setBackground(circle);
+            LinearLayout.LayoutParams mp = new LinearLayout.LayoutParams(dp(30), dp(30));
+            mp.topMargin = dp(4);
+            col.addView(mark, mp);
+
+            TextView date = text(String.valueOf(c.get(Calendar.DAY_OF_MONTH)), 10, 0xFFA59EB0, false);
+            date.setGravity(Gravity.CENTER);
+            date.setPadding(0, dp(3), 0, 0);
+            col.addView(date);
+            col.setContentDescription(dayName.format(c.getTime()) + " " + c.get(Calendar.DAY_OF_MONTH) + ": "
+                    + (did ? "done" : future ? "still to come" : isToday ? "not yet today" : "missed"));
+            row.addView(col, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        }
+
+        String tally = done + (done == 1 ? " day" : " days") + " done" + (missed > 0 ? " \u00b7 " + missed + " missed" : "");
+        TextView top = text(who == null ? tally : who + "  \u00b7  " + tally, 12,
+                who == null ? 0xFF5F5F64 : 0xFF1A1A2E, who != null);
+        top.setPadding(dp(4), 0, 0, dp(8));
+        box.addView(top);
+        box.addView(row);
+        return box;
     }
 
     private View legendItem(String who, int color, String where) {

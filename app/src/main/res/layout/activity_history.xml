@@ -115,17 +115,32 @@
                 android:text="THIS WEEK" />
 
             <LinearLayout
-                android:id="@+id/personRingsRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
+                android:animateLayoutChanges="true"
                 android:background="@drawable/bg_history_card"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:paddingStart="8dp"
-                android:paddingTop="16dp"
+                android:paddingTop="12dp"
                 android:paddingEnd="8dp"
-                android:paddingBottom="14dp" />
+                android:paddingBottom="10dp">
+
+                <LinearLayout
+                    android:id="@+id/personRingsRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+
+                <!-- Tap a ring: that practice day by day, Monday to Sunday -->
+                <LinearLayout
+                    android:id="@+id/personWeekDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Month navigation -->
@@ -302,6 +317,7 @@
                 android:paddingStart="8dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="8dp"
+                android:animateLayoutChanges="true"
                 android:paddingBottom="12dp">
 
                 <LinearLayout
@@ -309,6 +325,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
+
+                <!-- Tap a ring: that practice day by day, for each of you -->
+                <LinearLayout
+                    android:id="@+id/usWeekDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/ringsLegend"
