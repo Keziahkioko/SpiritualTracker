@@ -473,52 +473,162 @@ public class MemorizeActivity extends AppCompatActivity {
 
     // ─── Passage / chunk dialog ───────────────────────────────────────────────
 
+    /**
+     * Add a passage (full screen): reference, the pasted text, verses per part and sharing, with a
+     * live preview of the parts it will make. Back asks before throwing away a pasted passage.
+     */
     private void showAddPassageDialog() {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_add_passage, null);
-        PartnerName.apply(v);
         TextInputEditText etRef   = v.findViewById(R.id.etPassageReference);
         TextInputEditText etText  = v.findViewById(R.id.etPassageText);
-        CheckBox          cbShare = v.findViewById(R.id.cbPassageShared);
+        android.widget.CompoundButton share = v.findViewById(R.id.cbPassageShared);
         TextView          btn3    = v.findViewById(R.id.btnChunk3);
         TextView          btn4    = v.findViewById(R.id.btnChunk4);
         TextView          btn5    = v.findViewById(R.id.btnChunk5);
+        MaterialButton    btnAdd  = v.findViewById(R.id.btnPassageAdd);
 
-        if (cbShare != null) cbShare.setVisibility(partnerId != null ? View.VISIBLE : View.GONE);
+        if (partnerId != null) {
+            v.findViewById(R.id.rowPassageShare).setVisibility(View.VISIBLE);
+            ((TextView) v.findViewById(R.id.tvPassageShare)).setText("Share with " + PartnerName.get(this));
+            v.findViewById(R.id.rowPassageShare).setOnClickListener(r -> share.toggle());
+        }
+
+        android.app.Dialog dialog = openScreen(v, v.findViewById(R.id.passageTopBar), v.findViewById(R.id.passageBottomBar));
 
         final int[] chunkSize = {3};
+        android.os.Handler later = new android.os.Handler(android.os.Looper.getMainLooper());
+        Runnable preview = () -> previewPassage(v, btnAdd,
+                etRef.getText() != null ? etRef.getText().toString().trim() : "",
+                etText.getText() != null ? etText.getText().toString() : "", chunkSize[0]);
 
         View.OnClickListener chunkClick = cv -> {
             chunkSize[0] = Integer.parseInt(((TextView) cv).getText().toString());
-            btn3.setBackgroundResource(chunkSize[0] == 3 ? R.drawable.chunk_btn_selected : R.drawable.chunk_btn_unselected);
-            btn4.setBackgroundResource(chunkSize[0] == 4 ? R.drawable.chunk_btn_selected : R.drawable.chunk_btn_unselected);
-            btn5.setBackgroundResource(chunkSize[0] == 5 ? R.drawable.chunk_btn_selected : R.drawable.chunk_btn_unselected);
-            btn3.setTextColor(chunkSize[0] == 3 ? 0xFFFFFFFF : 0xFF7E57C2);
-            btn4.setTextColor(chunkSize[0] == 4 ? 0xFFFFFFFF : 0xFF7E57C2);
-            btn5.setTextColor(chunkSize[0] == 5 ? 0xFFFFFFFF : 0xFF7E57C2);
+            for (TextView t : new TextView[]{btn3, btn4, btn5}) {
+                boolean on = t == cv;
+                t.setBackgroundResource(on ? R.drawable.chunk_btn_selected : R.drawable.chunk_btn_unselected);
+                t.setTextColor(on ? 0xFFFFFFFF : 0xFF7E57C2);
+            }
+            preview.run();
         };
         btn3.setOnClickListener(chunkClick);
         btn4.setOnClickListener(chunkClick);
         btn5.setOnClickListener(chunkClick);
 
-        androidx.appcompat.app.AlertDialog dialog =
-                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                        .setView(v)
-                        .setPositiveButton("Split & Add", null)
-                        .setNegativeButton("Cancel", null)
-                        .show();
-        dialog.setCanceledOnTouchOutside(false); // a pasted passage shouldn't vanish on a stray tap
-        // Kept open on an empty field instead of closing and losing what was pasted.
-        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener(b -> {
-            String  baseRef  = etRef.getText()  != null ? etRef.getText().toString().trim()  : "";
-            String  fullText = etText.getText() != null ? etText.getText().toString().trim() : "";
-            boolean shared   = cbShare != null && cbShare.isChecked();
-            if (baseRef.isEmpty() || fullText.isEmpty()) {
-                Toast.makeText(this, "Please fill both fields", Toast.LENGTH_SHORT).show();
-                return;
+        // Re-split shortly after typing or pasting stops.
+        android.text.TextWatcher watcher = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence x, int a, int b, int c) {}
+            @Override public void onTextChanged(CharSequence x, int a, int b, int c) {}
+            @Override public void afterTextChanged(android.text.Editable e) {
+                later.removeCallbacks(preview);
+                later.postDelayed(preview, 300);
             }
-            dialog.dismiss();
-            splitAndSavePassage(baseRef, fullText, chunkSize[0], shared);
+        };
+        etRef.addTextChangedListener(watcher);
+        etText.addTextChangedListener(watcher);
+
+        // The text box scrolls inside the page: while it has more to show, a drag scrolls it.
+        etText.setOnTouchListener((tv, e) -> {
+            if (tv.canScrollVertically(1) || tv.canScrollVertically(-1)) {
+                tv.getParent().requestDisallowInterceptTouchEvent(
+                        e.getActionMasked() != android.view.MotionEvent.ACTION_UP
+                                && e.getActionMasked() != android.view.MotionEvent.ACTION_CANCEL);
+            }
+            return false;
         });
+
+        Runnable leave = () -> {
+            boolean typed = etText.getText() != null && !etText.getText().toString().trim().isEmpty();
+            if (!typed) { dialog.dismiss(); return; }
+            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                    .setMessage("Leave without adding? The pasted passage will be lost.")
+                    .setPositiveButton("Leave", (x, y) -> dialog.dismiss())
+                    .setNegativeButton("Keep editing", null)
+                    .show();
+        };
+        v.findViewById(R.id.btnPassageBack).setOnClickListener(b -> leave.run());
+        dialog.setOnKeyListener((d, keyCode, event) -> {
+            if (keyCode != android.view.KeyEvent.KEYCODE_BACK) return false;
+            if (event.getAction() == android.view.KeyEvent.ACTION_UP) leave.run();
+            return true;
+        });
+
+        btnAdd.setOnClickListener(b -> {
+            String baseRef  = etRef.getText()  != null ? etRef.getText().toString().trim()  : "";
+            String fullText = etText.getText() != null ? etText.getText().toString().trim() : "";
+            if (baseRef.isEmpty() || fullText.isEmpty()) return;
+            dialog.dismiss();
+            splitAndSavePassage(baseRef, fullText, chunkSize[0], share.isChecked());
+        });
+        dialog.show();
+        etRef.requestFocus();
+    }
+
+    /** The parts a passage will make, as the person types or pastes; the Add button follows. */
+    private void previewPassage(View v, MaterialButton btnAdd, String ref, String text, int size) {
+        List<List<String>> parts = new ArrayList<>();
+        List<String> verses = text.trim().isEmpty() ? new ArrayList<>() : PassageSplit.verses(text);
+        for (int i = 0; i < verses.size(); i += size) {
+            parts.add(verses.subList(i, Math.min(verses.size(), i + size)));
+        }
+        View card = v.findViewById(R.id.cardPassagePreview);
+        card.setVisibility(parts.isEmpty() ? View.GONE : View.VISIBLE);
+        btnAdd.setEnabled(!parts.isEmpty() && !ref.isEmpty());
+        btnAdd.setText(parts.isEmpty() ? "Add passage"
+                : "Add " + (parts.size() == 1 ? "1 part" : parts.size() + " parts"));
+        if (parts.isEmpty()) return;
+
+        ((TextView) v.findViewById(R.id.tvPassagePreviewTitle)).setText(
+                verses.size() + (verses.size() == 1 ? " verse" : " verses") + "  \u2192  "
+                        + parts.size() + (parts.size() == 1 ? " part" : " parts"));
+        LinearLayout list = v.findViewById(R.id.listPassageParts);
+        list.removeAllViews();
+        java.util.regex.Pattern number = java.util.regex.Pattern.compile("^(\\d+)\\s");
+        int shown = Math.min(parts.size(), 8);
+        for (int i = 0; i < shown; i++) {
+            List<String> p = parts.get(i);
+            java.util.regex.Matcher first = number.matcher(p.get(0)), last = number.matcher(p.get(p.size() - 1));
+            String range = first.find() && last.find()
+                    ? (first.group(1).equals(last.group(1)) ? "verse " + first.group(1) : "verses " + first.group(1) + "\u2013" + last.group(1))
+                    : (p.size() == 1 ? "1 line" : p.size() + " lines");
+            String start = p.get(0).replaceFirst("^\\d+\\s+", "");
+            if (start.length() > 42) start = start.substring(0, 40).trim() + "\u2026";
+
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            row.setPadding(0, dp(6), 0, dp(6));
+            TextView num = new TextView(this);
+            num.setText(String.valueOf(i + 1));
+            num.setGravity(android.view.Gravity.CENTER);
+            num.setTextColor(0xFFFFFFFF);
+            num.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12);
+            num.setTypeface(null, android.graphics.Typeface.BOLD);
+            android.graphics.drawable.GradientDrawable dot = new android.graphics.drawable.GradientDrawable();
+            dot.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            dot.setColor(0xFF9575CD);
+            num.setBackground(dot);
+            row.addView(num, new LinearLayout.LayoutParams(dp(24), dp(24)));
+            TextView label = new TextView(this);
+            android.text.SpannableStringBuilder sb = new android.text.SpannableStringBuilder();
+            sb.append("Part ").append(String.valueOf(i + 1)).append(" \u00b7 ").append(range);
+            sb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, sb.length(), 0);
+            sb.append("\n").append(start);
+            label.setText(sb);
+            label.setTextColor(0xFF3A3346);
+            label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            lp.setMarginStart(dp(12));
+            row.addView(label, lp);
+            list.addView(row);
+        }
+        if (parts.size() > shown) {
+            TextView more = new TextView(this);
+            more.setText("+ " + (parts.size() - shown) + " more");
+            more.setTextColor(0xFF7E57C2);
+            more.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13);
+            more.setPadding(dp(36), dp(4), 0, 0);
+            list.addView(more);
+        }
     }
 
     private void splitAndSavePassage(String baseRef, String fullText, int chunkSize, boolean shared) {
@@ -1392,88 +1502,69 @@ public class MemorizeActivity extends AppCompatActivity {
                         "Couldn't save. Check your connection and try again.", Toast.LENGTH_LONG).show());
     }
 
+    /**
+     * A verse's details (full screen): its text with Listen, where it is in the schedule (stage,
+     * day, next review), and Edit / Practise / Delete for your own verses.
+     */
     private void showVerseDetailDialog(MemoryVerse verse) {
-        int    idx  = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
-        String reviewLine;
-        if ("mastered".equals(verse.getStage())) reviewLine = isDue(verse) ? "\nRefresh: today"
-                : verse.getNextReviewDate() == null ? "" : "\nNext refresh: " + new java.text.SimpleDateFormat(
-                        "d MMM yyyy", Locale.getDefault()).format(verse.getNextReviewDate().toDate());
-        else if (isLocked(verse)) reviewLine = "\nNext review: after the previous part advances";
-        else if (verse.getNextReviewDate() == null) reviewLine = "";
-        else if (isDue(verse)) reviewLine = "\nNext review: today";
-        else reviewLine = "\nNext review: " + new java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault())
-                .format(verse.getNextReviewDate().toDate());
-
-        // The verse scrolls in a box of its own, so a long part can't push Listen and the
-        // buttons off the bottom of the window.
-        float dp = getResources().getDisplayMetrics().density;
-        int maxTextHeight = (int) (getResources().getDisplayMetrics().heightPixels * 0.36f);
-        android.widget.ScrollView textBox = new android.widget.ScrollView(this) {
-            @Override protected void onMeasure(int widthSpec, int heightSpec) {
-                super.onMeasure(widthSpec, View.MeasureSpec.makeMeasureSpec(maxTextHeight, View.MeasureSpec.AT_MOST));
-            }
-        };
-        TextView message = new TextView(this);
-        message.setText(verse.getText()
-                + "\n\nDay " + (idx + 1) + " of " + INTERVALS.length
-                + "\nStage: " + getStageLabel(verse)
-                + reviewLine);
-        message.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16);
-        message.setTextColor(0xFF49454F);
-        message.setLineSpacing(0, 1.2f);
-        textBox.addView(message);
-        textBox.setPadding((int) (4 * dp), 0, (int) (4 * dp), 0);
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding((int) (20 * dp), (int) (8 * dp), (int) (20 * dp), 0);
-        content.addView(textBox);
-
-        androidx.appcompat.app.AlertDialog dialog =
-                new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
-                .setTitle(verse.shownReference())
-                .setView(content)
-                .setPositiveButton("Close", null)
-                .setNeutralButton(viewingPartner ? null : "Delete",
-                        viewingPartner ? null : (d, w) -> onVerseLongTapped(verse))
-                .setNegativeButton(viewingPartner ? null : "Edit",
-                        viewingPartner ? null : (d, w) -> showEditVerseDialog(verse))
-                .create();
-        // A locked part's text is for later; everything else can be listened to.
-        if (!isLocked(verse)) {
-            LinearLayout extras = new LinearLayout(this);
-            extras.setOrientation(LinearLayout.VERTICAL);
-            extras.setPadding(0, (int) (10 * dp), 0, 0);
-            View listen = LayoutInflater.from(this).inflate(R.layout.view_listen_controls, extras, false);
-            speaker.bind(listen, verse.getReference(), verse.getText());
-            extras.addView(listen);
-            if (!viewingPartner) {
-                // The learn steps any time, e.g. to brush up before a test. Doesn't change the schedule.
-                MaterialButton practise = new MaterialButton(this, null,
-                        com.google.android.material.R.attr.materialButtonOutlinedStyle);
-                practise.setText("Practise");
-                practise.setAllCaps(false);
-                practise.setTextColor(android.graphics.Color.parseColor("#5E35B1"));
-                practise.setStrokeColor(android.content.res.ColorStateList.valueOf(
-                        android.graphics.Color.parseColor("#9575CD")));
-                practise.setCornerRadius((int) (24 * dp));
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, (int) (48 * dp));
-                lp.topMargin = (int) (10 * dp);
-                extras.addView(practise, lp);
-                practise.setOnClickListener(b -> {
-                    dialog.dismiss();
-                    showLearnDialog(verse, true);
-                });
-            }
-            content.addView(extras);
-        }
+        View v = LayoutInflater.from(this).inflate(R.layout.screen_verse_detail, null);
+        android.app.Dialog dialog = openScreen(v, v.findViewById(R.id.detailTopBar), v.findViewById(R.id.detailBottomBar));
         dialog.setOnDismissListener(d -> speaker.stop());
+        v.findViewById(R.id.btnDetailBack).setOnClickListener(b -> dialog.dismiss());
+
+        ((TextView) v.findViewById(R.id.tvDetailReference)).setText(
+                withPartChip(verse.shownReference(), v.findViewById(R.id.tvDetailPart)));
+        ((TextView) v.findViewById(R.id.tvDetailText)).setText(verse.getText());
+        if (viewingPartner) {
+            TextView owner = v.findViewById(R.id.tvDetailOwner);
+            owner.setText(PartnerName.get(this) + " is learning this");
+            owner.setVisibility(View.VISIBLE);
+        } else if (verse.isShared()) {
+            v.findViewById(R.id.tvDetailShared).setVisibility(View.VISIBLE);
+        }
+
+        // Where it is in the schedule.
+        int idx = verse.getIntervalIndex() != null ? verse.getIntervalIndex() : 0;
+        boolean mastered = "mastered".equals(verse.getStage()), locked = isLocked(verse);
+        java.text.SimpleDateFormat when = new java.text.SimpleDateFormat("d MMM", Locale.getDefault());
+        ((TextView) v.findViewById(R.id.tvDetailStage)).setText(
+                locked ? "Locked" : needsLearning(verse) ? "New" : getStageLabel(verse));
+        if (mastered) {
+            ((TextView) v.findViewById(R.id.tvDetailProgressLabel)).setText("REFRESHES");
+            int done = verse.getRefreshes() != null ? verse.getRefreshes() : 0;
+            ((TextView) v.findViewById(R.id.tvDetailDay)).setText(done == 1 ? "1 done" : done + " done");
+            ((TextView) v.findViewById(R.id.tvDetailNextLabel)).setText("NEXT REFRESH");
+        } else {
+            ((TextView) v.findViewById(R.id.tvDetailDay)).setText("Day " + (idx + 1) + " of " + INTERVALS.length);
+        }
+        String next = locked ? "After the part before"
+                : verse.getNextReviewDate() == null ? "\u2013"
+                : isDue(verse) ? "Today"
+                : when.format(verse.getNextReviewDate().toDate());
+        ((TextView) v.findViewById(R.id.tvDetailNext)).setText(next);
+
+        // A locked part's text is for later; everything else can be listened to and practised.
+        View listen = v.findViewById(R.id.detailListen);
+        if (locked) {
+            listen.setVisibility(View.GONE);
+            v.findViewById(R.id.tvDetailLocked).setVisibility(View.VISIBLE);
+        } else {
+            speaker.bind(listen, verse.getReference(), verse.getText());
+        }
+
+        if (viewingPartner) {
+            v.findViewById(R.id.detailBottomBar).setVisibility(View.GONE);
+        } else {
+            View delete = v.findViewById(R.id.btnDetailDelete);
+            delete.setVisibility(View.VISIBLE);
+            delete.setOnClickListener(b -> { dialog.dismiss(); onVerseLongTapped(verse); });
+            v.findViewById(R.id.btnDetailEdit).setOnClickListener(b -> { dialog.dismiss(); showEditVerseDialog(verse); });
+            View practise = v.findViewById(R.id.btnDetailPractise);
+            // The learn steps any time, e.g. to brush up before a test. Doesn't change the schedule.
+            if (locked) practise.setVisibility(View.GONE);
+            practise.setOnClickListener(b -> { dialog.dismiss(); showLearnDialog(verse, true); });
+        }
         dialog.show();
-        android.widget.Button delete = dialog.getButton(android.content.DialogInterface.BUTTON_NEUTRAL);
-        if (delete != null) delete.setTextColor(android.graphics.Color.parseColor("#C62828"));
-        android.widget.Button edit = dialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE);
-        android.widget.Button close = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
-        if (edit != null && close != null) edit.setTextColor(close.getTextColors());
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

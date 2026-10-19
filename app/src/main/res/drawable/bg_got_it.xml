@@ -1,37 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Got it": a bright, luminous green with a glossy sheen on its top half, and a press ripple. -->
+<!-- "Got it": a glossy, 3D-looking green (like a rendered candy/icon): bright on top, deeper at
+     the bottom, a white shine across the upper half, a small sparkle, a soft reflected light
+     along the bottom edge and a thin bright rim. A press shows a ripple. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#40FFFFFF">
     <item>
         <layer-list>
-            <!-- Body: vivid green, lighter at the top -->
+            <!-- Body: vivid green, deeper towards the bottom for depth -->
             <item>
                 <shape android:shape="rectangle">
                     <gradient
                         android:angle="270"
-                        android:startColor="#5CF08F"
-                        android:centerColor="#2BD46A"
-                        android:endColor="#18B553" />
+                        android:startColor="#46EE7C"
+                        android:centerColor="#16C150"
+                        android:endColor="#0A8A35" />
                     <corners android:radius="26dp" />
                 </shape>
             </item>
-            <!-- Gloss: a soft white sheen over the upper half -->
-            <item android:bottom="24dp" android:left="2dp" android:right="2dp" android:top="2dp">
+            <!-- Reflected light along the bottom edge -->
+            <item android:left="14dp" android:right="14dp" android:top="34dp" android:bottom="3dp">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="90"
+                        android:startColor="#6639F07A"
+                        android:endColor="#0039F07A" />
+                    <corners android:radius="12dp" />
+                </shape>
+            </item>
+            <!-- Shine: white across the upper half -->
+            <item android:left="3dp" android:right="3dp" android:top="2dp" android:bottom="26dp">
                 <shape android:shape="rectangle">
                     <gradient
                         android:angle="270"
-                        android:startColor="#73FFFFFF"
-                        android:endColor="#08FFFFFF" />
+                        android:startColor="#A6FFFFFF"
+                        android:endColor="#0DFFFFFF" />
                     <corners
                         android:topLeftRadius="24dp"
                         android:topRightRadius="24dp"
-                        android:bottomLeftRadius="12dp"
-                        android:bottomRightRadius="12dp" />
+                        android:bottomLeftRadius="14dp"
+                        android:bottomRightRadius="14dp" />
                 </shape>
             </item>
-            <!-- A thin bright rim -->
+            <!-- Sparkle: a small bright highlight near the top left -->
+            <item android:left="22dp" android:top="6dp" android:width="34dp" android:height="7dp">
+                <shape android:shape="oval">
+                    <solid android:color="#D9FFFFFF" />
+                </shape>
+            </item>
+            <!-- Thin bright rim -->
             <item>
                 <shape android:shape="rectangle">
-                    <stroke android:width="1dp" android:color="#8CFFB4" />
+                    <stroke android:width="1dp" android:color="#99B5FFCB" />
                     <corners android:radius="26dp" />
                 </shape>
             </item>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Main button: purple, faded while it can't be used yet. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#C9B8E6" android:state_enabled="false" />
+    <item android:color="#7E57C2" />
+</selector>
