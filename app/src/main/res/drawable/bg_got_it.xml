@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Got it": a glossy, 3D-looking green (like a rendered candy/icon): bright on top, deeper at
+<!-- "Got it": a glossy, 3D-looking Kelly green (like a rendered candy/icon): bright on top, deeper at
      the bottom, a white shine across the upper half, a small sparkle, a soft reflected light
      along the bottom edge and a thin bright rim. A press shows a ripple. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#40FFFFFF">
@@ -10,9 +10,9 @@
                 <shape android:shape="rectangle">
                     <gradient
                         android:angle="270"
-                        android:startColor="#46EE7C"
-                        android:centerColor="#16C150"
-                        android:endColor="#0A8A35" />
+                        android:startColor="#5DDC77"
+                        android:centerColor="#22A845"
+                        android:endColor="#126E2C" />
                     <corners android:radius="26dp" />
                 </shape>
             </item>
@@ -21,8 +21,8 @@
                 <shape android:shape="rectangle">
                     <gradient
                         android:angle="90"
-                        android:startColor="#6639F07A"
-                        android:endColor="#0039F07A" />
+                        android:startColor="#7378EB8C"
+                        android:endColor="#0078EB8C" />
                     <corners android:radius="12dp" />
                 </shape>
             </item>
@@ -49,7 +49,7 @@
             <!-- Thin bright rim -->
             <item>
                 <shape android:shape="rectangle">
-                    <stroke android:width="1dp" android:color="#99B5FFCB" />
+                    <stroke android:width="1dp" android:color="#99A6F0B6" />
                     <corners android:radius="26dp" />
                 </shape>
             </item>
