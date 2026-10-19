@@ -760,13 +760,13 @@ public class MainActivity extends AppCompatActivity {
                 binding.progressPrayerPartner, binding.progressJournalMe, binding.progressJournalPartner,
                 binding.progressMemorizeMe, binding.progressMemorizePartner};
         // 1. All four tiles together.
-        for (View t : tiles) bounce(t, 300, 1.06f, 550, 1000);
+        for (View t : tiles) balloon(t, 300, 1.12f, 750);
         // 2. The ticks one by one, down the list.
-        long start = 1950;
-        for (int i = 0; i < dots.length; i++) bounce(dots[i], start + i * 330L, 1.35f, 330, 620);
+        long start = 2700;
+        for (int i = 0; i < dots.length; i++) balloon(dots[i], start + i * 330L, 1.6f, 450);
         // 3. Then all of them at once.
-        long together = start + dots.length * 330L + 550;
-        for (View d : dots) bounce(d, together, 1.35f, 400, 780);
+        long together = start + dots.length * 330L + 1100;
+        for (View d : dots) balloon(d, together, 1.6f, 550);
         // 4. Sparkles out of every tile and every circle, over the whole screen.
         View screen = getWindow().getDecorView();
         screen.postDelayed(() -> {
@@ -775,15 +775,26 @@ public class MainActivity extends AppCompatActivity {
             for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.6f, 2500, true, false, null);
             for (View d : dots) SparkleBurst.play(screen, d, 8, 0.5f, 2400, true, false, null);
             SparkleBurst.play(screen, binding.cardBothDone, 24, 0.7f, 2600, true, false, null);
-        }, together + 700);
+        }, together + 1500);
     }
 
-    /** Grows to {@code peak} over {@code up} ms, then springs back over {@code down} ms. */
-    private static void bounce(View v, long delay, float peak, long up, long down) {
-        v.postDelayed(() -> v.animate().scaleX(peak).scaleY(peak).setStartDelay(0).setDuration(up)
-                .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(down)
-                        .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start())
+    /**
+     * Like a balloon: swells to {@code peak} and lifts off the page over {@code inflate} ms,
+     * wobbles (wide, then tall) while full, then lets go and springs back with a jiggle that settles.
+     */
+    private void balloon(View v, long delay, float peak, long inflate) {
+        float lift = 10 * getResources().getDisplayMetrics().density;
+        v.postDelayed(() -> v.animate().scaleX(peak).scaleY(peak).translationZ(lift).setStartDelay(0)
+                .setDuration(inflate)
+                .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator())
+                .withEndAction(() -> v.animate().scaleX(peak * 1.05f).scaleY(peak * 0.95f).setDuration(170)
+                        .setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator())
+                        .withEndAction(() -> v.animate().scaleX(peak * 0.96f).scaleY(peak * 1.04f).setDuration(170)
+                                .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).translationZ(0f).setDuration(1100)
+                                        .setInterpolator(t -> (float) (1 - Math.exp(-5.5 * t) * Math.cos(15 * t)))
+                                        .start())
+                                .start())
+                        .start())
                 .start(), delay);
     }
 
