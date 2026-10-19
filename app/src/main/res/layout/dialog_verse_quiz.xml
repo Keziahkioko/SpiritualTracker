@@ -239,7 +239,7 @@
                 android:layout_marginBottom="8dp"
                 android:visibility="gone" />
 
-            <!-- Type it out: typed (or said with the keyboard's mic). It grows with the text; the page scrolls. -->
+            <!-- Type it out: typed (or said with the keyboard's mic). It fills the rest of the page and scrolls inside. -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilTypeIt"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -266,6 +266,8 @@
                     android:inputType="textMultiLine|textCapSentences"
                     android:lineSpacingMultiplier="1.25"
                     android:minLines="6"
+                    android:overScrollMode="ifContentScrolls"
+                    android:scrollbars="vertical"
                     android:textColor="#1A1A2E"
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>

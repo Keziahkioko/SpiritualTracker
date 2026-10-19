@@ -946,11 +946,17 @@ public class MemorizeActivity extends AppCompatActivity {
                 int cap = Math.max(dp(120), Math.round(v.getHeight() * 0.32f));
                 hintBox.post(() -> hintBox.setMaxHeight(cap));
             }
-            int room = v.getHeight() - tilTypeIt.getTop() - etTypeIt.getTop() - dp(56);
-            int min = Math.max(dp(200), room);
-            if (Math.abs(etTypeIt.getMinimumHeight() - min) > 2) {
-                etTypeIt.setMinHeight(min);
-                etTypeIt.post(etTypeIt::requestLayout);
+            // The typing box takes exactly the rest of the page and scrolls inside itself, so the
+            // page stays put: the title and any first letters stay in view however much is typed.
+            int room = v.getHeight() - tilTypeIt.getTop() - etTypeIt.getTop() - dp(84);
+            int h = Math.max(dp(140), room);
+            if (Math.abs(etTypeIt.getMinimumHeight() - h) > 2 || etTypeIt.getMaxHeight() != h) {
+                etTypeIt.setMinHeight(h);
+                etTypeIt.setMaxHeight(h);
+                etTypeIt.post(() -> {
+                    etTypeIt.requestLayout();
+                    ((androidx.core.widget.NestedScrollView) v).scrollTo(0, 0);
+                });
             }
         });
         // Back (the arrow or the phone's): typing takes a while, so ask before throwing it away.
