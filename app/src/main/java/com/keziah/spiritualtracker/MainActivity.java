@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -102,23 +103,7 @@ public class MainActivity extends AppCompatActivity {
             resetUnreadCount("unreadPrayer");
             startActivity(new Intent(this, PrayerActivity.class));
         });
-        // The dashboard is dark below the photo: a matching navigation bar with light buttons.
-        getWindow().setNavigationBarColor(0xFF17131D);
-        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
-                .setAppearanceLightNavigationBars(false);
-
-        // A purple glow under the glossy tiles instead of a grey shadow.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory}) {
-                tile.setOutlineSpotShadowColor(0xFF8E44C9);
-                tile.setOutlineAmbientShadowColor(0xFF8E44C9);
-            }
-            // The cards below them get the same purple glow.
-            for (View card : new View[]{binding.cardProgress, binding.cardWeek}) {
-                card.setOutlineSpotShadowColor(0xFF8E44C9);
-                card.setOutlineAmbientShadowColor(0xFF8E44C9);
-            }
-        }
+        applyLook();
         binding.cardMemory.setOnClickListener(v ->
                 startActivity(new Intent(this, MemorizeActivity.class)));
 
@@ -145,10 +130,12 @@ public class MainActivity extends AppCompatActivity {
             // While a request is open, the banner on the home screen handles it instead.
             if (unlinkRequestBy == null) menu.getMenu().add(0, 4, 1, "Unlink " + PartnerName.get(this));
         }
-        menu.getMenu().add(0, 2, 2, "Sign out");
+        menu.getMenu().add(0, 5, 2, "Appearance");
+        menu.getMenu().add(0, 2, 3, "Sign out");
         menu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 3) showNamePartnerDialog(false);
             else if (item.getItemId() == 4) confirmUnlink();
+            else if (item.getItemId() == 5) chooseLook();
             else signOut();
             return true;
         });
@@ -689,12 +676,15 @@ public class MainActivity extends AppCompatActivity {
         boolean first = tileLit[i] == null;
         tileLit[i] = done;
         if (!first && !changed) return;
-        face.setBackgroundResource(done ? R.drawable.card_premium_done_bg : R.drawable.card_premium_bg);
+        face.setBackgroundResource(darkLook
+                ? (done ? R.drawable.card_premium_done_bg : R.drawable.card_premium_bg)
+                : (done ? R.drawable.card_pearl_done_bg : R.drawable.card_pearl_bg));
         float density = getResources().getDisplayMetrics().density;
         card.setCardElevation((done ? 16 : 10) * density);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            card.setOutlineSpotShadowColor(done ? 0xFFB15CFF : 0xFF8E44C9);
-            card.setOutlineAmbientShadowColor(done ? 0xFFB15CFF : 0xFF8E44C9);
+            int glow = darkLook ? (done ? 0xFFB15CFF : 0xFF8E44C9) : (done ? 0xFF9C6BE8 : 0xFFB39DDB);
+            card.setOutlineSpotShadowColor(glow);
+            card.setOutlineAmbientShadowColor(glow);
         }
         if (first || !done) return;
         // Just done: the tile pulses once.
@@ -715,6 +705,99 @@ public class MainActivity extends AppCompatActivity {
         return userDoc != null && todayDate.equals(userDoc.getString(field));
     }
 
+    // ─── Look: dark (Obsidian) or light (Pearl) ─────────────────────────────
+
+    private static final String LOOK_PREFS = "dashboard_look";
+    private boolean darkLook = true;
+    /** Colours the layout gives the cards' text (the dark look), and what they become in the light look. */
+    private static final int[][] LIGHT_TEXT = {
+            {0xFFC9B2F0, 0xFF7E57C2}, {0xFFB9A6DA, 0xFF6A4FB0}, {0xFFECE7F3, 0xFF3D3459},
+            {0xFFD7C4FF, 0xFF5E35B1}, {0xFFA9A1B6, 0xFF5F5F64}};
+    private final Map<View, Integer> layoutColour = new HashMap<>();
+
+    private void chooseLook() {
+        String[] looks = {"Light  \u00b7  Pearl", "Dark  \u00b7  Obsidian"};
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
+                .setTitle("Appearance")
+                .setSingleChoiceItems(looks, darkLook ? 1 : 0, (d, which) -> {
+                    getSharedPreferences(LOOK_PREFS, MODE_PRIVATE).edit().putBoolean("dark", which == 1).apply();
+                    d.dismiss();
+                    applyLook();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Dresses the dashboard in the chosen look: the tiles, the two cards and what's in them, the
+     * beads and week chips, the page behind and the navigation bar. Dark is the default.
+     */
+    private void applyLook() {
+        darkLook = getSharedPreferences(LOOK_PREFS, MODE_PRIVATE).getBoolean("dark", true);
+        int page = darkLook ? 0xFF17131D : 0xFFF6F2FB;
+        binding.getRoot().setBackgroundColor(page);
+        getWindow().setNavigationBarColor(page);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightNavigationBars(!darkLook);
+
+        // Tiles: white icons with a halo and glowing labels on dark; purple on light.
+        for (View face : new View[]{binding.tileFaceBible, binding.tileFacePrayer, binding.tileFaceJournal, binding.tileFaceMemory}) {
+            ViewGroup g = (ViewGroup) face;
+            for (int k = 0; k < g.getChildCount(); k++) {
+                View child = g.getChildAt(k);
+                if (child instanceof ImageView) {
+                    ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(darkLook ? Color.WHITE : 0xFF6A3CC8));
+                    child.setBackgroundResource(darkLook ? R.drawable.bg_icon_glow : 0);
+                } else if (child instanceof TextView) {
+                    TextView label = (TextView) child;
+                    label.setTextColor(darkLook ? Color.WHITE : 0xFF4A2C8F);
+                    label.setShadowLayer(darkLook ? 10 : 0, 0, 0, 0x739F6BFF);
+                }
+            }
+        }
+        java.util.Arrays.fill(tileLit, null); // so the tiles redraw in this look
+
+        // The two cards and their contents.
+        for (com.google.android.material.card.MaterialCardView card : new com.google.android.material.card.MaterialCardView[]{binding.cardProgress, binding.cardWeek}) {
+            card.getChildAt(0).setBackgroundResource(darkLook ? R.drawable.bg_obsidian_card : R.drawable.bg_pearl_card);
+            recolour(card);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                int glow = darkLook ? 0xFF8E44C9 : 0xFFB39DDB;
+                card.setOutlineSpotShadowColor(glow);
+                card.setOutlineAmbientShadowColor(glow);
+            }
+        }
+        binding.legendNone.setBackgroundResource(darkLook ? R.drawable.hm_none : R.drawable.hm_none_light);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory}) {
+                tile.setOutlineSpotShadowColor(darkLook ? 0xFF8E44C9 : 0xFFB39DDB);
+                tile.setOutlineAmbientShadowColor(darkLook ? 0xFF8E44C9 : 0xFFB39DDB);
+            }
+        }
+        refreshProgressCard();
+        if (currentUserId != null) loadHeatmap();
+    }
+
+    /** Text and small icons inside a card: the layout's (dark-look) colour, or its light-look match. */
+    private void recolour(View v) {
+        if (v instanceof ViewGroup) {
+            for (int k = 0; k < ((ViewGroup) v).getChildCount(); k++) recolour(((ViewGroup) v).getChildAt(k));
+            return;
+        }
+        Integer original = layoutColour.get(v);
+        if (original == null) {
+            if (v instanceof TextView) original = ((TextView) v).getCurrentTextColor();
+            else if (v instanceof ImageView && ((ImageView) v).getImageTintList() != null)
+                original = ((ImageView) v).getImageTintList().getDefaultColor();
+            else return;
+            layoutColour.put(v, original);
+        }
+        int colour = original;
+        if (!darkLook) for (int[] pair : LIGHT_TEXT) if (pair[0] == original) colour = pair[1];
+        if (v instanceof TextView) ((TextView) v).setTextColor(colour);
+        else ((ImageView) v).setImageTintList(android.content.res.ColorStateList.valueOf(colour));
+    }
+
     // ── Dot: circle background + double-tick icon when done ──────────────────
     private void setDot(ImageView view, boolean done) {
         if (done) {
@@ -722,7 +805,7 @@ public class MainActivity extends AppCompatActivity {
             view.setImageResource(R.drawable.ic_check_double);       // white double tick
             view.setColorFilter(Color.WHITE);
         } else {
-            view.setBackgroundResource(R.drawable.ic_progress_todo); // faint circle
+            view.setBackgroundResource(darkLook ? R.drawable.ic_progress_todo : R.drawable.ic_progress_todo_light);
             view.setImageResource(0);                                 // no icon
             view.clearColorFilter();
         }
@@ -782,8 +865,8 @@ public class MainActivity extends AppCompatActivity {
                 cell.setBackgroundResource(R.drawable.hm_half);
                 cell.setTextColor(Color.WHITE);
             } else {
-                cell.setBackgroundResource(R.drawable.hm_none);
-                cell.setTextColor(Color.parseColor("#B9A6DA"));
+                cell.setBackgroundResource(darkLook ? R.drawable.hm_none : R.drawable.hm_none_light);
+                cell.setTextColor(darkLook ? 0xFFB9A6DA : 0xFF6A4FB0);
             }
         }
     }

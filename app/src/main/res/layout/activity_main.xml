@@ -804,7 +804,7 @@
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_half" android:layout_marginEnd="4dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial" android:textSize="11sp" android:textColor="#A9A1B6" android:layout_marginEnd="14dp" />
 
-                    <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_none" android:layout_marginEnd="4dp" />
+                    <View android:id="@+id/legendNone" android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_none" android:layout_marginEnd="4dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Missed" android:textSize="11sp" android:textColor="#A9A1B6" />
 
                 </LinearLayout>
