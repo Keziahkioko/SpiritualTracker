@@ -745,7 +745,32 @@ public class MainActivity extends AppCompatActivity {
         card.setAlpha(0f);
         card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(450).setStartDelay(250)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
-                .withEndAction(() -> SparkleBurst.play(getWindow().getDecorView(), card, null))
+                .withEndAction(() -> {
+                    SparkleBurst.play(getWindow().getDecorView(), card, null);
+                    celebrateDashboard();
+                })
+                .start();
+    }
+
+    /**
+     * With the sparkles: the four tiles bounce one after another, then the circles in Today's
+     * progress ripple down in a wave.
+     */
+    private void celebrateDashboard() {
+        View[] tiles = {binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory};
+        for (int i = 0; i < tiles.length; i++) bounce(tiles[i], i * 90L, 1.07f);
+        View[] dots = {binding.progressBibleMe, binding.progressBiblePartner, binding.progressPrayerMe,
+                binding.progressPrayerPartner, binding.progressJournalMe, binding.progressJournalPartner,
+                binding.progressMemorizeMe, binding.progressMemorizePartner};
+        for (int i = 0; i < dots.length; i++) bounce(dots[i], 380 + (i / 2) * 90L + (i % 2) * 40L, 1.3f);
+    }
+
+    private static void bounce(View v, long delay, float peak) {
+        v.animate().cancel();
+        v.animate().scaleX(peak).scaleY(peak).setStartDelay(delay).setDuration(150)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setStartDelay(0).setDuration(380)
+                        .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start())
                 .start();
     }
 
