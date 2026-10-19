@@ -102,16 +102,21 @@ public class MainActivity extends AppCompatActivity {
             resetUnreadCount("unreadPrayer");
             startActivity(new Intent(this, PrayerActivity.class));
         });
+        // The dashboard is dark below the photo: a matching navigation bar with light buttons.
+        getWindow().setNavigationBarColor(0xFF17131D);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightNavigationBars(false);
+
         // A purple glow under the glossy tiles instead of a grey shadow.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory}) {
                 tile.setOutlineSpotShadowColor(0xFF8E44C9);
                 tile.setOutlineAmbientShadowColor(0xFF8E44C9);
             }
-            // The cards below them get a soft lilac shadow to match.
+            // The cards below them get the same purple glow.
             for (View card : new View[]{binding.cardProgress, binding.cardWeek}) {
-                card.setOutlineSpotShadowColor(0xFFB39DDB);
-                card.setOutlineAmbientShadowColor(0xFFB39DDB);
+                card.setOutlineSpotShadowColor(0xFF8E44C9);
+                card.setOutlineAmbientShadowColor(0xFF8E44C9);
             }
         }
         binding.cardMemory.setOnClickListener(v ->
@@ -744,7 +749,7 @@ public class MainActivity extends AppCompatActivity {
                 cell.setTextColor(Color.WHITE);
             } else {
                 cell.setBackgroundResource(R.drawable.hm_none);
-                cell.setTextColor(Color.parseColor("#6A4FB0"));
+                cell.setTextColor(Color.parseColor("#B9A6DA"));
             }
         }
     }

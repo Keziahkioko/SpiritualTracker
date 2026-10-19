@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashboard cards (Today's progress, This week) in the Obsidian look, to match the tiles: a
+     near-black edge below for depth, a glossy charcoal face with a faint purple light rising from
+     the bottom, a shine along the top and a lavender rim. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#0B0A0F" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item android:bottom="5dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#38333F" android:endColor="#211D27" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item android:bottom="5dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="1.25"
+                android:gradientRadius="220dp"
+                android:startColor="#4DA23FB5"
+                android:endColor="#00A23FB5" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:height="44dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#26FFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:topLeftRadius="22dp" android:topRightRadius="22dp" />
+        </shape>
+    </item>
+    <item android:bottom="5dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="1dp" android:color="#59C9A0FF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F2FB"
+    android:background="#17131D"
     android:fillViewport="true"
     tools:context=".MainActivity">
 
@@ -148,15 +148,17 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/holy_bible"
-                            app:tint="#6A3CC8" />
+                            app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
+                            android:shadowColor="#739F6BFF"
+                            android:shadowRadius="10"
                             android:text="@string/label_bible"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#4A2C8F" />
+                            android:textColor="#ffffff" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgeBible"
@@ -200,15 +202,17 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/prayer"
-                            app:tint="#6A3CC8" />
+                            app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
+                            android:shadowColor="#739F6BFF"
+                            android:shadowRadius="10"
                             android:text="@string/label_prayer"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#4A2C8F" />
+                            android:textColor="#ffffff" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgePrayer"
@@ -252,13 +256,15 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/journal"
-                            app:tint="#6A3CC8" />
+                            app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
+                            android:shadowColor="#739F6BFF"
+                            android:shadowRadius="10"
                             android:text="@string/label_journal"
-                            android:textColor="#4A2C8F"
+                            android:textColor="#ffffff"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -304,15 +310,17 @@
                             android:background="@drawable/bg_icon_glow"
                             android:padding="12dp"
                             android:src="@drawable/memorize"
-                            app:tint="#6A3CC8" />
+                            app:tint="#FFFFFF" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="0dp"
+                            android:shadowColor="#739F6BFF"
+                            android:shadowRadius="10"
                             android:text="@string/label_memorize"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="#4A2C8F" />
+                            android:textColor="#ffffff" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/badgeMemory"
@@ -419,7 +427,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/bg_pearl_card"
+                android:background="@drawable/bg_obsidian_card"
                 android:paddingStart="20dp"
                 android:paddingTop="20dp"
                 android:paddingEnd="20dp"
@@ -436,7 +444,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:text="TODAY'S PROGRESS"
-                        android:textColor="#7E57C2"
+                        android:textColor="#C9B2F0"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.06" />
@@ -455,7 +463,7 @@
                             android:maxLines="1"
                             android:ellipsize="end"
                             android:text="You"
-                            android:textColor="#6A4FB0"
+                            android:textColor="#B9A6DA"
                             android:textSize="11sp" />
 
                         <TextView
@@ -465,7 +473,7 @@
                             android:maxLines="1"
                             android:ellipsize="end"
                             android:text="Partner"
-                            android:textColor="#6A4FB0"
+                            android:textColor="#B9A6DA"
                             android:textSize="11sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -483,14 +491,14 @@
                         android:layout_height="16dp"
                         android:src="@drawable/holy_bible"
                         android:layout_marginEnd="8dp"
-                        app:tint="#7E57C2" />
+                        app:tint="#C9B2F0" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Bible"
-                        android:textColor="#3D3459"
+                        android:textColor="#ECE7F3"
                         android:textSize="14sp" />
 
                     <FrameLayout
@@ -535,14 +543,14 @@
                         android:layout_height="16dp"
                         android:src="@drawable/prayer"
                         android:layout_marginEnd="8dp"
-                        app:tint="#7E57C2" />
+                        app:tint="#C9B2F0" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Prayer"
-                        android:textColor="#3D3459"
+                        android:textColor="#ECE7F3"
                         android:textSize="14sp" />
 
                     <FrameLayout
@@ -587,14 +595,14 @@
                         android:layout_height="16dp"
                         android:src="@drawable/journal"
                         android:layout_marginEnd="8dp"
-                        app:tint="#7E57C2" />
+                        app:tint="#C9B2F0" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Journal"
-                        android:textColor="#3D3459"
+                        android:textColor="#ECE7F3"
                         android:textSize="14sp" />
 
                     <FrameLayout
@@ -638,14 +646,14 @@
                         android:layout_height="16dp"
                         android:src="@drawable/memorize"
                         android:layout_marginEnd="8dp"
-                        app:tint="#7E57C2" />
+                        app:tint="#C9B2F0" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Memorize"
-                        android:textColor="#3D3459"
+                        android:textColor="#ECE7F3"
                         android:textSize="14sp" />
 
                     <FrameLayout
@@ -701,7 +709,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/bg_pearl_card"
+                android:background="@drawable/bg_obsidian_card"
                 android:paddingStart="20dp"
                 android:paddingTop="20dp"
                 android:paddingEnd="20dp"
@@ -719,7 +727,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="THIS WEEK · READING TOGETHER"
-                        android:textColor="#7E57C2"
+                        android:textColor="#C9B2F0"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.06" />
@@ -731,7 +739,7 @@
                         android:background="?attr/selectableItemBackground"
                         android:padding="4dp"
                         android:text="All progress ›"
-                        android:textColor="#5E35B1"
+                        android:textColor="#D7C4FF"
                         android:textSize="12sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -743,37 +751,37 @@
 
                     <LinearLayout android:id="@+id/hmMon" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellMon" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="M" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mon" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mon" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmTue" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellTue" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="T" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tue" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tue" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmWed" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellWed" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="W" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Wed" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Wed" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmThu" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellThu" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="T" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thu" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thu" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmFri" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellFri" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="F" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fri" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fri" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmSat" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellSat" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="S" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sat" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sat" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                     <LinearLayout android:id="@+id/hmSun" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <TextView android:id="@+id/hmCellSun" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="S" android:textSize="12sp" android:textStyle="bold" android:background="@drawable/hm_none" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sun" android:textSize="10sp" android:textColor="#6A4FB0" android:layout_marginTop="4dp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sun" android:textSize="10sp" android:textColor="#B9A6DA" android:layout_marginTop="4dp" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -787,13 +795,13 @@
                     android:layout_marginTop="14dp">
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_full" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Both done" android:textSize="11sp" android:textColor="#5F5F64" android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Both done" android:textSize="11sp" android:textColor="#A9A1B6" android:layout_marginEnd="14dp" />
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_half" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial" android:textSize="11sp" android:textColor="#5F5F64" android:layout_marginEnd="14dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial" android:textSize="11sp" android:textColor="#A9A1B6" android:layout_marginEnd="14dp" />
 
                     <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/hm_none" android:layout_marginEnd="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Missed" android:textSize="11sp" android:textColor="#5F5F64" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Missed" android:textSize="11sp" android:textColor="#A9A1B6" />
 
                 </LinearLayout>
 
