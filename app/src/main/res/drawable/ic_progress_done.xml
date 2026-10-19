@@ -12,12 +12,6 @@
             <gradient android:angle="270" android:startColor="#99FFFFFF" android:endColor="#00FFFFFF" />
         </shape>
     </item>
-    <!-- Small sparkle, top left -->
-    <item android:top="4dp" android:left="6dp" android:width="8dp" android:height="4dp">
-        <shape android:shape="oval">
-            <solid android:color="#CCFFFFFF" />
-        </shape>
-    </item>
     <!-- Rim -->
     <item>
         <shape android:shape="oval">
