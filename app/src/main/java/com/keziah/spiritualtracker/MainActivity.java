@@ -666,6 +666,47 @@ public class MainActivity extends AppCompatActivity {
         setDot(binding.progressJournalPartner,  hasPartner && (dayFlag(partnerDayDoc, "journal") || userDate(partnerUserDoc, "journaledTodayDate")));
         setDot(binding.progressMemorizeMe,      dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate"));
         setDot(binding.progressMemorizePartner, hasPartner && (dayFlag(partnerDayDoc, "memorize") || userDate(partnerUserDoc, "memorizedTodayDate")));
+
+        // The tiles light up for what I've done today.
+        lightTile(0, binding.cardBible,   binding.tileFaceBible,   binding.doneBible,   bibleDone(currentUserId, myDayDoc));
+        lightTile(1, binding.cardPrayer,  binding.tileFacePrayer,  binding.donePrayer,
+                dayFlag(myDayDoc, "prayed") || userDate(myUserDoc, "prayedTodayDate"));
+        lightTile(2, binding.cardJournal, binding.tileFaceJournal, binding.doneJournal,
+                dayFlag(myDayDoc, "journal") || userDate(myUserDoc, "journaledTodayDate"));
+        lightTile(3, binding.cardMemory,  binding.tileFaceMemory,  binding.doneMemory,
+                dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate"));
+    }
+
+    /** Which tiles were lit last time, so only a change (not every refresh) pops and pulses. */
+    private final Boolean[] tileLit = new Boolean[4];
+
+    /**
+     * A practice done today: its tile glows (stronger purple light, bright rim, bigger glow under
+     * it) and shows a glossy tick. When it has just been done, the tick pops in and the tile pulses.
+     */
+    private void lightTile(int i, androidx.cardview.widget.CardView card, View face, View tick, boolean done) {
+        boolean changed = tileLit[i] != null && tileLit[i] != done;
+        boolean first = tileLit[i] == null;
+        tileLit[i] = done;
+        if (!first && !changed) return;
+        face.setBackgroundResource(done ? R.drawable.card_premium_done_bg : R.drawable.card_premium_bg);
+        float density = getResources().getDisplayMetrics().density;
+        card.setCardElevation((done ? 16 : 10) * density);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            card.setOutlineSpotShadowColor(done ? 0xFFB15CFF : 0xFF8E44C9);
+            card.setOutlineAmbientShadowColor(done ? 0xFFB15CFF : 0xFF8E44C9);
+        }
+        tick.animate().cancel();
+        if (!done) { tick.setVisibility(View.GONE); return; }
+        tick.setVisibility(View.VISIBLE);
+        if (first) { tick.setScaleX(1f); tick.setScaleY(1f); return; }
+        // Just done: the tick pops in, the tile pulses once.
+        tick.setScaleX(0f);
+        tick.setScaleY(0f);
+        tick.animate().scaleX(1f).scaleY(1f).setDuration(380)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(2.4f)).start();
+        card.animate().scaleX(1.04f).scaleY(1.04f).setDuration(160)
+                .withEndAction(() -> card.animate().scaleX(1f).scaleY(1f).setDuration(220).start()).start();
     }
 
     private boolean bibleDone(String uid, DocumentSnapshot dayDoc) {

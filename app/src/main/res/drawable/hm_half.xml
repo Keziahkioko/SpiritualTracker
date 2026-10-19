@@ -14,12 +14,6 @@
             <corners android:topLeftRadius="8dp" android:topRightRadius="8dp" android:bottomLeftRadius="12dp" android:bottomRightRadius="12dp" />
         </shape>
     </item>
-    <!-- Small sparkle, top left -->
-    <item android:top="6dp" android:left="7dp" android:width="10dp" android:height="4dp">
-        <shape android:shape="oval">
-            <solid android:color="#CCFFFFFF" />
-        </shape>
-    </item>
     <!-- Rim -->
     <item>
         <shape android:shape="rectangle">
