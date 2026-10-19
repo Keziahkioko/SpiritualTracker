@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#EDE7F6" />
-</shape>
+<!-- Today's progress, not done yet: a pearl bead. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient android:angle="270" android:startColor="#FFFFFF" android:endColor="#E7DFF4" />
+        </shape>
+    </item>
+    <!-- Shine over the upper half -->
+    <item android:top="1dp" android:left="2dp" android:right="2dp" android:bottom="12dp">
+        <shape android:shape="oval">
+            <gradient android:angle="270" android:startColor="#CCFFFFFF" android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+    <!-- Small sparkle, top left -->
+    <item android:top="4dp" android:left="6dp" android:width="8dp" android:height="4dp">
+        <shape android:shape="oval">
+            <solid android:color="#E6FFFFFF" />
+        </shape>
+    </item>
+    <!-- Rim -->
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="1dp" android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+</layer-list>

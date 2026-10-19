@@ -108,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
                 tile.setOutlineSpotShadowColor(0xFF8E44C9);
                 tile.setOutlineAmbientShadowColor(0xFF8E44C9);
             }
+            // The cards below them get a soft lilac shadow to match.
+            for (View card : new View[]{binding.cardProgress, binding.cardWeek}) {
+                card.setOutlineSpotShadowColor(0xFFB39DDB);
+                card.setOutlineAmbientShadowColor(0xFFB39DDB);
+            }
         }
         binding.cardMemory.setOnClickListener(v ->
                 startActivity(new Intent(this, MemorizeActivity.class)));
