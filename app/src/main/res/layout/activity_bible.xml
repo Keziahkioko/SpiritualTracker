@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/st_page"
     tools:context=".BibleActivity">
 
     <View
@@ -69,17 +69,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
-                app:strokeColor="#EDE7F6"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@android:color/transparent"
                 android:layout_marginBottom="28dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="28dp">
+                    android:background="@drawable/bg_card"
+                    android:paddingStart="28dp"
+                    android:paddingTop="28dp"
+                    android:paddingEnd="28dp"
+                    android:paddingBottom="32dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -97,7 +100,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Your Reading"
-                            android:textColor="#212121"
+                            android:textColor="@color/st_text"
                             android:textSize="22sp"
                             android:textStyle="bold"
                             android:layout_marginStart="12dp"/>
@@ -119,7 +122,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#EEEEEE"
+                        android:background="@color/st_stroke"
                         android:layout_marginBottom="20dp"/>
 
                     <TextView
@@ -128,7 +131,7 @@
                         android:text="What did you read?"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="#757575"
+                        android:textColor="@color/st_text_2"
                         android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.card.MaterialCardView
@@ -136,9 +139,9 @@
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="0dp"
-                        app:strokeColor="#E0E0E0"
+                        app:strokeColor="@color/st_stroke"
                         app:strokeWidth="1dp"
-                        app:cardBackgroundColor="#FAFAFA"
+                        app:cardBackgroundColor="@color/st_field"
                         android:layout_marginBottom="16dp">
 
                         <EditText
@@ -146,8 +149,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="e.g. John 3:16"
-                            android:textColor="#212121"
-                            android:textColorHint="#6E6E73"
+                            android:textColor="@color/st_text"
+                            android:textColorHint="@color/st_text_3"
                             android:textSize="15sp"
                             android:padding="16dp"
                             android:background="@null"
@@ -161,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:text="Save Note"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#8E24AA"
+                        app:backgroundTint="@color/st_accent_fill"
                         app:cornerRadius="24dp"
                         android:layout_gravity="end"
                         android:paddingHorizontal="24dp"
@@ -178,7 +181,7 @@
                 android:text="Accountability Partner"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#8E24AA"
+                android:textColor="@color/st_accent"
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="8dp"
                 android:letterSpacing="0.05"
@@ -188,17 +191,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
-                app:strokeColor="#EDE7F6"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@android:color/transparent"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:background="@drawable/bg_card"
+                    android:paddingStart="24dp"
+                    android:paddingTop="24dp"
+                    android:paddingEnd="24dp"
+                    android:paddingBottom="28dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -244,7 +250,7 @@
                                 android:textSize="16sp"
                                 android:fontFamily="sans-serif-medium"
                                 android:lineSpacingExtra="2dp"
-                                android:textColor="#212121"/>
+                                android:textColor="@color/st_text"/>
 
                         </LinearLayout>
 
@@ -270,7 +276,7 @@
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="0dp"
-                        app:cardBackgroundColor="#F4F0F9"
+                        app:cardBackgroundColor="@color/st_soft"
                         android:layout_marginTop="20dp"
                         android:visibility="gone">
 
@@ -285,7 +291,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="PORTION READ"
                                 android:textSize="11sp"
-                                android:textColor="#8E24AA"
+                                android:textColor="@color/st_accent"
                                 android:textStyle="bold"
                                 android:letterSpacing="0.1"
                                 android:textAllCaps="true"/>
@@ -296,7 +302,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="..."
                                 android:textSize="18sp"
-                                android:textColor="#424242"
+                                android:textColor="@color/st_text"
                                 android:layout_marginTop="8dp"
                                 android:lineSpacingExtra="4dp"
                                 android:textStyle="italic"/>

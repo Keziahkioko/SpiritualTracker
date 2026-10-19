@@ -13,6 +13,7 @@ public class SpiritualTrackerApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Appearance.apply(this); // Light, Dark or Match phone, before any screen opens
 
         try {
             Map<String, String> config = new HashMap<>();

@@ -39,13 +39,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Let the lavender run behind the status bar; keep the bottom bar in the same soft shade.
-        getWindow().setStatusBarColor(Color.parseColor("#E4DAF5"));
-        getWindow().setNavigationBarColor(Color.parseColor("#FAF8FD"));
+        // Let the background wash run behind the status bar; keep the bottom bar in its last shade.
+        boolean dark = Appearance.isDark(this);
+        getWindow().setStatusBarColor(dark ? 0xFF2A1D3E : 0xFFE4DAF5);
+        getWindow().setNavigationBarColor(dark ? 0xFF17131D : 0xFFFAF8FD);
         androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
-                .setAppearanceLightStatusBars(true);
+                .setAppearanceLightStatusBars(!dark);
         androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
-                .setAppearanceLightNavigationBars(true);
+                .setAppearanceLightNavigationBars(!dark);
+        SpringPress.on(binding.btnLogin, 0.95f);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -82,10 +84,10 @@ public class LoginActivity extends AppCompatActivity {
         til.setErrorEnabled(false);
     }
 
-    private static CharSequence link(String lead, String action) {
+    private CharSequence link(String lead, String action) {
         SpannableString s = new SpannableString(lead + action);
         int start = lead.length();
-        s.setSpan(new ForegroundColorSpan(Color.parseColor("#6A4FB0")), start, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        s.setSpan(new ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(this, R.color.st_accent)), start, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return s;
     }
@@ -123,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setBusy(boolean busy) {
         binding.btnLogin.setEnabled(!busy);
+        binding.btnLogin.setAlpha(busy ? 0.6f : 1f);
         binding.tvRegister.setEnabled(!busy);
         binding.btnLogin.setText(busy ? (creating ? "Creating account…" : "Signing in…")
                                       : (creating ? "CREATE ACCOUNT" : "LOG IN"));

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Main cards across the app (give the content 4dp extra bottom padding for the edge). Light look (Pearl): a soft lilac edge below, a pearl face with a faint
+     lavender-to-sky sheen, a shine along the top and a white rim. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#DDD0F2" android:endColor="#ECD6EC" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="315" android:startColor="#FFFFFF" android:centerColor="#FBF8FF" android:endColor="#F1F7FF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:height="40dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#F2FFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:topLeftRadius="22dp" android:topRightRadius="22dp" />
+        </shape>
+    </item>
+    <item android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="1dp" android:color="#FFFFFFFF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</layer-list>

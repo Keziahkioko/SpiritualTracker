@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark look: deep plum wash, a touch of violet at the top. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#2A1D3E"
+        android:centerColor="#1C1626"
+        android:endColor="#17131D" />
+</shape>

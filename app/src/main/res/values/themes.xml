@@ -1,30 +1,38 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Always light: every screen is designed light. Following the phone's dark mode left
-         system parts (like the copy/paste bar) with white text on white. -->
-    <style name="Base.Theme.SpiritualTracker" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Light or dark, as chosen under Appearance (see Appearance.java): every screen takes its
+         colours from the palette in values/colors.xml and values-night/colors.xml. -->
+    <style name="Base.Theme.SpiritualTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#7E57C2</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondaryContainer">#D1C4E9</item>
-        <item name="colorOnSecondaryContainer">#7E57C2</item>
-        <item name="android:windowBackground">#F3F4F9</item>
-        <!-- Light system navigation bar to match the pages, instead of a black strip. -->
-        <item name="android:navigationBarColor">#F5F5F5</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="colorSecondaryContainer">@color/st_soft</item>
+        <item name="colorOnSecondaryContainer">@color/st_accent</item>
+        <item name="colorSurface">@color/st_surface</item>
+        <item name="colorOnSurface">@color/st_text</item>
+        <item name="colorOnSurfaceVariant">@color/st_text_2</item>
+        <item name="colorOutline">@color/st_stroke</item>
+        <item name="android:textColorPrimary">@color/st_text</item>
+        <item name="android:textColorSecondary">@color/st_text_2</item>
+        <item name="android:textColorHint">@color/st_text_3</item>
+        <item name="android:windowBackground">@color/st_page</item>
+        <item name="android:statusBarColor">@color/st_page</item>
+        <item name="android:windowLightStatusBar">@bool/st_light_bars</item>
+        <item name="android:navigationBarColor">@color/st_page</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/st_light_bars</item>
     </style>
 
     <!-- Login fields: white rounded cards like the original, label floats inside, no underline. -->
     <style name="LoginField" parent="Widget.Material3.TextInputLayout.FilledBox">
-        <item name="boxBackgroundColor">#FFFFFF</item>
+        <item name="boxBackgroundColor">@color/st_field</item>
         <item name="boxStrokeWidth">0dp</item>
         <item name="boxStrokeWidthFocused">0dp</item>
         <item name="boxCornerRadiusTopStart">16dp</item>
         <item name="boxCornerRadiusTopEnd">16dp</item>
         <item name="boxCornerRadiusBottomStart">16dp</item>
         <item name="boxCornerRadiusBottomEnd">16dp</item>
-        <item name="hintTextColor">#6A4FB0</item>
-        <item name="android:textColorHint">#6E6E73</item>
-        <item name="errorTextColor">#C62828</item>
-        <item name="helperTextTextColor">#5F5F64</item>
+        <item name="hintTextColor">@color/st_accent</item>
+        <item name="android:textColorHint">@color/st_text_3</item>
+        <item name="errorTextColor">@color/st_danger</item>
+        <item name="helperTextTextColor">@color/st_text_2</item>
         <item name="android:elevation">2dp</item>
     </style>
 
@@ -34,6 +42,22 @@
     </style>
 
     <style name="Theme.SpiritualTracker" parent="Base.Theme.SpiritualTracker" />
+
+    <!-- The one main action on a screen: the glossy purple of Got it. -->
+    <style name="Widget.ST.GlossyButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/bg_got_it</item>
+        <item name="backgroundTint">@null</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:shadowColor">#59250B4D</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowRadius">2</item>
+        <item name="android:elevation">6dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
 
     <!-- A window that fills the screen like a page (Memorize review): same look as the app,
          drawn edge to edge; the code pads it for the status bar, navigation bar and keyboard. -->
@@ -50,8 +74,8 @@
     </style>
 
     <style name="PrayerBottomNavTheme">
-        <item name="colorSecondaryContainer">#EDE7F6</item>
-        <item name="colorOnSecondaryContainer">#5E35B1</item>
+        <item name="colorSecondaryContainer">@color/st_soft</item>
+        <item name="colorOnSecondaryContainer">@color/st_accent_strong</item>
     </style>
 
     <!-- Rounded MaterialAlertDialog with purple buttons — forced light appearance -->
@@ -63,21 +87,21 @@
         <!-- Force white background and dark text regardless of dark mode -->
         <!-- White through the dialog's own surface colour. (android:background here also painted
              the copy/paste bar's window white, hiding its words.) -->
-        <item name="colorSurfaceContainerHigh">#FFFFFF</item>
-        <item name="backgroundTint">#FFFFFF</item>
+        <item name="colorSurfaceContainerHigh">@color/st_surface</item>
+        <item name="backgroundTint">@color/st_surface</item>
         <item name="elevationOverlayEnabled">false</item>
-        <item name="android:textColor">#1A1A1A</item>
-        <item name="android:textColorPrimary">#1A1A1A</item>
-        <item name="android:textColorSecondary">#1F1F1F</item>
-        <item name="colorOnSurfaceVariant">#1F1F1F</item>
-        <item name="colorOnSurface">#1A1A1A</item>
-        <item name="colorSurface">#FFFFFF</item>
+        <item name="android:textColor">@color/st_text</item>
+        <item name="android:textColorPrimary">@color/st_text</item>
+        <item name="android:textColorSecondary">@color/st_text_2</item>
+        <item name="colorOnSurfaceVariant">@color/st_text_2</item>
+        <item name="colorOnSurface">@color/st_text</item>
+        <item name="colorSurface">@color/st_surface</item>
         <item name="editTextStyle">@style/DialogEditTextStyle</item>
     </style>
 
     <style name="DialogEditTextStyle" parent="Widget.Material3.TextInputEditText.OutlinedBox">
-        <item name="android:textColor">#1A1A1A</item>
-        <item name="android:textColorHint">#9E9E9E</item>
+        <item name="android:textColor">@color/st_text</item>
+        <item name="android:textColorHint">@color/st_text_3</item>
     </style>
 
     <style name="ShapeAppearance_App_MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
@@ -85,12 +109,12 @@
     </style>
 
     <style name="DialogButtonStylePrimary" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:textColor">#7E57C2</item>
+        <item name="android:textColor">@color/st_accent</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="DialogButtonStyleNeutral" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:textColor">#4A4A4A</item>
+        <item name="android:textColor">@color/st_text_2</item>
         <item name="android:textStyle">normal</item>
     </style>
 
@@ -100,7 +124,7 @@
         <item name="android:layout_marginStart">22dp</item>
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:layout_marginBottom">8dp</item>
-        <item name="android:textColor">#7E57C2</item>
+        <item name="android:textColor">@color/st_accent</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.06</item>

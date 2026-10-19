@@ -838,7 +838,6 @@ public class MainActivity extends AppCompatActivity {
 
     // ─── Look: dark (Obsidian) or light (Pearl) ─────────────────────────────
 
-    private static final String LOOK_PREFS = "dashboard_look";
     private boolean darkLook = true;
     /** Colours the layout gives the cards' text (the dark look), and what they become in the light look. */
     private static final int[][] LIGHT_TEXT = {
@@ -847,13 +846,11 @@ public class MainActivity extends AppCompatActivity {
     private final Map<View, Integer> layoutColour = new HashMap<>();
 
     private void chooseLook() {
-        String[] looks = {"Light  \u00b7  Pearl", "Dark  \u00b7  Obsidian"};
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_App_MaterialAlertDialog)
                 .setTitle("Appearance")
-                .setSingleChoiceItems(looks, darkLook ? 1 : 0, (d, which) -> {
-                    getSharedPreferences(LOOK_PREFS, MODE_PRIVATE).edit().putBoolean("dark", which == 1).apply();
+                .setSingleChoiceItems(Appearance.NAMES, Appearance.get(this), (d, which) -> {
                     d.dismiss();
-                    applyLook();
+                    Appearance.set(this, which); // the whole app redraws in the new look
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -864,7 +861,7 @@ public class MainActivity extends AppCompatActivity {
      * beads and week chips, the page behind and the navigation bar. Dark is the default.
      */
     private void applyLook() {
-        darkLook = getSharedPreferences(LOOK_PREFS, MODE_PRIVATE).getBoolean("dark", true);
+        darkLook = Appearance.isDark(this);
         int page = darkLook ? 0xFF17131D : 0xFFF6F2FB;
         binding.getRoot().setBackgroundColor(page);
         getWindow().setNavigationBarColor(page);

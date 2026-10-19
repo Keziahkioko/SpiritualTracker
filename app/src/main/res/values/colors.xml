@@ -2,4 +2,23 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- The app's palette, light look (Pearl). values-night/colors.xml holds the dark look
+         (Obsidian). Screens use these, so Appearance switches the whole app at once. -->
+    <color name="st_page">#F6F2FB</color>          <!-- screen background -->
+    <color name="st_surface">#FFFFFF</color>       <!-- cards, sheets, pop-ups -->
+    <color name="st_surface_alt">#F7F4FB</color>   <!-- quieter panels, inside cards -->
+    <color name="st_field">#FFFFFF</color>         <!-- text boxes -->
+    <color name="st_soft">#EDE5F8</color>          <!-- lavender fills: chips, Listen, tiles -->
+    <color name="st_stroke">#E6DFF0</color>        <!-- hairlines and card edges -->
+    <color name="st_text">#1C1A24</color>          <!-- main text -->
+    <color name="st_text_2">#5F5A6B</color>        <!-- secondary text -->
+    <color name="st_text_3">#8A8494</color>        <!-- hints, captions -->
+    <color name="st_accent">#7E57C2</color>        <!-- purple for labels, icons, links -->
+    <color name="st_accent_strong">#5E35B1</color> <!-- purple text that must stand out -->
+    <color name="st_accent_fill">#7E57C2</color>   <!-- purple button fills -->
+    <color name="st_on_accent">#FFFFFF</color>     <!-- text on purple -->
+    <color name="st_danger">#C62828</color>
+    <color name="st_success">#2E7D32</color>
+    <color name="st_scrim">#66000000</color>
 </resources>

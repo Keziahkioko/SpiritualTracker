@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- List cards across the app (3dp extra bottom padding for the edge). Dark look (Obsidian): a near-black edge below, a glossy charcoal face with a faint
+     purple light rising from the bottom, a shine along the top and a lavender rim. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#0B0A0F" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#34303B" android:endColor="#231F29" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.5" android:centerY="1.25"
+                android:gradientRadius="220dp" android:startColor="#38A23FB5" android:endColor="#00A23FB5" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:height="40dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#1FFFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:topLeftRadius="16dp" android:topRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="1dp" android:color="#4DC9A0FF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -80,6 +80,9 @@ public class BibleActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tvBibleDate)).setText(
                 new java.text.SimpleDateFormat("EEEE, d MMMM", java.util.Locale.getDefault()).format(new java.util.Date()));
 
+        SpringPress.on(cbRead, 0.95f);
+        SpringPress.on(btnSaveVerse, 0.92f);
+        SpringPress.on(btnNudge, 0.88f);
         listenToMyDay();
         fetchPartnerId();
         setupListeners();
@@ -156,8 +159,8 @@ public class BibleActivity extends AppCompatActivity {
         float density = getResources().getDisplayMetrics().density;
         cbRead.setElevation(read ? 8 * density : 0);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            cbRead.setOutlineSpotShadowColor(Color.parseColor("#8E24AA"));
-            cbRead.setOutlineAmbientShadowColor(Color.parseColor("#8E24AA"));
+            cbRead.setOutlineSpotShadowColor(0xFF8E44C9);
+            cbRead.setOutlineAmbientShadowColor(0xFF8E44C9);
         }
     }
 
@@ -169,7 +172,7 @@ public class BibleActivity extends AppCompatActivity {
     private void updatePartnerUI(boolean hasRead, String partnerVerseText) {
         if (hasRead) {
             tvPartnerStatus.setText(partnerName + " finished today's reading!");
-            tvPartnerStatus.setTextColor(Color.parseColor("#212121"));
+            tvPartnerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_text));
             tvPartnerStatusIcon.setVisibility(View.GONE);
             imgPartnerStatusIcon.setVisibility(View.VISIBLE);
             btnNudge.setVisibility(View.GONE);
@@ -183,7 +186,7 @@ public class BibleActivity extends AppCompatActivity {
             }
         } else {
             tvPartnerStatus.setText("Waiting for " + partnerName + "\u2026");
-            tvPartnerStatus.setTextColor(Color.parseColor("#616161"));
+            tvPartnerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_text_2));
             imgPartnerStatusIcon.setVisibility(View.GONE);
             tvPartnerStatusIcon.setVisibility(View.VISIBLE);
             tvPartnerStatusIcon.setText("⏳");
@@ -199,6 +202,7 @@ public class BibleActivity extends AppCompatActivity {
             setReadButton(isChecked);
             ActivityLog.setBible(currentUserId, isChecked, etVerse.getText().toString());
             if (isChecked) {
+                SparkleBurst.play(getWindow().getDecorView(), cbRead, null);
                 Toast.makeText(this, "Marked as Read!", Toast.LENGTH_SHORT).show();
                 if (partnerId != null) {
                     tellPartnerIRead();

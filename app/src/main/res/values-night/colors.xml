@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The dark look (Obsidian): deep plum page, charcoal cards, lavender accents. -->
+    <color name="st_page">#17131D</color>
+    <color name="st_surface">#28232F</color>
+    <color name="st_surface_alt">#211C27</color>
+    <color name="st_field">#2E2836</color>
+    <color name="st_soft">#352B47</color>
+    <color name="st_stroke">#3D3448</color>
+    <color name="st_text">#EEE9F5</color>
+    <color name="st_text_2">#BCB4CA</color>
+    <color name="st_text_3">#8F879D</color>
+    <color name="st_accent">#C9B2F0</color>
+    <color name="st_accent_strong">#D7C4FF</color>
+    <color name="st_accent_fill">#7E57C2</color>
+    <color name="st_on_accent">#FFFFFF</color>
+    <color name="st_danger">#FF8A80</color>
+    <color name="st_success">#7BCB98</color>
+    <color name="st_scrim">#99000000</color>
+</resources>

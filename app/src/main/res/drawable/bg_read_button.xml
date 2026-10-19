@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "I have read today" button: outlined before, header gradient once read. -->
+<!-- "I have read today": a soft outlined button before; the glossy purple (as Got it) once read. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true">
-        <shape android:shape="rectangle">
-            <!-- Same colours as the header: magenta on the left fading to deep violet. -->
-            <gradient
-                android:angle="0"
-                android:startColor="#8E24AA"
-                android:endColor="#5E35B1" />
-            <corners android:radius="18dp" />
-        </shape>
-    </item>
+    <item android:state_checked="true" android:drawable="@drawable/bg_got_it" />
     <item>
         <shape android:shape="rectangle">
             <solid android:color="#F8F2FB" />
             <stroke android:width="1.5dp" android:color="#CE93D8" />
-            <corners android:radius="18dp" />
+            <corners android:radius="26dp" />
         </shape>
     </item>
 </selector>
