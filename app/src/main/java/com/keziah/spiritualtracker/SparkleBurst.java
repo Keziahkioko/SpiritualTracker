@@ -31,7 +31,17 @@ final class SparkleBurst {
 
     /** Bursts from the centre of {@code from} (a view inside {@code host}), then runs {@code then}. */
     static void play(View host, View from, @Nullable Runnable then) {
-        host.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+        play(host, from, 42, 1f, DURATION, false, true, then);
+    }
+
+    /**
+     * A burst with its own size and pace: {@code count} sparkles, {@code speed} times the usual
+     * speed, lasting {@code duration} ms; {@code everyWay} sends them in all directions instead of
+     * mostly upwards; {@code haptic} gives a soft tap.
+     */
+    static void play(View host, View from, int count, float speed, long duration, boolean everyWay,
+                     boolean haptic, @Nullable Runnable then) {
+        if (haptic) host.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
         float scale = Settings.Global.getFloat(host.getContext().getContentResolver(),
                 Settings.Global.ANIMATOR_DURATION_SCALE, 1f);
         if (scale == 0f) {
@@ -43,10 +53,10 @@ final class SparkleBurst {
         from.getLocationInWindow(f);
         float cx = f[0] - h[0] + from.getWidth() / 2f, cy = f[1] - h[1] + from.getHeight() / 2f;
 
-        Burst burst = new Burst(cx, cy, host.getResources().getDisplayMetrics().density);
+        Burst burst = new Burst(cx, cy, host.getResources().getDisplayMetrics().density, count, speed, duration, everyWay);
         burst.setBounds(0, 0, host.getWidth(), host.getHeight());
         host.getOverlay().add(burst);
-        ValueAnimator a = ValueAnimator.ofFloat(0f, 1f).setDuration(DURATION);
+        ValueAnimator a = ValueAnimator.ofFloat(0f, 1f).setDuration(duration);
         a.setInterpolator(new LinearInterpolator());
         a.addUpdateListener(v -> { burst.t = (float) v.getAnimatedValue(); burst.invalidateSelf(); });
         a.addListener(new android.animation.AnimatorListenerAdapter() {
@@ -59,24 +69,29 @@ final class SparkleBurst {
     }
 
     private static final class Burst extends Drawable {
-        private static final int COUNT = 42;
+        final int count;
+        final long duration;
         final float cx, cy, dp;
-        final float[] vx = new float[COUNT], vy = new float[COUNT], spin = new float[COUNT], size = new float[COUNT];
-        final int[] color = new int[COUNT];
-        final boolean[] star = new boolean[COUNT];
+        final float[] vx, vy, spin, size;
+        final int[] color;
+        final boolean[] star;
         final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         final Path starPath = new Path();
         float t;
 
-        Burst(float cx, float cy, float dp) {
+        Burst(float cx, float cy, float dp, int count, float pace, long duration, boolean everyWay) {
             this.cx = cx;
             this.cy = cy;
             this.dp = dp;
+            this.count = count;
+            this.duration = duration;
+            vx = new float[count]; vy = new float[count]; spin = new float[count]; size = new float[count];
+            color = new int[count]; star = new boolean[count];
             Random r = new Random();
-            for (int i = 0; i < COUNT; i++) {
-                // Mostly upwards and outwards, like a little fountain.
-                double angle = Math.PI * (1.08 + r.nextDouble() * 0.84);
-                float speed = (260 + r.nextFloat() * 340) * dp;
+            for (int i = 0; i < count; i++) {
+                // Mostly upwards and outwards like a little fountain, or every way at once.
+                double angle = everyWay ? r.nextDouble() * Math.PI * 2 : Math.PI * (1.08 + r.nextDouble() * 0.84);
+                float speed = (260 + r.nextFloat() * 340) * dp * pace;
                 vx[i] = (float) Math.cos(angle) * speed;
                 vy[i] = (float) Math.sin(angle) * speed;
                 spin[i] = (r.nextFloat() - 0.5f) * 720f;
@@ -88,10 +103,10 @@ final class SparkleBurst {
 
         @Override
         public void draw(@NonNull Canvas canvas) {
-            float s = t * DURATION / 1000f;            // seconds
-            float gravity = 520 * dp;
+            float s = t * duration / 1000f;            // seconds
+            float gravity = 520 * dp * (DURATION / (float) duration) * (DURATION / (float) duration);
             int alpha = (int) (255 * Math.max(0f, 1f - t * t));
-            for (int i = 0; i < COUNT; i++) {
+            for (int i = 0; i < count; i++) {
                 float x = cx + vx[i] * s;
                 float y = cy + vy[i] * s + 0.5f * gravity * s * s;
                 paint.setColor(color[i]);

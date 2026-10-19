@@ -743,35 +743,48 @@ public class MainActivity extends AppCompatActivity {
         card.setScaleX(0.85f);
         card.setScaleY(0.85f);
         card.setAlpha(0f);
-        card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(450).setStartDelay(250)
-                .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
-                .withEndAction(() -> {
-                    SparkleBurst.play(getWindow().getDecorView(), card, null);
-                    celebrateDashboard();
-                })
+        card.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(700).setStartDelay(300)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(1.4f))
+                .withEndAction(this::celebrateDashboard)
                 .start();
     }
 
     /**
-     * With the sparkles: the four tiles bounce one after another, then the circles in Today's
-     * progress ripple down in a wave.
+     * The celebration, unhurried: the four tiles bounce together; the ticks in Today's progress
+     * bounce one after another, then all together; then sparkles burst out of every tile and every
+     * circle across the whole screen.
      */
     private void celebrateDashboard() {
         View[] tiles = {binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory};
-        for (int i = 0; i < tiles.length; i++) bounce(tiles[i], i * 90L, 1.07f);
         View[] dots = {binding.progressBibleMe, binding.progressBiblePartner, binding.progressPrayerMe,
                 binding.progressPrayerPartner, binding.progressJournalMe, binding.progressJournalPartner,
                 binding.progressMemorizeMe, binding.progressMemorizePartner};
-        for (int i = 0; i < dots.length; i++) bounce(dots[i], 380 + (i / 2) * 90L + (i % 2) * 40L, 1.3f);
+        // 1. All four tiles together.
+        for (View t : tiles) bounce(t, 200, 1.06f, 380, 700);
+        // 2. The ticks one by one, down the list.
+        long start = 1300;
+        for (int i = 0; i < dots.length; i++) bounce(dots[i], start + i * 220L, 1.35f, 220, 420);
+        // 3. Then all of them at once.
+        long together = start + dots.length * 220L + 350;
+        for (View d : dots) bounce(d, together, 1.35f, 260, 520);
+        // 4. Sparkles out of every tile and every circle, over the whole screen.
+        View screen = getWindow().getDecorView();
+        screen.postDelayed(() -> {
+            if (isFinishing()) return;
+            screen.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM);
+            for (View t : tiles) SparkleBurst.play(screen, t, 16, 0.75f, 1800, true, false, null);
+            for (View d : dots) SparkleBurst.play(screen, d, 8, 0.6f, 1700, true, false, null);
+            SparkleBurst.play(screen, binding.cardBothDone, 24, 0.85f, 1900, true, false, null);
+        }, together + 450);
     }
 
-    private static void bounce(View v, long delay, float peak) {
-        v.animate().cancel();
-        v.animate().scaleX(peak).scaleY(peak).setStartDelay(delay).setDuration(150)
+    /** Grows to {@code peak} over {@code up} ms, then springs back over {@code down} ms. */
+    private static void bounce(View v, long delay, float peak, long up, long down) {
+        v.postDelayed(() -> v.animate().scaleX(peak).scaleY(peak).setStartDelay(0).setDuration(up)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setStartDelay(0).setDuration(380)
-                        .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start())
-                .start();
+                .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(down)
+                        .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start())
+                .start(), delay);
     }
 
     // ─── Light sweep across the tiles ─────────────────────────────────────────
