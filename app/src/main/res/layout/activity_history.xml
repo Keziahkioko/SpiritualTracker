@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="16dp"
-                android:background="@drawable/bg_tab_group"
+                android:background="@drawable/bg_frost_group"
                 android:orientation="horizontal"
                 android:padding="4dp">
 
@@ -76,10 +76,10 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="@drawable/tab_active"
+                    android:background="@drawable/bg_frost_tab"
                     android:gravity="center"
                     android:text="Me"
-                    android:textColor="@color/st_accent_strong"
+                    android:textColor="#4527A0"
                     android:textStyle="bold" />
 
                 <TextView
@@ -89,7 +89,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Partner"
-                    android:textColor="@color/st_text_2" />
+                    android:textColor="#E6FFFFFF" />
 
                 <TextView
                     android:id="@+id/tabHistoryUs"
@@ -98,7 +98,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Us"
-                    android:textColor="@color/st_text_2" />
+                    android:textColor="#E6FFFFFF" />
             </LinearLayout>
         </LinearLayout>
 

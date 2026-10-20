@@ -221,8 +221,9 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void styleTab(TextView tab, boolean active) {
-        tab.setBackgroundResource(active ? R.drawable.tab_active : 0);
-        tab.setTextColor(active ? k(0xFF4527A0) : k(0xFF5F5F64));
+        // On the purple header in either look: a white pill for the chosen tab, white text for the rest.
+        tab.setBackgroundResource(active ? R.drawable.bg_frost_tab : 0);
+        tab.setTextColor(active ? 0xFF4527A0 : 0xE6FFFFFF);
         tab.setTypeface(null, active ? Typeface.BOLD : Typeface.NORMAL);
     }
 
@@ -402,7 +403,7 @@ public class HistoryActivity extends AppCompatActivity {
         box.addView(name);
 
         if (r == null || r.doneCount() == 0 && !r.prayedForPartner) {
-            box.addView(detailLine(0xFFBDBDBD, "Nothing recorded this day"));
+            box.addView(detailLine(k(0xFFBDBDBD), "Nothing recorded this day"));
             return;
         }
 
@@ -548,7 +549,7 @@ public class HistoryActivity extends AppCompatActivity {
             chip.setPadding(0, dp(7), 0, dp(7));
             GradientDrawable g = new GradientDrawable();
             g.setCornerRadius(dp(16));
-            if (d == i) g.setColor(TEXT_COLORS[d]); else { g.setColor(k(Color.WHITE)); g.setStroke(dp(1), k(0xFFDDD5EA)); }
+            if (d == i) g.setColor(dark ? COLORS[d] : TEXT_COLORS[d]); else { g.setColor(k(Color.WHITE)); g.setStroke(dp(1), k(0xFFDDD5EA)); }
             chip.setBackground(g);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             if (d > 0) lp.setMarginStart(dp(6));
@@ -670,7 +671,7 @@ public class HistoryActivity extends AppCompatActivity {
         LinearLayout track = new LinearLayout(this);
         GradientDrawable t = new GradientDrawable();
         t.setCornerRadius(dp(5));
-        t.setColor(0xFFF1EDF7);
+        t.setColor(k(0xFFF1EDF7));
         track.setBackground(t);
         track.setWeightSum(length);
         track.setLayoutParams(new LinearLayout.LayoutParams(0, dp(10), 1f));
@@ -831,7 +832,7 @@ public class HistoryActivity extends AppCompatActivity {
         col.setPadding(0, dp(6), 0, dp(6));
         if (weekPick == discipline) {
             GradientDrawable bg = new GradientDrawable();
-            bg.setColor(0xFFF6F2FB);
+            bg.setColor(k(0xFFF6F2FB));
             bg.setCornerRadius(dp(16));
             col.setBackground(bg);
         }
@@ -849,7 +850,7 @@ public class HistoryActivity extends AppCompatActivity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         View line = new View(this);
-        line.setBackgroundColor(0xFFF0EBF6);
+        line.setBackgroundColor(k(0xFFF0EBF6));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
         lp.setMargins(dp(8), dp(10), dp(8), 0);
         box.addView(line, lp);
@@ -901,13 +902,13 @@ public class HistoryActivity extends AppCompatActivity {
                 mark.setText("\u2713");
                 mark.setTextColor(Color.WHITE);
             } else if (future) {
-                circle.setColor(0xFFF4F1F8);
+                circle.setColor(k(0xFFF4F1F8));
             } else {
                 circle.setColor(k(Color.WHITE));
                 circle.setStroke(dp(isToday ? 2 : 1), isToday ? color : k(0xFFD9D3E3));
                 if (!isToday) {
                     mark.setText("\u2013");
-                    mark.setTextColor(0xFFB9B2C4);
+                    mark.setTextColor(k(0xFFB9B2C4));
                 }
             }
             mark.setBackground(circle);
