@@ -140,7 +140,7 @@
             android:textColor="@color/st_danger"
             android:textAllCaps="false"
             android:textSize="14sp"
-            app:strokeColor="#FFCDD2"
+            app:strokeColor="@color/st_danger"
             app:icon="@drawable/ic_st_trash"
             app:iconTint="@color/st_danger"/>
     </LinearLayout>

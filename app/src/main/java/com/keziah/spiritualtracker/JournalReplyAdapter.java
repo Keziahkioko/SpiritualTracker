@@ -124,9 +124,11 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
         int bubbleColor = isMine ? 0xFF7E57C2 : androidx.core.content.ContextCompat.getColor(cx, R.color.st_bubble_theirs);
         int primaryTextColor = isMine ? Color.WHITE : androidx.core.content.ContextCompat.getColor(cx, R.color.st_text);
         int secondaryTextColor = isMine ? Color.parseColor("#E0E0E0") : androidx.core.content.ContextCompat.getColor(cx, R.color.st_text_3);
-        int accentColor = Color.parseColor("#7E57C2");
-        int iconTintColor = isMine ? accentColor : Color.WHITE;
-        int btnBgColor = isMine ? Color.WHITE : accentColor;
+        // Text accents use the lighter accent in Dark; the play button keeps the solid purple fill.
+        int accentColor = androidx.core.content.ContextCompat.getColor(cx, R.color.st_accent);
+        int fillColor = androidx.core.content.ContextCompat.getColor(cx, R.color.st_accent_fill);
+        int iconTintColor = isMine ? fillColor : Color.WHITE;
+        int btnBgColor = isMine ? Color.WHITE : fillColor;
 
         holder.messageBubble.setBackgroundTintList(ColorStateList.valueOf(bubbleColor));
         holder.tvReplyText.setTextColor(primaryTextColor);
@@ -180,7 +182,7 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
             if (isMine) {
                 holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(cx, R.color.st_surface)));
             } else {
-                holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D1C4E9")));
+                holder.tvReaction.setBackgroundTintList(ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(cx, R.color.st_soft)));
             }
         } else {
             holder.tvReaction.setVisibility(View.GONE);

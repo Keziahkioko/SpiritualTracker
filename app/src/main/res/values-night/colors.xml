@@ -30,4 +30,5 @@
     <color name="st_mastered">#E6A2E2</color>  <!-- a mastered verse -->
     <color name="st_soft_button">#4A3B66</color>  <!-- everyday main buttons -->
     <color name="st_soft_button_text">#EFE6FF</color>
+    <color name="st_quote_bg">#1FFFFFFF</color>  <!-- behind a quoted message -->
 </resources>

@@ -160,12 +160,10 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSaveVerse"
+                        style="@style/Widget.ST.SoftButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Save Note"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="@color/st_accent_fill"
-                        app:cornerRadius="24dp"
                         android:layout_gravity="end"
                         android:paddingHorizontal="24dp"
                         android:paddingVertical="10dp"
