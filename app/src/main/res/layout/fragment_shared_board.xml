@@ -58,6 +58,7 @@
 
         <!-- ===== SCROLLABLE CONTENT BELOW CURVE ===== -->
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/boardScroll"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -212,23 +213,21 @@
     </LinearLayout>
 
     <!-- FAB pinned to bottom-end of CoordinatorLayout -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.ST.GlossyButton"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddRequest"
         android:layout_width="wrap_content"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         android:text="New Request"
-        android:fontFamily="sans-serif-medium"
-        app:icon="@android:drawable/ic_input_add"
+        app:icon="@drawable/ic_st_add"
         app:iconTint="#FFFFFF"
-        android:outlineSpotShadowColor="#8E44C9"
-        android:outlineAmbientShadowColor="#8E44C9"
-        android:paddingStart="20dp"
-        android:paddingEnd="24dp"
-        android:elevation="8dp"
-        app:iconPadding="10dp"
-        android:stateListAnimator="@null"/>
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        app:backgroundTint="@color/st_accent_fill"
+        app:elevation="6dp"
+        android:outlineSpotShadowColor="#9C6BE8"
+        android:outlineAmbientShadowColor="#9C6BE8"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

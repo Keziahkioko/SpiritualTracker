@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#5E35B1"/>
-    <corners
-        android:topLeftRadius="28dp"
-        android:topRightRadius="28dp"/>
-</shape>
+<!-- Header of the Prayer pop-ups: an aurora from sapphire through the app's violet into magenta,
+     with a soft light at the top right and a magenta bloom at the bottom. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="315" android:startColor="#3F5FD0" android:centerColor="#6A3CC8" android:endColor="#A8409F" />
+            <corners android:topLeftRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.9" android:centerY="0.0" android:gradientRadius="220dp"
+                android:startColor="#33FFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:topLeftRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.15" android:centerY="1.1" android:gradientRadius="200dp"
+                android:startColor="#334FA3FF" android:endColor="#004FA3FF" />
+            <corners android:topLeftRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+</layer-list>

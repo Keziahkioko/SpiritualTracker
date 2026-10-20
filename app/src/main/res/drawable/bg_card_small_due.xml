@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A verse that's due today, Pearl look: the list card with a soft lavender rim and a faint
+     lavender light rising inside, so it stands out without shouting. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#DDD0F2" android:endColor="#ECD6EC" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="315" android:startColor="#FFFFFF" android:centerColor="#FBF8FF" android:endColor="#F1F7FF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:height="40dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#F2FFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:topLeftRadius="16dp" android:topRightRadius="16dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.5" android:centerY="1.2"
+                android:gradientRadius="200dp" android:startColor="#40B39DDB" android:endColor="#00B39DDB" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item android:bottom="3dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="1.5dp" android:color="#C9B2F0" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</layer-list>

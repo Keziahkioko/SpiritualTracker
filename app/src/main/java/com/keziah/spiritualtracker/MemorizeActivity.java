@@ -62,7 +62,7 @@ public class MemorizeActivity extends AppCompatActivity {
     private TextView                     tvHeaderTitle;
     private TextView                     tvTogglePartnerLabel; // ← text label inside the FrameLayout pill
     private View                         btnTogglePartner;     // ← now View, not TextView
-    private com.google.android.material.button.MaterialButton fabAddVerse;
+    private com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton fabAddVerse;
     private View                         layoutPartnerPanel;
 
     // Data
@@ -158,6 +158,7 @@ public class MemorizeActivity extends AppCompatActivity {
         adapter = new VerseAdapter(displayList, this::onVerseTapped, this::onVerseLongTapped, this::showTogetherDialog);
         rvVerses.setLayoutManager(new LinearLayoutManager(this));
         rvVerses.setAdapter(adapter);
+        FabScroll.attach(fabAddVerse, rvVerses);
 
         fabAddVerse.setOnClickListener(v -> showAddChoiceDialog());
 
@@ -989,7 +990,7 @@ public class MemorizeActivity extends AppCompatActivity {
         Runnable showAnswer = () -> {
             intro.setVisibility(View.GONE);
             ((TextView) dv.findViewById(R.id.tvQuizPrompt)).setText("How did you do?");
-            tvText.setText(text);
+            WordReveal.show(tvText, text); // the verse fades in word by word
             tvText.setVisibility(View.VISIBLE);
             btnReveal.setVisibility(View.GONE);
             dv.findViewById(R.id.rowHints).setVisibility(View.GONE);
@@ -1173,9 +1174,30 @@ public class MemorizeActivity extends AppCompatActivity {
             topBar.setPadding(topBar.getPaddingLeft(), top + sys.top, topBar.getPaddingRight(), topBar.getPaddingBottom());
             bottomBar.setPadding(bottomBar.getPaddingLeft(), bottomBar.getPaddingTop(), bottomBar.getPaddingRight(),
                     bottom + Math.max(sys.bottom, ime.bottom));
+            // No bottom bar (e.g. a partner's verse): the scrolling page keeps clear of the navigation bar itself.
+            View scroll = findScroll(v);
+            if (scroll != null) {
+                if (scroll.getTag(R.id.tag_pad_bottom) == null) scroll.setTag(R.id.tag_pad_bottom, scroll.getPaddingBottom());
+                int base = (int) scroll.getTag(R.id.tag_pad_bottom);
+                int extra = bottomBar.getVisibility() == View.GONE ? Math.max(sys.bottom, ime.bottom) : 0;
+                scroll.setPadding(scroll.getPaddingLeft(), scroll.getPaddingTop(), scroll.getPaddingRight(), base + extra);
+            }
             return androidx.core.view.WindowInsetsCompat.CONSUMED;
         });
         return dialog;
+    }
+
+    /** The first scrolling page inside a full screen. */
+    private static View findScroll(View v) {
+        if (v instanceof androidx.core.widget.NestedScrollView || v instanceof android.widget.ScrollView) return v;
+        if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) {
+                View f = findScroll(g.getChildAt(i));
+                if (f != null) return f;
+            }
+        }
+        return null;
     }
 
     // ─── Type it out ─────────────────────────────────────────────────────────
@@ -1570,6 +1592,7 @@ public class MemorizeActivity extends AppCompatActivity {
 
         if (viewingPartner) {
             v.findViewById(R.id.detailBottomBar).setVisibility(View.GONE);
+            androidx.core.view.ViewCompat.requestApplyInsets(v); // so the page pads itself instead
         } else {
             View delete = v.findViewById(R.id.btnDetailDelete);
             delete.setVisibility(View.VISIBLE);
@@ -1772,14 +1795,21 @@ public class MemorizeActivity extends AppCompatActivity {
             h.tvText.setText(v.getText());
 
             int idx = v.getIntervalIndex() != null ? v.getIntervalIndex() : 0;
-            if (h.tvProgress != null)
-                h.tvProgress.setText("Day " + (idx + 1) + " / " + INTERVALS.length);
+            boolean isDue  = MemorizeActivity.isDue(v);
+            boolean isMast = "mastered".equals(v.getStage());
+            if (h.tvProgress != null) h.tvProgress.setVisibility(View.GONE);
+            if (h.dots != null) {
+                h.dots.setVisibility(View.VISIBLE);
+                h.dots.set(INTERVALS.length, idx, isMast);
+            }
+            h.tvStage.setCompoundDrawablesRelativeWithIntrinsicBounds(isMast ? R.drawable.ic_mastered_seal : 0, 0, 0, 0);
+            // What needs doing today glows softly; the rest stay calm.
+            boolean glow = !partnerMode && (isDue || MemorizeActivity.needsLearning(v));
+            h.face.setBackgroundResource(glow ? R.drawable.bg_card_small_due : R.drawable.bg_card_small);
 
             if (h.tvShared != null)
                 h.tvShared.setVisibility(v.isShared() && !partnerMode ? View.VISIBLE : View.GONE);
 
-            boolean isDue  = MemorizeActivity.isDue(v);
-            boolean isMast = "mastered".equals(v.getStage());
 
             if (isMast) {
                 boolean refreshDue = isDue && !partnerMode;
@@ -1828,7 +1858,13 @@ public class MemorizeActivity extends AppCompatActivity {
             boolean due = t.due();
             h.tvReference.setText(t.title + " · " + t.label());
             h.tvText.setText(t.text());
-            if (h.tvProgress != null) h.tvProgress.setText(t.parts.size() + " parts");
+            if (h.tvProgress != null) {
+                h.tvProgress.setVisibility(View.VISIBLE);
+                h.tvProgress.setText(t.parts.size() + " parts");
+            }
+            if (h.dots != null) h.dots.setVisibility(View.GONE);
+            h.tvStage.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
+            h.face.setBackgroundResource(due && !partnerMode ? R.drawable.bg_card_small_due : R.drawable.bg_card_small);
             if (h.tvShared != null) h.tvShared.setVisibility(View.GONE);
             h.tvStage.setText(due ? "Say them as one" : "Next: " + new SimpleDateFormat("d MMM", Locale.getDefault())
                     .format(t.anchor.getTogetherNextDate().toDate()));
@@ -1851,7 +1887,8 @@ public class MemorizeActivity extends AppCompatActivity {
 
         static class VerseVH extends RecyclerView.ViewHolder {
             TextView tvReference, tvText, tvStage, tvDuePill, tvProgress, tvShared;
-            View     viewStripe;
+            View     viewStripe, face;
+            StepDots dots;
             VerseVH(@NonNull View v) {
                 super(v);
                 tvReference = v.findViewById(R.id.tvVerseReference);
@@ -1861,6 +1898,8 @@ public class MemorizeActivity extends AppCompatActivity {
                 tvProgress  = v.findViewById(R.id.tvVerseProgress);
                 tvShared    = v.findViewById(R.id.tvVerseShared);
                 viewStripe  = v.findViewById(R.id.viewVerseStripe);
+                dots        = v.findViewById(R.id.stepDots);
+                face        = ((ViewGroup) v).getChildAt(0); // the glossy face inside the card
             }
         }
 

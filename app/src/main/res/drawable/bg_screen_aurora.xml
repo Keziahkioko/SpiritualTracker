@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-screen pages (Review, Learn, Add passage, Verse details), Pearl look: the page with a soft
+     lavender aurora at the top that fades into it, and a faint blush of magenta at the top right. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><color android:color="@color/st_page" /></item>
+    <item android:height="340dp" android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#3D9A7BDB" android:centerColor="#149A7BDB" android:endColor="#00F6F2FB" />
+        </shape>
+    </item>
+    <item android:height="300dp" android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="1.0" android:centerY="0.0" android:gradientRadius="260dp"
+                android:startColor="#33D58BD0" android:endColor="#00D58BD0" />
+        </shape>
+    </item>
+</layer-list>

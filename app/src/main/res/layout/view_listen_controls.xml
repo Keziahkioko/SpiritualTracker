@@ -58,6 +58,24 @@
             app:iconTint="@null" />
     </LinearLayout>
 
+    <!-- While playing: the round, and in Repeat after me the phrase to say back -->
+    <TextView
+        android:id="@+id/tvListenStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_learn_text"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.2"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/st_text"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <!-- Speed and how many times: compact pills, tap to change -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

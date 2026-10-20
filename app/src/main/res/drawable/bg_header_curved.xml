@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Memorize header: the app's purple gradient with a soft curved bottom edge, a glow of light
+     at the top right and a faint magenta bloom at the bottom left. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="135" android:startColor="#5E35B1" android:endColor="#8E24AA" />
+            <corners android:bottomLeftRadius="28dp" android:bottomRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.95" android:centerY="0.05" android:gradientRadius="260dp"
+                android:startColor="#38FFFFFF" android:endColor="#00FFFFFF" />
+            <corners android:bottomLeftRadius="28dp" android:bottomRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.0" android:centerY="1.0" android:gradientRadius="220dp"
+                android:startColor="#40D16AB5" android:endColor="#00D16AB5" />
+            <corners android:bottomLeftRadius="28dp" android:bottomRightRadius="28dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -38,7 +38,7 @@ public class MySpaceFragment extends Fragment {
     private RecyclerView rvMyPrayers;
     private LinearLayout layoutMySpaceEmpty;
     private TextView tvActiveCount, tvAnsweredCount;
-    private com.google.android.material.button.MaterialButton fabAddPersonalPrayer;
+    private com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton fabAddPersonalPrayer;
 
     private PersonalPrayerAdapter adapter;
     private List<PrayerRequest> personalList;
@@ -69,6 +69,7 @@ public class MySpaceFragment extends Fragment {
         tvActiveCount     = view.findViewById(R.id.tvActiveCount);
         tvAnsweredCount   = view.findViewById(R.id.tvAnsweredCount);
         fabAddPersonalPrayer = view.findViewById(R.id.fabAddPersonalPrayer);
+        FabScroll.attach(fabAddPersonalPrayer, view.findViewById(R.id.mySpaceScroll));
         StatusBarUtil.padTop(view.findViewById(R.id.mySpaceHeader));
 
         personalList = new ArrayList<>();

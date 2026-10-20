@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-screen pages, Obsidian look: the dark page with a violet aurora glowing at the top and
+     fading into it, and a touch of magenta light at the top right. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><color android:color="@color/st_page" /></item>
+    <item android:height="360dp" android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#5C6A3CC8" android:centerColor="#1F6A3CC8" android:endColor="#0017131D" />
+        </shape>
+    </item>
+    <item android:height="320dp" android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="1.0" android:centerY="0.0" android:gradientRadius="280dp"
+                android:startColor="#40A23FB5" android:endColor="#00A23FB5" />
+        </shape>
+    </item>
+</layer-list>

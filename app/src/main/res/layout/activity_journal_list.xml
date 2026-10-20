@@ -180,25 +180,24 @@
             android:paddingBottom="100dp"
             android:clipToPadding="false"/>
 
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ST.GlossyButton"
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabAdd"
             android:layout_width="wrap_content"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="24dp"
             android:text="New Entry"
-            app:icon="@android:drawable/ic_input_add"
+            app:icon="@drawable/ic_st_add"
             app:iconTint="#FFFFFF"
-            android:outlineSpotShadowColor="#8E44C9"
-            android:outlineAmbientShadowColor="#8E44C9"
             android:contentDescription="New journal entry"
-            android:paddingStart="20dp"
-            android:paddingEnd="24dp"
-            android:elevation="8dp"
-            app:iconPadding="10dp"
-            android:stateListAnimator="@null"/>
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            app:backgroundTint="@color/st_accent_fill"
+            app:elevation="6dp"
+            android:outlineSpotShadowColor="#9C6BE8"
+            android:outlineAmbientShadowColor="#9C6BE8"/>
 
     </FrameLayout>
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- A scrolling page's own bottom padding, kept so window insets can be added to it. -->
+    <item name="tag_pad_bottom" type="id" />
+</resources>

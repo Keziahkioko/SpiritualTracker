@@ -6,7 +6,7 @@
     <!-- Lilac edge showing below the face -->
     <item>
         <shape android:shape="rectangle">
-            <gradient android:angle="0" android:startColor="#DDD0F2" android:endColor="#ECD6EC" />
+            <gradient android:angle="0" android:startColor="#D6C8EE" android:endColor="#E7CFE8" />
             <corners android:radius="24dp" />
         </shape>
     </item>
@@ -16,8 +16,8 @@
             <gradient
                 android:angle="315"
                 android:startColor="#FFFFFF"
-                android:centerColor="#FBF8FF"
-                android:endColor="#F1F7FF" />
+                android:centerColor="#EFE6FF"
+                android:endColor="#E3F1FF" />
             <corners android:radius="24dp" />
         </shape>
     </item>
@@ -29,7 +29,7 @@
                 android:centerX="1.0"
                 android:centerY="1.0"
                 android:gradientRadius="180dp"
-                android:startColor="#66FBE6F3"
+                android:startColor="#80FBE3F2"
                 android:endColor="#00FBE6F3" />
             <corners android:radius="24dp" />
         </shape>

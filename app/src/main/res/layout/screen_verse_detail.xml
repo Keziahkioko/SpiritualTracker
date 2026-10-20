@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/st_page"
+    android:background="@drawable/bg_screen_aurora"
     android:orientation="vertical">
 
     <LinearLayout
@@ -274,7 +274,7 @@
             app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ST.GlossyButton"
+            style="@style/Widget.ST.SoftButton"
             android:id="@+id/btnDetailPractise"
             android:layout_width="0dp"
             android:layout_height="52dp"
@@ -285,8 +285,6 @@
             android:letterSpacing="0"
             android:text="Practise"
             android:textAllCaps="false"
-            android:textSize="15sp"
-            android:outlineSpotShadowColor="#8E44C9"
-            android:outlineAmbientShadowColor="#8E44C9" />
+            android:textSize="15sp" />
     </LinearLayout>
 </LinearLayout>

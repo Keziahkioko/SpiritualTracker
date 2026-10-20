@@ -23,10 +23,10 @@
             android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_header_gradient"
+            android:background="@drawable/bg_header_curved"
             android:orientation="vertical"
             android:paddingTop="8dp"
-            android:paddingBottom="28dp"
+            android:paddingBottom="22dp"
             android:paddingStart="20dp"
             android:paddingEnd="20dp">
 
@@ -57,7 +57,7 @@
                     android:id="@+id/btnTogglePartner"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:background="@drawable/bg_partner_toggle"
+                    android:background="@drawable/bg_frost_pill"
                     android:foreground="?attr/selectableItemBackground"
                     android:paddingHorizontal="16dp"
                     android:visibility="gone">
@@ -68,7 +68,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:text="Partner's verses"
-                        android:textColor="@color/st_accent"
+                        android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
                 </FrameLayout>
@@ -101,19 +101,19 @@
                 android:text="@string/memorize_subtitle"
                 android:textColor="#EDE7F6"
                 android:textSize="13sp"
-                android:layout_marginBottom="20dp"/>
+                android:layout_marginBottom="18dp"/>
 
-            <!-- Stats row -->
+            <!-- Stats: frosted tiles, as on the Prayer Vault header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-
+                android:orientation="horizontal">
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="72dp"
                     android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_vault_stat"
                     android:gravity="center"
                     android:orientation="vertical">
                     <TextView
@@ -122,25 +122,23 @@
                         android:layout_height="wrap_content"
                         android:text="0"
                         android:textColor="#FFFFFF"
-                        android:textSize="32sp"
+                        android:textSize="26sp"
                         android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/due_today"
+                        android:text="DUE TODAY"
                         android:textColor="#EDE7F6"
-                        android:textSize="11sp"/>
+                        android:letterSpacing="0.12"
+                        android:textSize="10sp"
+                        android:textStyle="bold"/>
                 </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="36dp"
-                    android:background="#4DFFFFFF"/>
-
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="72dp"
                     android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_vault_stat"
                     android:gravity="center"
                     android:orientation="vertical">
                     <TextView
@@ -149,14 +147,16 @@
                         android:layout_height="wrap_content"
                         android:text="0"
                         android:textColor="#FFFFFF"
-                        android:textSize="32sp"
+                        android:textSize="26sp"
                         android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/mastered"
+                        android:text="MASTERED"
                         android:textColor="#EDE7F6"
-                        android:textSize="11sp"/>
+                        android:letterSpacing="0.12"
+                        android:textSize="10sp"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -271,23 +271,22 @@
         android:background="@drawable/bg_header_gradient" />
 
     <!-- FAB -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.ST.GlossyButton"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddVerse"
         android:layout_width="wrap_content"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="24dp"
         android:text="@string/btn_add_verse"
-        app:icon="@android:drawable/ic_input_add"
+        app:icon="@drawable/ic_st_add"
         app:iconTint="#FFFFFF"
-        android:outlineSpotShadowColor="#8E44C9"
-        android:outlineAmbientShadowColor="#8E44C9"
-        android:paddingStart="20dp"
-        android:paddingEnd="24dp"
-        android:elevation="8dp"
-        app:iconPadding="10dp"
-        android:stateListAnimator="@null"/>
+        android:textColor="#FFFFFF"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        app:backgroundTint="@color/st_accent_fill"
+        app:elevation="6dp"
+        android:outlineSpotShadowColor="#9C6BE8"
+        android:outlineAmbientShadowColor="#9C6BE8"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

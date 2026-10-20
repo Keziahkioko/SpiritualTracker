@@ -890,7 +890,7 @@ public class MainActivity extends AppCompatActivity {
             card.getChildAt(0).setBackgroundResource(darkLook ? R.drawable.bg_obsidian_card : R.drawable.bg_pearl_card);
             recolour(card);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                int glow = darkLook ? 0xFF8E44C9 : 0xFFB39DDB;
+                int glow = darkLook ? 0xFF8E44C9 : 0xFFCFC2EC; // the tiles' glow, so the dashboard reads as one
                 card.setOutlineSpotShadowColor(glow);
                 card.setOutlineAmbientShadowColor(glow);
             }

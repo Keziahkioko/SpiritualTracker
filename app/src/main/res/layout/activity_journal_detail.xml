@@ -125,8 +125,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:background="@color/st_soft"
-                            android:padding="16dp"
+                            android:background="@drawable/bg_voice_note"
+                            android:paddingStart="16dp"
+                            android:paddingTop="14dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
                             android:layout_marginBottom="20dp"
                             android:visibility="gone">
 
@@ -144,14 +147,21 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
                                         android:src="@drawable/ic_st_play"
-                                        android:background="@drawable/circle_background"
-                                        android:backgroundTint="@color/st_accent_fill"
+                                        android:background="@drawable/bg_play_orb"
+                                        android:elevation="4dp"
+                                        android:outlineSpotShadowColor="#9C6BE8"
+                                        android:outlineAmbientShadowColor="#9C6BE8"
+                                        android:padding="12dp"
+                                        android:scaleType="fitCenter"
                                         app:tint="#FFFFFF" />
                                     <ProgressBar
                                         android:id="@+id/pbEntryDownload"
                                         style="?android:attr/progressBarStyleSmall"
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
+                                        android:padding="10dp"
+                                        android:elevation="5dp"
+                                        android:indeterminateTint="#FFFFFF"
                                         android:visibility="gone"/>
                                 </FrameLayout>
 
@@ -186,9 +196,13 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:progressBackgroundTint="@color/st_stroke"
-                                android:progressTint="@color/st_accent"
-                                android:thumbTint="@color/st_accent" />
+                                android:maxHeight="5dp"
+                                android:minHeight="5dp"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:splitTrack="false"
+                                android:progressDrawable="@drawable/seek_voice"
+                                android:thumb="@drawable/seek_voice_thumb" />
                         </LinearLayout>
 
                         <View

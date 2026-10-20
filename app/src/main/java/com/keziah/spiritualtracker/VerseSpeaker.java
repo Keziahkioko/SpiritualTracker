@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,12 +21,13 @@ import java.util.Locale;
 /**
  * Reads a verse aloud with the phone's own text-to-speech voice (offline, free).
  * "Listen" reads reference, verse, reference; "Repeat after me" reads a phrase at a time
- * and leaves a pause to say it back. Speed and how many times to play are remembered.
+ * and leaves a pause to say it back, showing the phrase. Speed and how many times to play are
+ * changed by tapping their pills, and remembered.
  */
 public final class VerseSpeaker {
 
     private static final float[] SPEEDS = {0.5f, 0.75f, 1f, 1.25f};
-    private static final int[]   TIMES  = {1, 3, 5};
+    private static final int[]   TIMES  = {1, 2, 3, 5};
     private static final String  PREFS  = "memorize_audio";
     private static final String  END    = "end:";
 
@@ -42,6 +44,9 @@ public final class VerseSpeaker {
     private String playRef, playText;
     private boolean playEcho;
     private volatile int atRound, atLine;
+    /** The line under the buttons that says which round it is and, in Repeat after me, the phrase. */
+    private TextView status;
+    private final java.util.Map<String, String> phraseOf = new java.util.concurrent.ConcurrentHashMap<>();
 
     public VerseSpeaker(Context context) {
         this.context = context.getApplicationContext();
@@ -53,8 +58,7 @@ public final class VerseSpeaker {
     public void bind(View controls, String reference, String text) {
         MaterialButton listen = controls.findViewById(R.id.btnListen);
         MaterialButton echo   = controls.findViewById(R.id.btnEcho);
-        TextView speed        = controls.findViewById(R.id.tvSpeed);
-        TextView times        = controls.findViewById(R.id.tvTimes);
+        TextView statusLine   = controls.findViewById(R.id.tvListenStatus);
 
         Runnable reset = () -> {
             listen.setText("Listen");
@@ -63,12 +67,13 @@ public final class VerseSpeaker {
             echo.setText("Repeat after me");
             echo.setIconResource(R.drawable.ic_repeat_after);
             echo.setIconTint(null);
+            if (statusLine != null) statusLine.setVisibility(View.GONE);
         };
         reset.run();
-        showSettings(speed, times);
 
-        listen.setOnClickListener(v -> toggle(listen, reference, text, false, reset));
-        echo.setOnClickListener(v -> toggle(echo, reference, text, true, reset));
+        TextView speed = controls.findViewById(R.id.tvSpeed);
+        TextView times = controls.findViewById(R.id.tvTimes);
+        showSettings(speed, times);
         speed.setOnClickListener(v -> {
             prefs().edit().putInt("speed", (speedIndex() + 1) % SPEEDS.length).apply();
             showSettings(speed, times);
@@ -76,25 +81,49 @@ public final class VerseSpeaker {
         });
         times.setOnClickListener(v -> {
             // No restart: the reading carries on and the new count is used when this round ends.
-            prefs().edit().putInt("times", (timesIndex() + 1) % TIMES.length).apply();
+            prefs().edit().putInt("playTimes", (timesIndex() + 1) % TIMES.length).apply();
             showSettings(speed, times);
+            showStatus(null);
         });
-    }
 
-    private void toggle(MaterialButton button, String reference, String text, boolean echo, Runnable reset) {
-        if (playingFrom == button) { stop(); return; }
-        play(reference, text, echo, reset);
-        playingFrom = button;
-        button.setText("Stop");
-        button.setIconResource(R.drawable.ic_stop_audio);
-        button.setIconTint(null);
+        listen.setOnClickListener(v -> toggle(listen, statusLine, reference, text, false, reset));
+        echo.setOnClickListener(v -> toggle(echo, statusLine, reference, text, true, reset));
     }
 
     private void showSettings(TextView speed, TextView times) {
         float s = SPEEDS[speedIndex()];
-        speed.setText("Speed " + (s == (int) s ? String.valueOf((int) s) : String.valueOf(s)) + "×");
+        speed.setText("Speed " + (s == (int) s ? String.valueOf((int) s) : String.valueOf(s)) + "\u00d7");
         int t = TIMES[timesIndex()];
         times.setText(t == 1 ? "Play once" : "Play " + t + " times");
+    }
+
+    private void toggle(MaterialButton button, TextView statusLine, String reference, String text, boolean echo, Runnable reset) {
+        if (playingFrom == button) { stop(); return; }
+        play(reference, text, echo, reset);
+        playingFrom = button;
+        status = statusLine;
+        button.setText("Stop");
+        button.setIconResource(R.drawable.ic_stop_audio);
+        button.setIconTint(null);
+        showStatus(null);
+    }
+
+    /** "Round 2 of 3" (when playing more than once), then what is being said. */
+    private void showStatus(@androidx.annotation.Nullable CharSequence what) {
+        TextView st = status;
+        if (st == null || playingFrom == null) return;
+        int total = TIMES[timesIndex()];
+        android.text.SpannableStringBuilder sb = new android.text.SpannableStringBuilder();
+        String head = total > 1 ? "ROUND " + Math.min(atRound + 1, total) + " OF " + total
+                : (playEcho ? "REPEAT AFTER ME" : "LISTENING");
+        sb.append(head);
+        sb.setSpan(new android.text.style.ForegroundColorSpan(
+                androidx.core.content.ContextCompat.getColor(st.getContext(), R.color.st_accent)), 0, sb.length(), 0);
+        sb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, sb.length(), 0);
+        sb.setSpan(new android.text.style.RelativeSizeSpan(0.8f), 0, sb.length(), 0);
+        if (what != null) sb.append("\n").append(what);
+        st.setText(sb);
+        st.setVisibility(View.VISIBLE);
     }
 
     // ─── Playback ────────────────────────────────────────────────────────────
@@ -136,6 +165,8 @@ public final class VerseSpeaker {
 
     private void stopped() {
         playingFrom = null;
+        status = null;
+        phraseOf.clear();
         Runnable r = onStopped;
         onStopped = null;
         if (r != null) r.run();
@@ -164,6 +195,8 @@ public final class VerseSpeaker {
                         atRound = Integer.parseInt(at[0]);
                         atLine = Integer.parseInt(at[1]);
                     }
+                    String said = phraseOf.get(id);
+                    if (said != null) main.post(() -> showStatus(said));
                 }
                 @Override public void onDone(String id) {
                     if (id.startsWith(END)) {
@@ -184,6 +217,8 @@ public final class VerseSpeaker {
     private void roundFinished(int round) {
         if (playingFrom == null || tts == null) return;
         if (round + 1 < TIMES[timesIndex()]) {
+            atRound = round + 1;
+            showStatus(null);
             pause(1500, round + 1, -1);
             queue(round + 1, -1);
         } else {
@@ -209,9 +244,10 @@ public final class VerseSpeaker {
         for (int i = Math.max(fromLine, 0); i < lines.size(); i++) {
             if (playEcho) {
                 for (String phrase : phrases(lines.get(i))) {
-                    say(phrase, round, i);
+                    phraseOf.put(say(phrase, round, i), "\u201c" + phrase + "\u201d");
                     // Long enough to say it back: about half a second a word, longer when slowed down.
-                    pause((long) (wordCount(phrase) * 450 / speed) + 900, round, i);
+                    phraseOf.put(pause((long) (wordCount(phrase) * 450 / speed) + 900, round, i),
+                            "Your turn: \u201c" + phrase + "\u201d");
                 }
             } else {
                 say(lines.get(i), round, i);
@@ -223,12 +259,16 @@ public final class VerseSpeaker {
         tts.playSilentUtterance(1, TextToSpeech.QUEUE_ADD, END + round);
     }
 
-    private void say(String s, int round, int line) {
-        tts.speak(s, TextToSpeech.QUEUE_ADD, null, round + ":" + line + ":" + (nextId++));
+    private String say(String s, int round, int line) {
+        String id = round + ":" + line + ":" + (nextId++);
+        tts.speak(s, TextToSpeech.QUEUE_ADD, null, id);
+        return id;
     }
 
-    private void pause(long ms, int round, int line) {
-        tts.playSilentUtterance(ms, TextToSpeech.QUEUE_ADD, round + ":" + line + ":" + (nextId++));
+    private String pause(long ms, int round, int line) {
+        String id = round + ":" + line + ":" + (nextId++);
+        tts.playSilentUtterance(ms, TextToSpeech.QUEUE_ADD, id);
+        return id;
     }
 
     private void noVoice() {
@@ -246,7 +286,7 @@ public final class VerseSpeaker {
     }
 
     private int timesIndex() {
-        int i = prefs().getInt("times", 0);
+        int i = prefs().getInt("playTimes", 0);
         return i >= 0 && i < TIMES.length ? i : 0;
     }
 

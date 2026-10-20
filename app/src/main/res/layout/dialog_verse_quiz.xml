@@ -7,7 +7,7 @@
     android:id="@+id/reviewRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/st_page"
+    android:background="@drawable/bg_screen_aurora"
     android:orientation="vertical">
 
     <!-- Top bar: back on the left, where this verse is (Part, Day) on the right -->
@@ -342,19 +342,17 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ST.GlossyButton"
+            style="@style/Widget.ST.SoftButton"
             android:id="@+id/btnReveal"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:letterSpacing="0"
             android:text="Reveal verse"
             android:textAllCaps="false"
-            android:textSize="15sp"
-            android:outlineSpotShadowColor="#8E44C9"
-            android:outlineAmbientShadowColor="#8E44C9" />
+            android:textSize="15sp" />
 
         <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ST.GlossyButton"
+            style="@style/Widget.ST.SoftButton"
             android:id="@+id/btnCheck"
             android:layout_width="match_parent"
             android:layout_height="52dp"
@@ -362,9 +360,7 @@
             android:text="Check"
             android:textAllCaps="false"
             android:textSize="15sp"
-            android:visibility="gone"
-            android:outlineSpotShadowColor="#8E44C9"
-            android:outlineAmbientShadowColor="#8E44C9" />
+            android:visibility="gone" />
 
         <!-- Got it / Try again -->
         <LinearLayout

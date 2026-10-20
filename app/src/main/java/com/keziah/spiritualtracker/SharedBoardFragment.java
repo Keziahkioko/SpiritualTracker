@@ -39,7 +39,7 @@ public class SharedBoardFragment extends Fragment {
     private RecyclerView rvPrayerBoard;
     private PrayerBoardAdapter adapter;
     private List<PrayerRequest> requestList;
-    private com.google.android.material.button.MaterialButton fabAddRequest;
+    private com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton fabAddRequest;
     private LinearLayout layoutJointListItems;
     private TextView tvJointCount, tvJointEmpty;
     private TextView btnViewVault, tvJointListTitle;
@@ -70,6 +70,7 @@ public class SharedBoardFragment extends Fragment {
 
         rvPrayerBoard        = view.findViewById(R.id.rvPrayerBoard);
         fabAddRequest        = view.findViewById(R.id.fabAddRequest);
+        FabScroll.attach(fabAddRequest, view.findViewById(R.id.boardScroll));
         layoutJointListItems = view.findViewById(R.id.layoutJointListItems);
         btnViewVault         = view.findViewById(R.id.btnViewVault);
         tvJointListTitle     = view.findViewById(R.id.tvJointListTitle);

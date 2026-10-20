@@ -91,7 +91,15 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textSize="12sp"
+                    android:drawablePadding="5dp"
                     android:textColor="@color/st_accent_strong"/>
+
+                <!-- The week's reviews as dots (Together cards show "N parts" instead) -->
+                <com.keziah.spiritualtracker.StepDots
+                    android:id="@+id/stepDots"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp" />
 
                 <TextView
                     android:id="@+id/tvVerseProgress"

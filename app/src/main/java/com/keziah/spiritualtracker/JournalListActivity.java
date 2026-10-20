@@ -73,6 +73,7 @@ public class JournalListActivity extends AppCompatActivity {
             return insets;
         });
 
+        FabScroll.attach(binding.fabAdd, binding.recyclerView);
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, JournalActivity.class)));
 
