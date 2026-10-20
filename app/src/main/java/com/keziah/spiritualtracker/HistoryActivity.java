@@ -31,7 +31,32 @@ public class HistoryActivity extends AppCompatActivity {
     private static final String[] LABELS = ProgressMath.LABELS;
     private static final int[]    COLORS = {0xFF7E57C2, 0xFF26A69A, 0xFFFFA726, 0xFFEC407A};
     /** Same hues, dark enough to read as text on white (all >= 4.5:1). */
-    private static final int[]    TEXT_COLORS = {0xFF5E35B1, 0xFF00796B, 0xFFB45309, 0xFFC2185B};
+    private int[]                 TEXT_COLORS = {0xFF5E35B1, 0xFF00796B, 0xFFB45309, 0xFFC2185B};
+    /** Light-look colours used on this screen and what each becomes in the Dark look. */
+    private static final java.util.Map<Integer, Integer> DARK_OF = new java.util.HashMap<>();
+    static {
+        int[][] pairs = {
+            {0xFF1A1A2E, 0xFFEEE9F5}, {0xFF5F5F64, 0xFFBCB4CA}, {0xFF424242, 0xFFBCB4CA},
+            {0xFF9E9E9E, 0xFF8F879D}, {0xFF8A8494, 0xFF8F879D}, {0xFFA59EB0, 0xFF8F879D}, {0xFF6E6E73, 0xFF8F879D},
+            {0xFFD0D0D0, 0xFF5A5266}, {0xFF4527A0, 0xFFD7C4FF}, {0xFF5E35B1, 0xFFC9B2F0},
+            {0xFFEDE7F6, 0xFF352B47}, {0xFFD3C9E3, 0xFF4A4256}, {0xFFBDBDBD, 0xFF5E5669},
+            {0xFFDDD5EA, 0xFF3D3448}, {0xFFF1EDF7, 0xFF332C3D}, {0xFFF6F2FB, 0xFF211C27},
+            {0xFFF0EBF6, 0xFF3D3448}, {0xFFF4F1F8, 0xFF2E2836}, {0xFFD9D3E3, 0xFF4A4256},
+            {0xFFB9B2C4, 0xFF6E6680}, {0xFF2448A3, 0xFF9DB6F5}, {0xFFFFFFFF, 0xFF28232F},
+            // Day-ring tracks for the four practices
+            {0xFFE0F2F1, 0xFF1F3A37}, {0xFFFFF3E0, 0xFF3D3020}, {0xFFFCE4EC, 0xFF3D2230},
+        };
+        for (int[] p : pairs) DARK_OF.put(p[0], p[1]);
+    }
+    private boolean dark;
+
+    /** A colour for the current look: as written in Light, its Dark partner in Dark. */
+    private int k(int light) {
+        if (!dark) return light;
+        Integer d = DARK_OF.get(light);
+        return d != null ? d : light;
+    }
+
     private static final String   HISTORY_START = "2000-01-01";
 
     private TextView tabMe, tabPartner, tabUs, tvMonthTitle, btnPrev, btnNext;
@@ -60,6 +85,9 @@ public class HistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dark = Appearance.isDark(this);
+        // Practice names and counts in text: lighter shades so they read on the dark cards.
+        if (dark) TEXT_COLORS = new int[]{0xFFC9B2F0, 0xFF6FD3C6, 0xFFFFC77A, 0xFFF48FB1};
         setContentView(R.layout.activity_history);
         PartnerName.apply(findViewById(android.R.id.content));
 
@@ -194,7 +222,7 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void styleTab(TextView tab, boolean active) {
         tab.setBackgroundResource(active ? R.drawable.tab_active : 0);
-        tab.setTextColor(active ? 0xFF4527A0 : 0xFF5F5F64);
+        tab.setTextColor(active ? k(0xFF4527A0) : k(0xFF5F5F64));
         tab.setTypeface(null, active ? Typeface.BOLD : Typeface.NORMAL);
     }
 
@@ -252,10 +280,10 @@ public class HistoryActivity extends AppCompatActivity {
             count.setGravity(Gravity.CENTER);
             count.setPadding(0, dp(4), 0, 0);
             col.addView(count);
-            TextView name = text(LABELS[i], 12, 0xFF1A1A2E, true);
+            TextView name = text(LABELS[i], 12, k(0xFF1A1A2E), true);
             name.setGravity(Gravity.CENTER);
             col.addView(name);
-            TextView of = text("of " + elapsed + " days", 11, 0xFF5F5F64, false);
+            TextView of = text("of " + elapsed + " days", 11, k(0xFF5F5F64), false);
             of.setGravity(Gravity.CENTER);
             col.addView(of);
 
@@ -266,7 +294,7 @@ public class HistoryActivity extends AppCompatActivity {
     private void buildWeekdayHeader() {
         String[] names = {"M", "T", "W", "T", "F", "S", "S"};
         for (String n : names) {
-            TextView tv = text(n, 11, 0xFFB39DDB, true);
+            TextView tv = text(n, 11, k(0xFFB39DDB), true);
             tv.setGravity(Gravity.CENTER);
             tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             weekdayHeader.addView(tv);
@@ -276,7 +304,7 @@ public class HistoryActivity extends AppCompatActivity {
     private void buildLegend() {
         for (int i = 0; i < LABELS.length; i++) {
             calendarLegend.addView(dot(COLORS[i], 7));
-            TextView tv = text(LABELS[i], 11, 0xFF9E9E9E, false);
+            TextView tv = text(LABELS[i], 11, k(0xFF9E9E9E), false);
             tv.setPadding(dp(4), 0, dp(10), 0);
             calendarLegend.addView(tv);
         }
@@ -321,11 +349,11 @@ public class HistoryActivity extends AppCompatActivity {
         boolean allDone = r != null && r.doneCount() == LABELS.length;
         GradientDrawable bg = new GradientDrawable();
         bg.setCornerRadius(dp(10));
-        bg.setColor(allDone ? 0xFFEDE7F6 : Color.TRANSPARENT);
-        if (isToday) bg.setStroke(dp(1), 0xFF7E57C2);
+        bg.setColor(allDone ? k(0xFFEDE7F6) : Color.TRANSPARENT);
+        if (isToday) bg.setStroke(dp(1), k(0xFF7E57C2));
         cell.setBackground(bg);
 
-        TextView num = text(label, 13, future ? 0xFFD0D0D0 : 0xFF1A1A2E, isToday || allDone);
+        TextView num = text(label, 13, future ? k(0xFFD0D0D0) : k(0xFF1A1A2E), isToday || allDone);
         num.setGravity(Gravity.CENTER);
         cell.addView(num);
 
@@ -334,7 +362,7 @@ public class HistoryActivity extends AppCompatActivity {
         dots.setGravity(Gravity.CENTER);
         dots.setPadding(0, dp(3), 0, 0);
         for (int i = 0; i < LABELS.length; i++) {
-            int color = future ? Color.TRANSPARENT : (r != null && isDone(r, i) ? COLORS[i] : 0xFFD3C9E3);
+            int color = future ? Color.TRANSPARENT : (r != null && isDone(r, i) ? COLORS[i] : k(0xFFD3C9E3));
             View dot = dot(color, 6);
             ((LinearLayout.LayoutParams) dot.getLayoutParams()).setMargins(dp(1), 0, dp(1), 0);
             dots.addView(dot);
@@ -369,7 +397,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void addPersonSection(LinearLayout box, String who, HistoryRepository.DayRecord r, String prayedFor) {
-        TextView name = text(who, 15, 0xFF4527A0, true);
+        TextView name = text(who, 15, k(0xFF4527A0), true);
         name.setPadding(0, dp(12), 0, dp(4));
         box.addView(name);
 
@@ -381,24 +409,24 @@ public class HistoryActivity extends AppCompatActivity {
         String bible = r.bible
                 ? "Read the Word" + (r.bibleNote != null && !r.bibleNote.isEmpty() ? ": “" + r.bibleNote + "”" : "")
                 : "Didn't mark Bible reading";
-        box.addView(detailLine(r.bible ? COLORS[0] : 0xFFBDBDBD, bible));
+        box.addView(detailLine(r.bible ? COLORS[0] : k(0xFFBDBDBD), bible));
 
         String prayer;
         if (r.prayed && r.prayedForPartner) prayer = "Prayed, and prayed for " + prayedFor;
         else if (r.prayed)                  prayer = "Prayed";
         else if (r.prayedForPartner)        prayer = "Prayed for " + prayedFor;
         else                                prayer = "Didn't mark prayer";
-        box.addView(detailLine(r.prayed || r.prayedForPartner ? COLORS[1] : 0xFFBDBDBD, prayer));
+        box.addView(detailLine(r.prayed || r.prayedForPartner ? COLORS[1] : k(0xFFBDBDBD), prayer));
 
         String journal = r.journal
                 ? "Journaled" + (r.journalTitles.isEmpty() ? "" : ": " + String.join(", ", r.journalTitles))
                 : "No journal entry";
-        box.addView(detailLine(r.journal ? COLORS[2] : 0xFFBDBDBD, journal));
+        box.addView(detailLine(r.journal ? COLORS[2] : k(0xFFBDBDBD), journal));
 
         String memo = r.memorize
                 ? "Practised verses" + (r.memorizeRefs.isEmpty() ? "" : ": " + String.join(", ", r.memorizeRefs))
                 : "No verse practice";
-        box.addView(detailLine(r.memorize ? COLORS[3] : 0xFFBDBDBD, memo));
+        box.addView(detailLine(r.memorize ? COLORS[3] : k(0xFFBDBDBD), memo));
     }
 
     private View detailLine(int color, String message) {
@@ -407,7 +435,7 @@ public class HistoryActivity extends AppCompatActivity {
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(0, dp(3), 0, dp(3));
         row.addView(dot(color, 8));
-        TextView tv = text(message, 13, 0xFF424242, false);
+        TextView tv = text(message, 13, k(0xFF424242), false);
         tv.setPadding(dp(10), 0, 0, 0);
         row.addView(tv);
         return row;
@@ -424,14 +452,14 @@ public class HistoryActivity extends AppCompatActivity {
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(0, dp(5), 0, dp(5));
 
-            row.addView(dot(all ? 0xFF4527A0 : COLORS[i], 9));
-            TextView label = text(all ? "All four" : LABELS[i], 14, 0xFF1A1A2E, all);
+            row.addView(dot(all ? k(0xFF4527A0) : COLORS[i], 9));
+            TextView label = text(all ? "All four" : LABELS[i], 14, k(0xFF1A1A2E), all);
             label.setPadding(dp(10), 0, 0, 0);
             label.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             row.addView(label);
 
-            row.addView(text(s[0] + (s[0] == 1 ? " day" : " days"), 13, 0xFF1A1A2E, true));
-            TextView best = text("  ·  best " + s[1], 13, 0xFF5F5F64, false);
+            row.addView(text(s[0] + (s[0] == 1 ? " day" : " days"), 13, k(0xFF1A1A2E), true));
+            TextView best = text("  ·  best " + s[1], 13, k(0xFF5F5F64), false);
             row.addView(best);
             streakContainer.addView(row);
         }
@@ -444,9 +472,9 @@ public class HistoryActivity extends AppCompatActivity {
         String today = ActivityLog.today();
 
         LinearLayout head = streakRow();
-        head.addView(cell(text("", 12, 0xFF1A1A2E, false), 1.3f));
-        head.addView(cell(centered(text("You", 13, 0xFF5E35B1, true)), 1f));
-        head.addView(cell(centered(text(partnerName, 13, 0xFF2448A3, true)), 1f));
+        head.addView(cell(text("", 12, k(0xFF1A1A2E), false), 1.3f));
+        head.addView(cell(centered(text("You", 13, k(0xFF5E35B1), true)), 1f));
+        head.addView(cell(centered(text(partnerName, 13, k(0xFF2448A3), true)), 1f));
         head.setPadding(0, 0, 0, dp(6));
         box.addView(head);
 
@@ -460,13 +488,13 @@ public class HistoryActivity extends AppCompatActivity {
             LinearLayout label = new LinearLayout(this);
             label.setOrientation(LinearLayout.HORIZONTAL);
             label.setGravity(Gravity.CENTER_VERTICAL);
-            label.addView(dot(all ? 0xFF4527A0 : COLORS[i], 9));
-            TextView name = text(all ? "All four" : LABELS[i], 14, 0xFF1A1A2E, all);
+            label.addView(dot(all ? k(0xFF4527A0) : COLORS[i], 9));
+            TextView name = text(all ? "All four" : LABELS[i], 14, k(0xFF1A1A2E), all);
             name.setPadding(dp(8), 0, 0, 0);
             label.addView(name);
             row.addView(cell(label, 1.3f));
-            row.addView(cell(streakCell(mine, 0xFF5E35B1), 1f));
-            row.addView(cell(streakCell(theirs, 0xFF2448A3), 1f));
+            row.addView(cell(streakCell(mine, k(0xFF5E35B1)), 1f));
+            row.addView(cell(streakCell(theirs, k(0xFF2448A3)), 1f));
             box.addView(row);
         }
     }
@@ -494,7 +522,7 @@ public class HistoryActivity extends AppCompatActivity {
         col.setOrientation(LinearLayout.VERTICAL);
         col.setGravity(Gravity.CENTER_HORIZONTAL);
         col.addView(text(s[0] + (s[0] == 1 ? " day" : " days"), 14, color, true));
-        col.addView(text("best " + s[1], 11, 0xFF5F5F64, false));
+        col.addView(text("best " + s[1], 11, k(0xFF5F5F64), false));
         return col;
     }
 
@@ -515,12 +543,12 @@ public class HistoryActivity extends AppCompatActivity {
         chips.setOrientation(LinearLayout.HORIZONTAL);
         for (int d = 0; d < LABELS.length; d++) {
             final int pick = d;
-            TextView chip = text(LABELS[d], 12, d == i ? Color.WHITE : 0xFF424242, d == i);
+            TextView chip = text(LABELS[d], 12, d == i ? Color.WHITE : k(0xFF424242), d == i);
             chip.setGravity(Gravity.CENTER);
             chip.setPadding(0, dp(7), 0, dp(7));
             GradientDrawable g = new GradientDrawable();
             g.setCornerRadius(dp(16));
-            if (d == i) g.setColor(TEXT_COLORS[d]); else { g.setColor(Color.WHITE); g.setStroke(dp(1), 0xFFDDD5EA); }
+            if (d == i) g.setColor(TEXT_COLORS[d]); else { g.setColor(k(Color.WHITE)); g.setStroke(dp(1), k(0xFFDDD5EA)); }
             chip.setBackground(g);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             if (d > 0) lp.setMarginStart(dp(6));
@@ -546,7 +574,7 @@ public class HistoryActivity extends AppCompatActivity {
         controls.addView(spacer);
         if (!otYears) {
             TextView prev = arrow("‹", "Earlier year", otYear > firstYear, () -> { otYear--; render(); });
-            TextView year = text(String.valueOf(otYear), 16, 0xFF1A1A2E, true);
+            TextView year = text(String.valueOf(otYear), 16, k(0xFF1A1A2E), true);
             year.setPadding(dp(4), 0, dp(4), 0);
             TextView next = arrow("›", "Later year", otYear < thisYear, () -> { otYear++; render(); });
             controls.addView(prev);
@@ -558,7 +586,7 @@ public class HistoryActivity extends AppCompatActivity {
         // What the bars mean, in words.
         String who = both ? "you each" : showingPartner ? partnerName : "you";
         TextView title = text("Days " + who + " " + VERBS[i] + (otYears ? ", each year" : ", each month"),
-                14, 0xFF1A1A2E, true);
+                14, k(0xFF1A1A2E), true);
         title.setPadding(0, dp(14), 0, dp(8));
         box.addView(title);
 
@@ -599,7 +627,7 @@ public class HistoryActivity extends AppCompatActivity {
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setPadding(0, dp(5), 0, dp(5));
-            TextView label = text(names.get(p), 13, 0xFF1A1A2E, false);
+            TextView label = text(names.get(p), 13, k(0xFF1A1A2E), false);
             label.setLayoutParams(new LinearLayout.LayoutParams(dp(otYears ? 46 : 38), LinearLayout.LayoutParams.WRAP_CONTENT));
             row.addView(label);
 
@@ -627,7 +655,7 @@ public class HistoryActivity extends AppCompatActivity {
             box.addView(legend);
         }
         TextView hint = text(otYears ? "A full bar means every day of the year." : "A full bar means every day of the month.",
-                11, 0xFF5F5F64, false);
+                11, k(0xFF5F5F64), false);
         hint.setGravity(Gravity.CENTER);
         hint.setPadding(0, dp(8), 0, 0);
         box.addView(hint);
@@ -657,7 +685,7 @@ public class HistoryActivity extends AppCompatActivity {
         }
         row.addView(track);
 
-        TextView count = text(done + (done == 1 ? " day" : " days"), 12, done == 0 ? 0xFF6E6E73 : textColor, done > 0);
+        TextView count = text(done + (done == 1 ? " day" : " days"), 12, done == 0 ? k(0xFF6E6E73) : textColor, done > 0);
         count.setGravity(Gravity.END);
         count.setLayoutParams(new LinearLayout.LayoutParams(dp(62), LinearLayout.LayoutParams.WRAP_CONTENT));
         row.addView(count);
@@ -665,7 +693,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private TextView toggleTab(String label, boolean active, Runnable onClick) {
-        TextView t = text(label, 13, active ? 0xFF4527A0 : 0xFF5F5F64, active);
+        TextView t = text(label, 13, active ? k(0xFF4527A0) : k(0xFF5F5F64), active);
         t.setPadding(dp(14), dp(5), dp(14), dp(5));
         if (active) t.setBackgroundResource(R.drawable.tab_active);
         t.setOnClickListener(v -> onClick.run());
@@ -673,7 +701,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private TextView arrow(String symbol, String description, boolean enabled, Runnable onClick) {
-        TextView t = text(symbol, 26, 0xFF5E35B1, false);
+        TextView t = text(symbol, 26, k(0xFF5E35B1), false);
         t.setGravity(Gravity.CENTER);
         t.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(40)));
         t.setContentDescription(description);
@@ -716,18 +744,18 @@ public class HistoryActivity extends AppCompatActivity {
             col.addView(ring);
             makePickable(col, i, this::renderRings);
 
-            TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
+            TextView name = text(LABELS[i], 13, k(0xFF1A1A2E), true);
             name.setGravity(Gravity.CENTER);
             name.setPadding(0, dp(8), 0, dp(2));
             col.addView(name);
 
             android.text.SpannableStringBuilder sb = new android.text.SpannableStringBuilder();
-            appendColored(sb, mine + "/7", 0xFF5E35B1);
+            appendColored(sb, mine + "/7", k(0xFF5E35B1));
             if (both) {
                 sb.append("  ");
-                appendColored(sb, theirs + "/7", 0xFF2448A3);
+                appendColored(sb, theirs + "/7", k(0xFF2448A3));
             }
-            TextView counts = text("", 12, 0xFF1A1A2E, false);
+            TextView counts = text("", 12, k(0xFF1A1A2E), false);
             counts.setGravity(Gravity.CENTER);
             counts.setText(sb);
             col.addView(counts);
@@ -754,7 +782,7 @@ public class HistoryActivity extends AppCompatActivity {
         Calendar c = Calendar.getInstance();
         String to = ActivityLog.dayKey(c.getTime());
         String from = ActivityLog.dayKey(ProgressMath.weekStart(c).getTime());
-        int[] tracks = {0xFFEDE7F6, 0xFFE0F2F1, 0xFFFFF3E0, 0xFFFCE4EC};
+        int[] tracks = {k(0xFFEDE7F6), k(0xFFE0F2F1), k(0xFFFFF3E0), k(0xFFFCE4EC)};
 
         for (int i = 0; i < LABELS.length; i++) {
             int done = ProgressMath.countBetween(days, from, to, i);
@@ -773,11 +801,11 @@ public class HistoryActivity extends AppCompatActivity {
             holder.addView(inside, new android.widget.FrameLayout.LayoutParams(-1, -1));
             col.addView(holder);
 
-            TextView name = text(LABELS[i], 13, 0xFF1A1A2E, true);
+            TextView name = text(LABELS[i], 13, k(0xFF1A1A2E), true);
             name.setGravity(Gravity.CENTER);
             name.setPadding(0, dp(8), 0, 0);
             col.addView(name);
-            TextView of = text(done + " of 7 days", 11, 0xFF5F5F64, false);
+            TextView of = text(done + " of 7 days", 11, k(0xFF5F5F64), false);
             of.setGravity(Gravity.CENTER);
             col.addView(of);
             makePickable(col, i, () -> renderPersonRings(days));
@@ -858,7 +886,7 @@ public class HistoryActivity extends AppCompatActivity {
             LinearLayout col = new LinearLayout(this);
             col.setOrientation(LinearLayout.VERTICAL);
             col.setGravity(Gravity.CENTER_HORIZONTAL);
-            TextView name = text(dayName.format(c.getTime()), 11, isToday ? 0xFF4527A0 : 0xFF8A8494, isToday);
+            TextView name = text(dayName.format(c.getTime()), 11, isToday ? k(0xFF4527A0) : k(0xFF8A8494), isToday);
             name.setGravity(Gravity.CENTER);
             col.addView(name);
 
@@ -875,8 +903,8 @@ public class HistoryActivity extends AppCompatActivity {
             } else if (future) {
                 circle.setColor(0xFFF4F1F8);
             } else {
-                circle.setColor(Color.WHITE);
-                circle.setStroke(dp(isToday ? 2 : 1), isToday ? color : 0xFFD9D3E3);
+                circle.setColor(k(Color.WHITE));
+                circle.setStroke(dp(isToday ? 2 : 1), isToday ? color : k(0xFFD9D3E3));
                 if (!isToday) {
                     mark.setText("\u2013");
                     mark.setTextColor(0xFFB9B2C4);
@@ -887,7 +915,7 @@ public class HistoryActivity extends AppCompatActivity {
             mp.topMargin = dp(4);
             col.addView(mark, mp);
 
-            TextView date = text(String.valueOf(c.get(Calendar.DAY_OF_MONTH)), 10, 0xFFA59EB0, false);
+            TextView date = text(String.valueOf(c.get(Calendar.DAY_OF_MONTH)), 10, k(0xFFA59EB0), false);
             date.setGravity(Gravity.CENTER);
             date.setPadding(0, dp(3), 0, 0);
             col.addView(date);
@@ -898,7 +926,7 @@ public class HistoryActivity extends AppCompatActivity {
 
         String tally = done + (done == 1 ? " day" : " days") + " done" + (missed > 0 ? " \u00b7 " + missed + " missed" : "");
         TextView top = text(who == null ? tally : who + "  \u00b7  " + tally, 12,
-                who == null ? 0xFF5F5F64 : 0xFF1A1A2E, who != null);
+                who == null ? k(0xFF5F5F64) : k(0xFF1A1A2E), who != null);
         top.setPadding(dp(4), 0, 0, dp(8));
         box.addView(top);
         box.addView(row);
@@ -911,7 +939,7 @@ public class HistoryActivity extends AppCompatActivity {
         item.setGravity(Gravity.CENTER_VERTICAL);
         item.setPadding(dp(10), 0, dp(10), 0);
         item.addView(dot(color, 10));
-        TextView tv = text(where == null ? who : who + " · " + where + " ring", 12, 0xFF424242, false);
+        TextView tv = text(where == null ? who : who + " · " + where + " ring", 12, k(0xFF424242), false);
         tv.setPadding(dp(6), 0, 0, 0);
         item.addView(tv);
         return item;

@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F5FB"
+    android:background="@color/st_page"
     android:fillViewport="true">
 
     <LinearLayout
@@ -79,7 +79,7 @@
                     android:background="@drawable/tab_active"
                     android:gravity="center"
                     android:text="Me"
-                    android:textColor="#4527A0"
+                    android:textColor="@color/st_accent_strong"
                     android:textStyle="bold" />
 
                 <TextView
@@ -89,7 +89,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Partner"
-                    android:textColor="#5F5F64" />
+                    android:textColor="@color/st_text_2" />
 
                 <TextView
                     android:id="@+id/tabHistoryUs"
@@ -98,7 +98,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Us"
-                    android:textColor="#5F5F64" />
+                    android:textColor="@color/st_text_2" />
             </LinearLayout>
         </LinearLayout>
 
@@ -162,7 +162,7 @@
                 android:contentDescription="Previous month"
                 android:gravity="center"
                 android:text="‹"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="28sp" />
 
             <TextView
@@ -172,7 +172,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="October 2026"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -184,7 +184,7 @@
                 android:contentDescription="Next month"
                 android:gravity="center"
                 android:text="›"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="28sp" />
         </LinearLayout>
 
@@ -259,7 +259,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="Tap a day to see what was read, prayed, written and memorized"
-                    android:textColor="#5F5F64"
+                    android:textColor="@color/st_text_2"
                     android:textSize="11sp" />
             </LinearLayout>
 

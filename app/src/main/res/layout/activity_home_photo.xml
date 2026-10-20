@@ -7,7 +7,7 @@
     android:id="@+id/photoRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@color/st_page"
     android:orientation="vertical">
 
     <androidx.core.widget.NestedScrollView
@@ -134,7 +134,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="4dp"
                 app:strokeWidth="0dp">
@@ -143,14 +143,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingStart="20dp"
+                    android:paddingTop="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="24dp"
+                    android:background="@drawable/bg_card">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="serif"
                         android:text="Home photo"
-                        android:textColor="#1C1C1E"
+                        android:textColor="@color/st_text"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -160,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="Shared with your partner · changes on both phones"
-                        android:textColor="#6E6A76"
+                        android:textColor="@color/st_text_2"
                         android:textSize="13sp" />
 
                     <View
@@ -168,7 +172,7 @@
                         android:layout_height="1dp"
                         android:layout_marginTop="14dp"
                         android:layout_marginBottom="4dp"
-                        android:background="#EFEAF5" />
+                        android:background="@color/st_stroke" />
 
                     <LinearLayout
                         android:id="@+id/btnChoosePhoto"
@@ -207,7 +211,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Choose a new photo"
-                                android:textColor="#1C1C1E"
+                                android:textColor="@color/st_text"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -216,7 +220,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="1dp"
                                 android:text="From your gallery"
-                                android:textColor="#6E6A76"
+                                android:textColor="@color/st_text_2"
                                 android:textSize="12sp" />
                         </LinearLayout>
 
@@ -226,7 +230,7 @@
                             android:importantForAccessibility="no"
                             android:rotation="180"
                             android:src="@drawable/ic_back"
-                            app:tint="#B7A8D6" />
+                            app:tint="@color/st_text_3" />
                     </LinearLayout>
                     <LinearLayout
                         android:id="@+id/btnOriginalPhoto"
@@ -265,7 +269,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Use the original photo"
-                                android:textColor="#1C1C1E"
+                                android:textColor="@color/st_text"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -274,7 +278,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="1dp"
                                 android:text="The one the app came with"
-                                android:textColor="#6E6A76"
+                                android:textColor="@color/st_text_2"
                                 android:textSize="12sp" />
                         </LinearLayout>
 
@@ -284,7 +288,7 @@
                             android:importantForAccessibility="no"
                             android:rotation="180"
                             android:src="@drawable/ic_back"
-                            app:tint="#B7A8D6" />
+                            app:tint="@color/st_text_3" />
                     </LinearLayout>
 
                     <View
@@ -292,14 +296,14 @@
                         android:layout_height="1dp"
                         android:layout_marginTop="4dp"
                         android:layout_marginBottom="10dp"
-                        android:background="#EFEAF5" />
+                        android:background="@color/st_stroke" />
 
                     <!-- Zoom: the slider and pinching stay in step -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Zoom"
-                        android:textColor="#5E35B1"
+                        android:textColor="@color/st_accent_strong"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -314,7 +318,7 @@
                             android:layout_height="wrap_content"
                             android:importantForAccessibility="no"
                             android:text="−"
-                            android:textColor="#7E57C2"
+                            android:textColor="@color/st_accent"
                             android:textSize="20sp" />
 
                         <com.google.android.material.slider.Slider
@@ -331,14 +335,14 @@
                             app:labelBehavior="gone"
                             app:thumbColor="#7E57C2"
                             app:trackColorActive="#7E57C2"
-                            app:trackColorInactive="#E6DCF5" />
+                            app:trackColorInactive="@color/st_soft" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:importantForAccessibility="no"
                             android:text="+"
-                            android:textColor="#7E57C2"
+                            android:textColor="@color/st_accent"
                             android:textSize="20sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -358,14 +362,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSavePhoto"
+            style="@style/Widget.ST.GlossyButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Save"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:backgroundTint="#673AB7"
-            app:cornerRadius="28dp" />
+            android:outlineSpotShadowColor="#8E44C9"
+            android:outlineAmbientShadowColor="#8E44C9" />
     </FrameLayout>
 </LinearLayout>

@@ -20,12 +20,16 @@ public class PairedRingView extends View {
     private float mine = 0f;
     /** Negative means there is no partner ring to draw. */
     private float theirs = -1f;
-    private int meColor = ME, meTrack = ME_TRACK;
+    private int meColor = ME, meTrack = ME_TRACK, partnerTrack = PARTNER_TRACK;
 
     public PairedRingView(Context context) { this(context, null); }
 
     public PairedRingView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        if (Appearance.isDark(context)) { // tracks that sit quietly on the dark cards
+            meTrack = 0xFF352B47;
+            partnerTrack = 0xFF26304A;
+        }
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
     }
@@ -58,7 +62,7 @@ public class PairedRingView extends View {
 
         float r = size / 2f - stroke / 2f;
         ring(canvas, cx, cy, r, stroke, meTrack, meColor, mine);
-        if (theirs >= 0) ring(canvas, cx, cy, r - stroke - gap, stroke, PARTNER_TRACK, PARTNER, theirs);
+        if (theirs >= 0) ring(canvas, cx, cy, r - stroke - gap, stroke, partnerTrack, PARTNER, theirs);
     }
 
     private void ring(Canvas c, float cx, float cy, float r, float stroke, int track, int color, float value) {
