@@ -2,5 +2,5 @@
 <!-- Switch track: purple when on, soft lavender when off. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:color="#7E57C2" android:state_checked="true" />
-    <item android:color="#DCD3EA" />
+    <item android:color="@color/st_soft" />
 </selector>

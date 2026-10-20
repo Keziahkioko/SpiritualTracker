@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,7 +38,7 @@ public class MySpaceFragment extends Fragment {
     private RecyclerView rvMyPrayers;
     private LinearLayout layoutMySpaceEmpty;
     private TextView tvActiveCount, tvAnsweredCount;
-    private ExtendedFloatingActionButton fabAddPersonalPrayer;
+    private com.google.android.material.button.MaterialButton fabAddPersonalPrayer;
 
     private PersonalPrayerAdapter adapter;
     private List<PrayerRequest> personalList;

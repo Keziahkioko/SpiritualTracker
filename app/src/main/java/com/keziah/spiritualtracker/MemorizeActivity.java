@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -63,7 +62,7 @@ public class MemorizeActivity extends AppCompatActivity {
     private TextView                     tvHeaderTitle;
     private TextView                     tvTogglePartnerLabel; // ← text label inside the FrameLayout pill
     private View                         btnTogglePartner;     // ← now View, not TextView
-    private ExtendedFloatingActionButton fabAddVerse;
+    private com.google.android.material.button.MaterialButton fabAddVerse;
     private View                         layoutPartnerPanel;
 
     // Data
