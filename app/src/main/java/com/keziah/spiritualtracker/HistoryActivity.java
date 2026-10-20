@@ -50,6 +50,11 @@ public class HistoryActivity extends AppCompatActivity {
     }
     private boolean dark;
 
+    /** The partner's colour for this look: the same sapphire as their ticks, stripes and streaks. */
+    private int partnerColor() {
+        return androidx.core.content.ContextCompat.getColor(this, R.color.st_partner);
+    }
+
     /** A colour for the current look: as written in Light, its Dark partner in Dark. */
     private int k(int light) {
         if (!dark) return light;
@@ -642,13 +647,13 @@ public class HistoryActivity extends AppCompatActivity {
             LinearLayout bars = new LinearLayout(this);
             bars.setOrientation(LinearLayout.VERTICAL);
             bars.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            bars.addView(countBar(a1, length, both ? PairedRingView.ME : COLORS[i], both ? 0xFF5E35B1 : TEXT_COLORS[i]));
+            bars.addView(countBar(a1, length, both ? PairedRingView.ME : COLORS[i], both ? k(0xFF5E35B1) : TEXT_COLORS[i]));
             if (both) {
                 int a2 = ProgressMath.countBetween(partnerDays, fromKey, toKey, i);
                 View gap = new View(this);
                 gap.setLayoutParams(new LinearLayout.LayoutParams(1, dp(3)));
                 bars.addView(gap);
-                bars.addView(countBar(a2, length, PairedRingView.PARTNER, 0xFF2448A3));
+                bars.addView(countBar(a2, length, partnerColor(), k(0xFF2448A3)));
             }
             row.addView(bars);
             box.addView(row);
@@ -659,7 +664,7 @@ public class HistoryActivity extends AppCompatActivity {
             legend.setGravity(Gravity.CENTER);
             legend.setPadding(0, dp(10), 0, 0);
             legend.addView(legendItem("You", PairedRingView.ME, null));
-            legend.addView(legendItem(partnerName, PairedRingView.PARTNER, null));
+            legend.addView(legendItem(partnerName, partnerColor(), null));
             box.addView(legend);
         }
         TextView hint = text(otYears ? "A full bar means every day of the year." : "A full bar means every day of the month.",
@@ -771,7 +776,7 @@ public class HistoryActivity extends AppCompatActivity {
         }
 
         legend.addView(legendItem("You", PairedRingView.ME, "outer"));
-        if (both) legend.addView(legendItem(partnerName, PairedRingView.PARTNER, "inner"));
+        if (both) legend.addView(legendItem(partnerName, partnerColor(), "inner"));
 
         LinearLayout detail = findViewById(R.id.usWeekDetail);
         detail.removeAllViews();
@@ -779,7 +784,7 @@ public class HistoryActivity extends AppCompatActivity {
         if (weekPick >= 0) {
             detail.addView(weekHeading(weekPick));
             detail.addView(weekStrip("You", myDays, weekPick, PairedRingView.ME));
-            if (both) detail.addView(weekStrip(partnerName, partnerDays, weekPick, PairedRingView.PARTNER));
+            if (both) detail.addView(weekStrip(partnerName, partnerDays, weekPick, partnerColor()));
         }
     }
 
