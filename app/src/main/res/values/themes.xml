@@ -47,8 +47,8 @@
     <!-- Everyday main actions (Reveal, Check, Next, Practise): a soft lavender fill with purple
          text and a faint lavender shadow. Gloss is kept for the moments that are a win. -->
     <style name="Widget.ST.SoftButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
-        <item name="backgroundTint">@color/st_soft</item>
-        <item name="android:textColor">@color/st_accent_strong</item>
+        <item name="backgroundTint">@color/st_soft_button</item>
+        <item name="android:textColor">@color/st_soft_button_text</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
