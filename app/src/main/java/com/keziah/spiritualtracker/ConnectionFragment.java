@@ -716,6 +716,12 @@ public class ConnectionFragment extends Fragment {
             
             boolean hasPartnerPrayedToday = today.equals(snapshot.getString("prayedTodayDate"));
             boolean hasPartnerPrayedForMe = today.equals(snapshot.getString("prayedForPartnerDate"));
+            // Debug test tool: show the partner's boxes ticked, on screen only.
+            if (BuildConfig.DEBUG && getContext() != null && getContext().getSharedPreferences("test_tools", android.content.Context.MODE_PRIVATE)
+                    .getBoolean("pretendBothDone", false)) {
+                hasPartnerPrayedToday = true;
+                hasPartnerPrayedForMe = true;
+            }
 
             cbPartnerPrayedToday.setChecked(hasPartnerPrayedToday);
             cbPartnerPrayedPartner.setChecked(hasPartnerPrayedForMe);

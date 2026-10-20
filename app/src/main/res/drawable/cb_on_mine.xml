@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ticked prayer box: rounded square with a white tick. -->
+<!-- Ticked prayer box (mine): glossy rounded square with a white tick, like the app's glossy buttons. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24">
-    <path android:fillColor="#7E57C2"
-        android:pathData="M7,3h10a4,4 0,0 1,4 4v10a4,4 0,0 1,-4 4H7a4,4 0,0 1,-4 -4V7a4,4 0,0 1,4 -4z" />
+    <path android:pathData="M7,3h10a4,4 0,0 1,4 4v10a4,4 0,0 1,-4 4H7a4,4 0,0 1,-4 -4V7a4,4 0,0 1,4 -4z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="3" android:startY="3" android:endX="21" android:endY="21"
+                android:startColor="#6A3CC8" android:endColor="#A23FB5" />
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#40FFFFFF" android:pathData="M7,4.2h10a2.8,2.8 0,0 1,2.8 2.8v2.2c-3,1.6 -12.6,1.6 -15.6,0V7a2.8,2.8 0,0 1,2.8 -2.8z" />
+    <path android:strokeColor="#80E6D2FF" android:strokeWidth="0.8" android:pathData="M7,3h10a4,4 0,0 1,4 4v10a4,4 0,0 1,-4 4H7a4,4 0,0 1,-4 -4V7a4,4 0,0 1,4 -4z" />
     <path android:strokeColor="#FFFFFF" android:strokeWidth="2.4"
         android:strokeLineCap="round" android:strokeLineJoin="round"
         android:pathData="M7.6,12.4l3,3l5.8,-6.6" />

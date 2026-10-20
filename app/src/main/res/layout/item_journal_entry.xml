@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingBottom="3dp"
+        android:clipToOutline="true"
         android:background="@drawable/bg_card_small">
 
     <!-- Purple for my entries, green for my partner's -->

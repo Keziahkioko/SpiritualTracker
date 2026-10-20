@@ -21,9 +21,10 @@
     <!-- Journal author / draft pills -->
     <color name="st_pill_me">#3A2E52</color>
     <color name="st_pill_me_text">#D7C4FF</color>
-    <color name="st_pill_partner">#1E3A2A</color>
-    <color name="st_pill_partner_text">#8ADBA6</color>
+    <color name="st_pill_partner">#4A2442</color>
+    <color name="st_pill_partner_text">#F3B3DE</color>
     <color name="st_pill_draft">#3F3120</color>
     <color name="st_pill_draft_text">#F2C077</color>
     <color name="st_danger_soft">#4A2328</color>  <!-- soft red behind a delete icon -->
+    <color name="st_partner">#D872BE</color>  <!-- the partner's colour -->
 </resources>

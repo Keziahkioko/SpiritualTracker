@@ -201,7 +201,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         // Author pill
         boolean isMe = entry.getUserId() != null && entry.getUserId().equals(currentUid);
-        if (h.stripe != null) h.stripe.setBackgroundColor(isMe ? 0xFF7E57C2 : 0xFF43A047);
+        if (h.stripe != null) h.stripe.setBackgroundColor(isMe ? 0xFF7E57C2 : androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_partner));
         if (isMe) {
             h.tvAuthor.setText("Me");
             h.tvAuthor.setBackgroundResource(R.drawable.pill_me);
