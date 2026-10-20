@@ -29,9 +29,9 @@ import java.util.TreeMap;
 public class HistoryActivity extends AppCompatActivity {
 
     private static final String[] LABELS = ProgressMath.LABELS;
-    private static final int[]    COLORS = {0xFF7E57C2, 0xFF26A69A, 0xFFFFA726, 0xFFEC407A};
+    private static final int[]    COLORS = {0xFF7E57C2, 0xFFE0699E, 0xFFE9A440, 0xFFA23FB5}; // violet, rose, amber, plum
     /** Same hues, dark enough to read as text on white (all >= 4.5:1). */
-    private int[]                 TEXT_COLORS = {0xFF5E35B1, 0xFF00796B, 0xFFB45309, 0xFFC2185B};
+    private int[]                 TEXT_COLORS = {0xFF5E35B1, 0xFFB0336F, 0xFF9A5B0A, 0xFF7B2A8C};
     /** Light-look colours used on this screen and what each becomes in the Dark look. */
     private static final java.util.Map<Integer, Integer> DARK_OF = new java.util.HashMap<>();
     static {
@@ -44,7 +44,7 @@ public class HistoryActivity extends AppCompatActivity {
             {0xFFF0EBF6, 0xFF3D3448}, {0xFFF4F1F8, 0xFF2E2836}, {0xFFD9D3E3, 0xFF4A4256},
             {0xFFB9B2C4, 0xFF6E6680}, {0xFF2448A3, 0xFF9DB6F5}, {0xFFFFFFFF, 0xFF28232F},
             // Day-ring tracks for the four practices
-            {0xFFE0F2F1, 0xFF1F3A37}, {0xFFFFF3E0, 0xFF3D3020}, {0xFFFCE4EC, 0xFF3D2230},
+            {0xFFFCE6EF, 0xFF3D2432}, {0xFFFDF1DE, 0xFF3B2F1E}, {0xFFF4E3F7, 0xFF36223D},
         };
         for (int[] p : pairs) DARK_OF.put(p[0], p[1]);
     }
@@ -87,7 +87,7 @@ public class HistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         dark = Appearance.isDark(this);
         // Practice names and counts in text: lighter shades so they read on the dark cards.
-        if (dark) TEXT_COLORS = new int[]{0xFFC9B2F0, 0xFF6FD3C6, 0xFFFFC77A, 0xFFF48FB1};
+        if (dark) TEXT_COLORS = new int[]{0xFFC9B2F0, 0xFFF4A6C8, 0xFFF5C878, 0xFFE3A3EE};
         setContentView(R.layout.activity_history);
         PartnerName.apply(findViewById(android.R.id.content));
 
@@ -133,6 +133,7 @@ public class HistoryActivity extends AppCompatActivity {
         btnNext.setOnClickListener(v -> { month.add(Calendar.MONTH, 1); render(); });
 
         tabMe.setOnClickListener(v -> selectTab(0));
+        styleTab(tabMe, true); // Me is chosen when the screen opens
         tabPartner.setOnClickListener(v -> {
             if (partnerId == null) {
                 Toast.makeText(this, "No partner linked yet", Toast.LENGTH_SHORT).show();
@@ -223,6 +224,12 @@ public class HistoryActivity extends AppCompatActivity {
     private void styleTab(TextView tab, boolean active) {
         // On the purple header in either look: a white pill for the chosen tab, white text for the rest.
         tab.setBackgroundResource(active ? R.drawable.bg_frost_tab : 0);
+        // In Dark the chosen pill glows softly violet.
+        tab.setElevation(active && dark ? dp(4) : 0);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            tab.setOutlineSpotShadowColor(0xFFB15CFF);
+            tab.setOutlineAmbientShadowColor(0xFFB15CFF);
+        }
         tab.setTextColor(active ? 0xFF4527A0 : 0xE6FFFFFF);
         tab.setTypeface(null, active ? Typeface.BOLD : Typeface.NORMAL);
     }
@@ -783,7 +790,7 @@ public class HistoryActivity extends AppCompatActivity {
         Calendar c = Calendar.getInstance();
         String to = ActivityLog.dayKey(c.getTime());
         String from = ActivityLog.dayKey(ProgressMath.weekStart(c).getTime());
-        int[] tracks = {k(0xFFEDE7F6), k(0xFFE0F2F1), k(0xFFFFF3E0), k(0xFFFCE4EC)};
+        int[] tracks = {k(0xFFEDE7F6), k(0xFFFCE6EF), k(0xFFFDF1DE), k(0xFFF4E3F7)};
 
         for (int i = 0; i < LABELS.length; i++) {
             int done = ProgressMath.countBetween(days, from, to, i);
