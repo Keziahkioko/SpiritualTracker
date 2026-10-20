@@ -210,11 +210,11 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
                 holder.pbDownload.setVisibility(View.GONE);
 
                 if (!isDownloaded) {
-                    holder.btnPlayReplyAudio.setImageResource(android.R.drawable.stat_sys_download);
+                    holder.btnPlayReplyAudio.setImageResource(R.drawable.ic_st_download);
                 } else {
                     boolean isThisPlayingOrPaused = (playingPosition == position);
                     if (isThisPlayingOrPaused && mediaPlayer != null) {
-                        holder.btnPlayReplyAudio.setImageResource(mediaPlayer.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+                        holder.btnPlayReplyAudio.setImageResource(mediaPlayer.isPlaying() ? R.drawable.ic_st_pause : R.drawable.ic_st_play);
                         int currentPos = mediaPlayer.getCurrentPosition();
                         holder.seekBarReply.setMax(mediaPlayer.getDuration());
                         holder.seekBarReply.setProgress(currentPos);
@@ -222,7 +222,7 @@ public class JournalReplyAdapter extends RecyclerView.Adapter<JournalReplyAdapte
                         int secs = (currentPos / 1000) % 60;
                         holder.tvReplyDuration.setText(String.format("%02d:%02d / %s", mins, secs, reply.getDuration()));
                     } else {
-                        holder.btnPlayReplyAudio.setImageResource(android.R.drawable.ic_media_play);
+                        holder.btnPlayReplyAudio.setImageResource(R.drawable.ic_st_play);
                         holder.seekBarReply.setProgress(0);
                         holder.tvReplyDuration.setText(reply.getDuration());
                     }

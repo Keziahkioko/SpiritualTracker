@@ -2,8 +2,8 @@
 <!-- A four-point sparkle with a small companion, white with a warm edge (for the gold card). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="40dp" android:height="40dp" android:viewportWidth="40" android:viewportHeight="40">
-    <path android:fillColor="#FFFFFFFF" android:strokeColor="#E0A13A" android:strokeWidth="0.8"
+    <path android:fillColor="#FFB98AF2" android:strokeColor="#FFE9DAFF" android:strokeWidth="0.8"
         android:pathData="M17,4C18,13 20,16 30,17C20,18 18,21 17,31C16,21 14,18 4,17C14,16 16,13 17,4Z" />
-    <path android:fillColor="#FFFFFFFF" android:strokeColor="#E0A13A" android:strokeWidth="0.6"
+    <path android:fillColor="#FFB98AF2" android:strokeColor="#FFE9DAFF" android:strokeWidth="0.6"
         android:pathData="M31,24C31.5,28 32.5,29 36,29.5C32.5,30 31.5,31 31,35C30.5,31 29.5,30 26,29.5C29.5,29 30.5,28 31,24Z" />
 </vector>

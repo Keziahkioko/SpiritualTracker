@@ -221,14 +221,14 @@ public class JournalActivity extends AppCompatActivity {
     }
 
     private void updateUIForRecording() {
-        binding.btnRecord.setImageResource(android.R.drawable.ic_media_pause);
-        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
+        binding.btnRecord.setImageResource(R.drawable.ic_st_pause);
+        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A23FB5")));
     }
 
     private void updateUIForPaused() {
-        // Using Green for "Captured/Paused" state as requested
-        binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
-        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2E7D32")));
+        // Paused: deep violet (recording is magenta, ready is the usual purple)
+        binding.btnRecord.setImageResource(R.drawable.ic_st_mic);
+        binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4A2C8F")));
     }
 
     private void stopAndFinalizeRecording() {
@@ -241,7 +241,7 @@ public class JournalActivity extends AppCompatActivity {
             binding.btnDiscardAudio.setVisibility(View.GONE);
 
             // Return icon to normal purple after save/stop logic is complete elsewhere
-            binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+            binding.btnRecord.setImageResource(R.drawable.ic_st_mic);
             binding.btnRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
         }
     }
@@ -278,7 +278,7 @@ public class JournalActivity extends AppCompatActivity {
         binding.btnDiscardAudio.setVisibility(android.view.View.GONE);
 
         // Reset Record button back to purple microphone
-        binding.btnRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+        binding.btnRecord.setImageResource(R.drawable.ic_st_mic);
         binding.btnRecord.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#673AB7")));
 
         android.widget.Toast.makeText(this, "Audio discarded", android.widget.Toast.LENGTH_SHORT).show();

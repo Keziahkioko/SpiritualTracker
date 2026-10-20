@@ -410,7 +410,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Both of us did all four today: a golden card (see MainActivity.showBothDone) -->
+        <!-- Both of us did all four today: a dashboard card with a glowing lavender rim (see MainActivity.showBothDone) -->
         <LinearLayout
             android:id="@+id/cardBothDone"
             android:layout_width="0dp"
@@ -418,8 +418,10 @@
             android:layout_marginStart="18dp"
             android:layout_marginEnd="18dp"
             android:layout_marginBottom="14dp"
-            android:background="@drawable/bg_gold_card"
-            android:elevation="6dp"
+            android:background="@drawable/bg_both_done"
+            android:elevation="8dp"
+            android:outlineSpotShadowColor="#B15CFF"
+            android:outlineAmbientShadowColor="#B15CFF"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="18dp"
@@ -449,7 +451,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="You both finished today"
-                    android:textColor="#3B2A06"
+                    android:textColor="@color/st_text"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -458,7 +460,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Bible, prayer, journal and verses, all done together"
-                    android:textColor="#6B4A0E"
+                    android:textColor="@color/st_text_2"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>

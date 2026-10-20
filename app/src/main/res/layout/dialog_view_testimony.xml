@@ -141,7 +141,7 @@
             android:textAllCaps="false"
             android:textSize="14sp"
             app:strokeColor="#FFCDD2"
-            app:icon="@android:drawable/ic_menu_delete"
+            app:icon="@drawable/ic_st_trash"
             app:iconTint="@color/st_danger"/>
     </LinearLayout>
 </LinearLayout>

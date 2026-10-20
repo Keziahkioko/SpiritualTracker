@@ -11,9 +11,9 @@ import android.view.View;
 public class PairedRingView extends View {
 
     public static final int ME = 0xFF7E57C2;
-    public static final int PARTNER = 0xFFB8479B;
+    public static final int PARTNER = 0xFF3A66D1;
     private static final int ME_TRACK = 0xFFEDE7F6;
-    private static final int PARTNER_TRACK = 0xFFF6E1EF;
+    private static final int PARTNER_TRACK = 0xFFE2EAFB;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF box = new RectF();

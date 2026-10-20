@@ -660,7 +660,7 @@ public class MainActivity extends AppCompatActivity {
         setDot(binding.progressMemorizeMe,      dayFlag(myDayDoc, "memorize") || userDate(myUserDoc, "memorizedTodayDate"));
         setDot(binding.progressMemorizePartner, hasPartner && (dayFlag(partnerDayDoc, "memorize") || userDate(partnerUserDoc, "memorizedTodayDate")));
 
-        // All eight (both of us, all four practices): the golden card.
+        // All eight (both of us, all four practices): the both-finished card.
         boolean[] mine = {
                 bibleDone(currentUserId, myDayDoc),
                 dayFlag(myDayDoc, "prayed") || userDate(myUserDoc, "prayedTodayDate"),
@@ -732,7 +732,7 @@ public class MainActivity extends AppCompatActivity {
     private Boolean bothDoneShown;
 
     /**
-     * The golden card when both of us have done all four practices today. The first time it
+     * The both-finished card when both of us have done all four practices today. The first time it
      * appears on a given day it pops in with a sparkle burst; after that it just stays.
      */
     private void showBothDone(boolean all) {

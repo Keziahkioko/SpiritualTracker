@@ -252,9 +252,9 @@ public class JournalDetailActivity extends AppCompatActivity {
 
             // WhatsApp Style: Show play button immediately if it's mine or already downloaded
             if (isMine || cacheFile.exists()) {
-                btnPlayAudio.setImageResource(android.R.drawable.ic_media_play);
+                btnPlayAudio.setImageResource(R.drawable.ic_st_play);
             } else {
-                btnPlayAudio.setImageResource(android.R.drawable.stat_sys_download);
+                btnPlayAudio.setImageResource(R.drawable.ic_st_download);
             }
 
             btnPlayAudio.setOnClickListener(v -> {
@@ -350,12 +350,12 @@ public class JournalDetailActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() > 0) {
                     if (!isTyping) {
-                        btnSendOrRecord.setImageResource(android.R.drawable.ic_menu_send);
+                        btnSendOrRecord.setImageResource(R.drawable.ic_st_send);
                         isTyping = true;
                     }
                 } else {
                     if (isTyping) {
-                        btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+                        btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
                         isTyping = false;
                     }
                 }
@@ -517,7 +517,7 @@ public class JournalDetailActivity extends AppCompatActivity {
                 mp.start();
                 isPlaying = true;
                 isPaused = false;
-                btnPlayAudio.setImageResource(android.R.drawable.ic_media_pause);
+                btnPlayAudio.setImageResource(R.drawable.ic_st_pause);
                 seekBarAudio.setMax(mp.getDuration());
                 startPlaybackTimer();
             });
@@ -535,7 +535,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             mediaPlayer.pause();
             isPlaying = false;
             isPaused = true;
-            btnPlayAudio.setImageResource(android.R.drawable.ic_media_play);
+            btnPlayAudio.setImageResource(R.drawable.ic_st_play);
             if (playbackRunnable != null) playbackHandler.removeCallbacks(playbackRunnable);
         }
     }
@@ -545,7 +545,7 @@ public class JournalDetailActivity extends AppCompatActivity {
             mediaPlayer.start();
             isPlaying = true;
             isPaused = false;
-            btnPlayAudio.setImageResource(android.R.drawable.ic_media_pause);
+            btnPlayAudio.setImageResource(R.drawable.ic_st_pause);
             startPlaybackTimer();
         }
     }
@@ -585,7 +585,7 @@ public class JournalDetailActivity extends AppCompatActivity {
 
         isPlaying = false;
         isPaused = false;
-        btnPlayAudio.setImageResource(android.R.drawable.ic_media_play);
+        btnPlayAudio.setImageResource(R.drawable.ic_st_play);
         seekBarAudio.setProgress(0);
 
         String total = (audioDuration != null) ? audioDuration : "--:--";
@@ -1051,13 +1051,13 @@ public class JournalDetailActivity extends AppCompatActivity {
     }
 
     private void updateUIForRecording() {
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_media_pause);
-        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_pause);
+        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A23FB5")));
     }
 
     private void updateUIForPaused() {
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
-        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2E7D32")));
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
+        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4A2C8F")));
     }
 
     private void discardAudio() {
@@ -1083,7 +1083,7 @@ public class JournalDetailActivity extends AppCompatActivity {
 
         layoutRecordingUI.setVisibility(View.GONE);
         etReplyInput.setVisibility(View.VISIBLE);
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
         btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
     }
 

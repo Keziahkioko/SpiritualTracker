@@ -446,7 +446,7 @@ public class HistoryActivity extends AppCompatActivity {
         LinearLayout head = streakRow();
         head.addView(cell(text("", 12, 0xFF1A1A2E, false), 1.3f));
         head.addView(cell(centered(text("You", 13, 0xFF5E35B1, true)), 1f));
-        head.addView(cell(centered(text(partnerName, 13, 0xFF93286F, true)), 1f));
+        head.addView(cell(centered(text(partnerName, 13, 0xFF2448A3, true)), 1f));
         head.setPadding(0, 0, 0, dp(6));
         box.addView(head);
 
@@ -466,7 +466,7 @@ public class HistoryActivity extends AppCompatActivity {
             label.addView(name);
             row.addView(cell(label, 1.3f));
             row.addView(cell(streakCell(mine, 0xFF5E35B1), 1f));
-            row.addView(cell(streakCell(theirs, 0xFF93286F), 1f));
+            row.addView(cell(streakCell(theirs, 0xFF2448A3), 1f));
             box.addView(row);
         }
     }
@@ -612,7 +612,7 @@ public class HistoryActivity extends AppCompatActivity {
                 View gap = new View(this);
                 gap.setLayoutParams(new LinearLayout.LayoutParams(1, dp(3)));
                 bars.addView(gap);
-                bars.addView(countBar(a2, length, PairedRingView.PARTNER, 0xFF93286F));
+                bars.addView(countBar(a2, length, PairedRingView.PARTNER, 0xFF2448A3));
             }
             row.addView(bars);
             box.addView(row);
@@ -725,7 +725,7 @@ public class HistoryActivity extends AppCompatActivity {
             appendColored(sb, mine + "/7", 0xFF5E35B1);
             if (both) {
                 sb.append("  ");
-                appendColored(sb, theirs + "/7", 0xFF93286F);
+                appendColored(sb, theirs + "/7", 0xFF2448A3);
             }
             TextView counts = text("", 12, 0xFF1A1A2E, false);
             counts.setGravity(Gravity.CENTER);

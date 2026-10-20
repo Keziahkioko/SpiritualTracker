@@ -253,8 +253,8 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             h.btnPlayAudio.setImageResource(
                     position == playingPosition
-                            ? android.R.drawable.ic_media_pause
-                            : android.R.drawable.ic_media_play);
+                            ? R.drawable.ic_st_pause
+                            : R.drawable.ic_st_play);
 
             h.btnPlayAudio.setOnClickListener(v -> {
                 if (position == playingPosition) stopAudio();

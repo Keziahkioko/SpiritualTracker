@@ -1776,8 +1776,8 @@ public class MemorizeActivity extends AppCompatActivity {
             if (isMast) {
                 boolean refreshDue = isDue && !partnerMode;
                 h.tvStage.setText(refreshDue ? "Mastered · refresh due" : "Mastered");
-                h.tvStage.setTextColor(0xFF2E7D32);
-                h.viewStripe.setBackgroundColor(0xFF43A047);
+                h.tvStage.setTextColor(0xFF8E2C9E);
+                h.viewStripe.setBackgroundColor(0xFFA23FB5);
                 if (h.tvDuePill != null) {
                     h.tvDuePill.setVisibility(refreshDue ? View.VISIBLE : View.GONE);
                     h.tvDuePill.setText("Refresh");

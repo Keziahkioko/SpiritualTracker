@@ -239,10 +239,10 @@ public class ConnectionFragment extends Fragment {
 
                 // Toggle Send/Mic Button
                 if (hasText && !isTyping) {
-                    btnSendOrRecord.setImageResource(android.R.drawable.ic_menu_send);
+                    btnSendOrRecord.setImageResource(R.drawable.ic_st_send);
                     isTyping = true;
                 } else if (!hasText && isTyping) {
-                    btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+                    btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
                     isTyping = false;
                 }
 
@@ -454,13 +454,13 @@ public class ConnectionFragment extends Fragment {
     }
 
     private void updateUIForRecording() {
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_media_pause);
-        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_pause);
+        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A23FB5")));
     }
 
     private void updateUIForPaused() {
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
-        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2E7D32")));
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
+        btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4A2C8F")));
     }
 
     private void discardAudio() {
@@ -486,7 +486,7 @@ public class ConnectionFragment extends Fragment {
 
         layoutRecordingUI.setVisibility(View.GONE);
         etMessageInput.setVisibility(View.VISIBLE);
-        btnSendOrRecord.setImageResource(android.R.drawable.ic_btn_speak_now);
+        btnSendOrRecord.setImageResource(R.drawable.ic_st_mic);
         btnSendOrRecord.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#673AB7")));
     }
 

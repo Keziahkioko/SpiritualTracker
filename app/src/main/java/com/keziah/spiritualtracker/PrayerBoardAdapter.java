@@ -63,6 +63,9 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
             authorLine += " · " + sdf.format(request.getTimestamp().toDate());
         }
         holder.tvAuthor.setText(authorLine);
+        // Side stripe: purple for my requests, the partner's colour for theirs (as in Journal).
+        if (holder.stripe != null) holder.stripe.setBackgroundColor(isMyPost ? 0xFF7E57C2
+                : androidx.core.content.ContextCompat.getColor(ctx, R.color.st_partner));
 
         // Weekly reminder bell, on the board only (answered requests have left it).
         if (holder.bell != null) {
@@ -123,7 +126,7 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
 
     public static class PrayerBoardViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvDescription, tvAuthor, reminderDay;
-        View badgeContainer;
+        View badgeContainer, stripe;
         android.widget.ImageView bell;
 
         public PrayerBoardViewHolder(@NonNull View itemView) {
@@ -134,6 +137,7 @@ public class PrayerBoardAdapter extends RecyclerView.Adapter<PrayerBoardAdapter.
             badgeContainer = itemView.findViewById(R.id.answeredBadge);
             bell = itemView.findViewById(R.id.requestReminderBell);
             reminderDay = itemView.findViewById(R.id.requestReminderDay);
+            stripe = itemView.findViewById(R.id.viewRequestStripe);
         }
     }
 }
