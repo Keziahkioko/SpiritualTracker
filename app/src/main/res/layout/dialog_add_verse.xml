@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add a Verse"
-        android:textColor="#1A1A2E"
+        android:textColor="@color/st_text"
         android:textSize="20sp"
         android:textStyle="bold"
         android:fontFamily="serif"
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Learn it today, then five short reviews over the next week."
-        android:textColor="#5F5F64"
+        android:textColor="@color/st_text_2"
         android:textSize="13sp"
         android:layout_marginBottom="20dp"/>
 
@@ -36,12 +36,12 @@
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusBottomEnd="12dp"
-        app:boxStrokeColor="#7E57C2"
+        app:boxStrokeColor="@color/st_accent"
         app:boxStrokeWidth="1.5dp"
         app:boxStrokeWidthFocused="2dp"
-        app:hintTextColor="#7E57C2"
-        app:boxBackgroundColor="#F8F5FF"
-        android:textColorHint="#6E6880"
+        app:hintTextColor="@color/st_accent"
+        app:boxBackgroundColor="@color/st_field"
+        android:textColorHint="@color/st_text_3"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:maxLines="1"
-            android:textColor="#1A1A2E"
+            android:textColor="@color/st_text"
             android:textSize="15sp"
             android:paddingTop="14dp"
             android:paddingBottom="14dp"/>
@@ -67,12 +67,12 @@
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusBottomEnd="12dp"
-        app:boxStrokeColor="#7E57C2"
+        app:boxStrokeColor="@color/st_accent"
         app:boxStrokeWidth="1.5dp"
         app:boxStrokeWidthFocused="2dp"
-        app:hintTextColor="#7E57C2"
-        app:boxBackgroundColor="#F8F5FF"
-        android:textColorHint="#6E6880"
+        app:hintTextColor="@color/st_accent"
+        app:boxBackgroundColor="@color/st_field"
+        android:textColorHint="@color/st_text_3"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -84,7 +84,7 @@
             android:maxLines="10"
             android:scrollbars="vertical"
             android:gravity="top|start"
-            android:textColor="#1A1A2E"
+            android:textColor="@color/st_text"
             android:textSize="14sp"
             android:paddingTop="12dp"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -95,9 +95,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Share with my partner"
-        android:textColor="#5E35B1"
+        android:textColor="@color/st_accent_strong"
         android:textSize="14sp"
-        android:buttonTint="#7E57C2"
+        android:buttonTint="@color/st_accent"
         android:visibility="gone"/>
 
 </LinearLayout>

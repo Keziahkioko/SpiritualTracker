@@ -13,14 +13,14 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_weight="1"
-        android:background="#EDE7F6"
+        android:background="@color/st_soft"
         android:layout_marginEnd="12dp"/>
 
     <TextView
         android:id="@+id/tvSectionHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#6A4FB0"
+        android:textColor="@color/st_accent"
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.12"/>
@@ -29,7 +29,7 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_weight="1"
-        android:background="#EDE7F6"
+        android:background="@color/st_soft"
         android:layout_marginStart="12dp"/>
 
 </LinearLayout>

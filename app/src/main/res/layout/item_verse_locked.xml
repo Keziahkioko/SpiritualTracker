@@ -21,7 +21,7 @@
         android:ellipsize="end"
         android:fontFamily="serif"
         android:maxLines="1"
-        android:textColor="#6E6880"
+        android:textColor="@color/st_text_3"
         android:textSize="15sp"
         android:textStyle="bold" />
 
@@ -30,6 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:textColor="#6A4FB0"
+        android:textColor="@color/st_accent"
         android:textSize="12sp" />
 </LinearLayout>

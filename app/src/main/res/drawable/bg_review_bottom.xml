@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Bottom action bar: white with a hairline on top. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item><shape><solid android:color="#ECE6F3" /></shape></item>
-    <item android:top="1dp"><shape><solid android:color="#FFFFFF" /></shape></item>
+    <item><shape><solid android:color="@color/st_stroke" /></shape></item>
+    <item android:top="1dp"><shape><solid android:color="@color/st_surface" /></shape></item>
 </layer-list>

@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FB"
+    android:background="@color/st_page"
     android:orientation="vertical">
 
     <LinearLayout
@@ -26,7 +26,7 @@
             android:contentDescription="Back"
             android:padding="12dp"
             android:src="@drawable/ic_back"
-            app:tint="#4A2C8F" />
+            app:tint="@color/st_accent_strong" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:text="Add a passage"
-                android:textColor="#1C1C1E"
+                android:textColor="@color/st_text"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
@@ -61,7 +61,7 @@
                 android:layout_marginBottom="20dp"
                 android:lineSpacingMultiplier="1.25"
                 android:text="Paste a chapter or a long passage. It's split into short parts that unlock one by one as you learn them."
-                android:textColor="#7A7385"
+                android:textColor="@color/st_text_3"
                 android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -70,14 +70,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:hint="Reference (e.g. Psalm 23)"
-                android:textColorHint="#6E6880"
-                app:boxBackgroundColor="#FFFFFF"
+                android:textColorHint="@color/st_text_3"
+                app:boxBackgroundColor="@color/st_surface"
                 app:boxCornerRadiusBottomEnd="14dp"
                 app:boxCornerRadiusBottomStart="14dp"
                 app:boxCornerRadiusTopEnd="14dp"
                 app:boxCornerRadiusTopStart="14dp"
-                app:boxStrokeColor="#7E57C2"
-                app:hintTextColor="#7E57C2">
+                app:boxStrokeColor="@color/st_accent"
+                app:hintTextColor="@color/st_accent">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassageReference"
@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
                     android:maxLines="1"
-                    android:textColor="#1A1A2E"
+                    android:textColor="@color/st_text"
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -94,16 +94,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Paste the passage here"
-                android:textColorHint="#6E6880"
-                app:boxBackgroundColor="#FFFFFF"
+                android:textColorHint="@color/st_text_3"
+                app:boxBackgroundColor="@color/st_surface"
                 app:boxCornerRadiusBottomEnd="14dp"
                 app:boxCornerRadiusBottomStart="14dp"
                 app:boxCornerRadiusTopEnd="14dp"
                 app:boxCornerRadiusTopStart="14dp"
-                app:boxStrokeColor="#7E57C2"
+                app:boxStrokeColor="@color/st_accent"
                 app:helperText="Verse numbers are fine to keep in; headings and footnote marks are left out."
-                app:helperTextTextColor="#8A8494"
-                app:hintTextColor="#7E57C2">
+                app:helperTextTextColor="@color/st_text_3"
+                app:hintTextColor="@color/st_accent">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassageText"
@@ -115,7 +115,7 @@
                     android:maxLines="10"
                     android:minLines="7"
                     android:scrollbars="vertical"
-                    android:textColor="#1A1A2E"
+                    android:textColor="@color/st_text"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -126,7 +126,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="VERSES PER PART"
                 android:letterSpacing="0.08"
-                android:textColor="#7E57C2"
+                android:textColor="@color/st_accent"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -157,7 +157,7 @@
                     android:background="@drawable/chunk_btn_unselected"
                     android:gravity="center"
                     android:text="4"
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -169,7 +169,7 @@
                     android:background="@drawable/chunk_btn_unselected"
                     android:gravity="center"
                     android:text="5"
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -200,7 +200,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Share with my partner"
-                        android:textColor="#1C1C1E"
+                        android:textColor="@color/st_text"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -209,7 +209,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         android:text="They can see it and how you're doing"
-                        android:textColor="#7A7385"
+                        android:textColor="@color/st_text_3"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -236,7 +236,7 @@
                     android:id="@+id/tvPassagePreviewTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#4A2C8F"
+                    android:textColor="@color/st_accent_strong"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 

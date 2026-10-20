@@ -7,7 +7,7 @@
     android:id="@+id/reviewRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FB"
+    android:background="@color/st_page"
     android:orientation="vertical">
 
     <!-- Top bar: back on the left, where this verse is (Part, Day) on the right -->
@@ -29,7 +29,7 @@
             android:contentDescription="Back"
             android:padding="12dp"
             android:src="@drawable/ic_back"
-            app:tint="#4A2C8F" />
+            app:tint="@color/st_accent_strong" />
 
         <Space
             android:layout_width="0dp"
@@ -46,7 +46,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="12dp"
             android:paddingBottom="5dp"
-            android:textColor="#6A4FB0"
+            android:textColor="@color/st_accent"
             android:textSize="12sp"
             android:visibility="gone" />
 
@@ -59,7 +59,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="12dp"
             android:paddingBottom="5dp"
-            android:textColor="#5E35B1"
+            android:textColor="@color/st_accent_strong"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -87,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.1"
-                android:textColor="#1C1C1E"
+                android:textColor="@color/st_text"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
@@ -98,7 +98,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="20dp"
                 android:text="Can you recall this verse?"
-                android:textColor="#7A7385"
+                android:textColor="@color/st_text_3"
                 android:textSize="15sp" />
 
             <!-- Last verse of the part before, as a lead-in (parts 2 onwards) -->
@@ -108,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:lineSpacingMultiplier="1.3"
-                android:textColor="#8A8494"
+                android:textColor="@color/st_text_3"
                 android:textSize="13sp"
                 android:textStyle="italic"
                 android:visibility="gone" />
@@ -139,7 +139,7 @@
                         android:layout_gravity="center"
                         android:importantForAccessibility="no"
                         android:src="@drawable/memorize"
-                        app:tint="#7E57C2" />
+                        app:tint="@color/st_accent" />
                 </FrameLayout>
 
                 <TextView
@@ -148,7 +148,7 @@
                     android:layout_marginTop="16dp"
                     android:gravity="center"
                     android:text="Say it from memory"
-                    android:textColor="#1C1C1E"
+                    android:textColor="@color/st_text"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -159,7 +159,7 @@
                     android:gravity="center"
                     android:lineSpacingMultiplier="1.3"
                     android:text="Out loud or in your head. Then reveal it to check yourself, or type it out and the app will check it for you."
-                    android:textColor="#6E6A76"
+                    android:textColor="@color/st_text_2"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -172,7 +172,7 @@
                 android:background="@drawable/bg_learn_text"
                 android:lineSpacingMultiplier="1.3"
                 android:padding="16dp"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textSize="14sp"
                 android:visibility="gone" />
 
@@ -200,7 +200,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="serif"
                     android:lineSpacingMultiplier="1.5"
-                    android:textColor="#1A1A2E"
+                    android:textColor="@color/st_text"
                     android:textSize="17sp" />
             </com.keziah.spiritualtracker.CappedScrollView>
 
@@ -214,7 +214,7 @@
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.5"
                 android:padding="18dp"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textIsSelectable="false"
                 android:textSize="17sp"
                 android:visibility="gone" />
@@ -226,7 +226,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:gravity="center_horizontal"
-                android:textColor="#6A4FB0"
+                android:textColor="@color/st_accent"
                 android:textSize="13sp"
                 android:visibility="gone" />
 
@@ -246,17 +246,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Type it from memory"
-                android:textColorHint="#6E6880"
+                android:textColorHint="@color/st_text_3"
                 android:visibility="gone"
-                app:boxBackgroundColor="#FFFFFF"
+                app:boxBackgroundColor="@color/st_surface"
                 app:boxCornerRadiusBottomEnd="14dp"
                 app:boxCornerRadiusBottomStart="14dp"
                 app:boxCornerRadiusTopEnd="14dp"
                 app:boxCornerRadiusTopStart="14dp"
-                app:boxStrokeColor="#7E57C2"
+                app:boxStrokeColor="@color/st_accent"
                 app:helperText="Tip: tap the mic on your keyboard to say it instead."
-                app:helperTextTextColor="#6E6880"
-                app:hintTextColor="#7E57C2">
+                app:helperTextTextColor="@color/st_text_3"
+                app:hintTextColor="@color/st_accent">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etTypeIt"
@@ -268,7 +268,7 @@
                     android:minLines="6"
                     android:overScrollMode="ifContentScrolls"
                     android:scrollbars="vertical"
-                    android:textColor="#1A1A2E"
+                    android:textColor="@color/st_text"
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -282,7 +282,7 @@
                 android:letterSpacing="0"
                 android:text="Not learned yet? Learn it first"
                 android:textAllCaps="false"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="14sp"
                 android:visibility="gone" />
         </LinearLayout>
@@ -318,10 +318,10 @@
                 android:letterSpacing="0"
                 android:text="First letters"
                 android:textAllCaps="false"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="14sp"
                 app:cornerRadius="24dp"
-                app:strokeColor="#B39DDB"
+                app:strokeColor="@color/st_accent"
                 app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -334,37 +334,37 @@
                 android:letterSpacing="0"
                 android:text="Type it out"
                 android:textAllCaps="false"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="14sp"
                 app:cornerRadius="24dp"
-                app:strokeColor="#B39DDB"
+                app:strokeColor="@color/st_accent"
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ST.GlossyButton"
             android:id="@+id/btnReveal"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:letterSpacing="0"
             android:text="Reveal verse"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
             android:textSize="15sp"
-            app:backgroundTint="#7E57C2"
-            app:cornerRadius="26dp" />
+            android:outlineSpotShadowColor="#8E44C9"
+            android:outlineAmbientShadowColor="#8E44C9" />
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ST.GlossyButton"
             android:id="@+id/btnCheck"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:letterSpacing="0"
             android:text="Check"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:visibility="gone"
-            app:backgroundTint="#7E57C2"
-            app:cornerRadius="26dp" />
+            android:outlineSpotShadowColor="#8E44C9"
+            android:outlineAmbientShadowColor="#8E44C9" />
 
         <!-- Got it / Try again -->
         <LinearLayout
@@ -386,10 +386,10 @@
                 android:letterSpacing="0"
                 android:text="Try again"
                 android:textAllCaps="false"
-                android:textColor="#5E35B1"
+                android:textColor="@color/st_accent_strong"
                 android:textSize="15sp"
                 app:cornerRadius="26dp"
-                app:strokeColor="#B39DDB"
+                app:strokeColor="@color/st_accent"
                 app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton

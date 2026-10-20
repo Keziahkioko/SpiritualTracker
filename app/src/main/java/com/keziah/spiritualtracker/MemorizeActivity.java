@@ -93,6 +93,11 @@ public class MemorizeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memorize);
+        SAID_DIFFERENTLY = androidx.core.content.ContextCompat.getColor(this, R.color.st_accent);
+        MISSED_WORD = androidx.core.content.ContextCompat.getColor(this, R.color.st_danger);
+        SCORE_COLOR = androidx.core.content.ContextCompat.getColor(this, R.color.st_accent_strong);
+        SCORE_TEXT = androidx.core.content.ContextCompat.getColor(this, R.color.st_text_2);
+        LearnText.theme(this);
         PartnerName.apply(findViewById(android.R.id.content));
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -505,7 +510,7 @@ public class MemorizeActivity extends AppCompatActivity {
             for (TextView t : new TextView[]{btn3, btn4, btn5}) {
                 boolean on = t == cv;
                 t.setBackgroundResource(on ? R.drawable.chunk_btn_selected : R.drawable.chunk_btn_unselected);
-                t.setTextColor(on ? 0xFFFFFFFF : 0xFF7E57C2);
+                t.setTextColor(on ? 0xFFFFFFFF : androidx.core.content.ContextCompat.getColor(this, R.color.st_accent));
             }
             preview.run();
         };
@@ -613,7 +618,7 @@ public class MemorizeActivity extends AppCompatActivity {
             sb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, sb.length(), 0);
             sb.append("\n").append(start);
             label.setText(sb);
-            label.setTextColor(0xFF3A3346);
+            label.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_text));
             label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
             lp.setMarginStart(dp(12));
@@ -623,7 +628,7 @@ public class MemorizeActivity extends AppCompatActivity {
         if (parts.size() > shown) {
             TextView more = new TextView(this);
             more.setText("+ " + (parts.size() - shown) + " more");
-            more.setTextColor(0xFF7E57C2);
+            more.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_accent));
             more.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13);
             more.setPadding(dp(36), dp(4), 0, 0);
             list.addView(more);
@@ -1154,11 +1159,12 @@ public class MemorizeActivity extends AppCompatActivity {
             w.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             androidx.core.view.WindowCompat.setDecorFitsSystemWindows(w, false);
             w.setStatusBarColor(android.graphics.Color.TRANSPARENT);
-            w.setNavigationBarColor(android.graphics.Color.WHITE);
+            w.setNavigationBarColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_surface));
             androidx.core.view.WindowInsetsControllerCompat bars =
                     androidx.core.view.WindowCompat.getInsetsController(w, w.getDecorView());
-            bars.setAppearanceLightStatusBars(true);
-            bars.setAppearanceLightNavigationBars(true);
+            boolean light = !Appearance.isDark(this);
+            bars.setAppearanceLightStatusBars(light);
+            bars.setAppearanceLightNavigationBars(light);
         }
         int top = topBar.getPaddingTop(), bottom = bottomBar.getPaddingBottom();
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(content, (v, insets) -> {
@@ -1174,8 +1180,10 @@ public class MemorizeActivity extends AppCompatActivity {
 
     // ─── Type it out ─────────────────────────────────────────────────────────
 
-    private static final int SAID_DIFFERENTLY = 0xFF7E57C2;
-    private static final int MISSED_WORD      = 0xFFC0392B;
+    /** Set from the palette in onCreate, so they suit Light or Dark. */
+    private static int SAID_DIFFERENTLY = 0xFF7E57C2;
+    private static int MISSED_WORD      = 0xFFC0392B;
+    private static int SCORE_COLOR = 0xFF4A2C8F, SCORE_TEXT = 0xFF4A4458;
 
     /** The verse with every word that wasn't typed exactly picked out: purple said differently, red missed. */
     private static CharSequence renderCheck(TypeCheck check, Map<Integer, String[]> meaning) {
@@ -1213,12 +1221,12 @@ public class MemorizeActivity extends AppCompatActivity {
         android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
         out.append(pct + "%");
         out.setSpan(new android.text.style.RelativeSizeSpan(2f), 0, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        out.setSpan(new android.text.style.ForegroundColorSpan(0xFF4A2C8F), 0, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.setSpan(new android.text.style.ForegroundColorSpan(SCORE_COLOR), 0, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         int words = out.length();
         out.append("  " + check.exact + " of " + total + " words exactly");
         out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, out.length(),
                 android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        out.setSpan(new android.text.style.ForegroundColorSpan(0xFF4A4458), words, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        out.setSpan(new android.text.style.ForegroundColorSpan(SCORE_TEXT), words, out.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         if (check.different > 0) colored(out.append("\n"), check.different + " said differently", SAID_DIFFERENTLY);
         if (check.missed > 0) colored(out.append(check.different > 0 ? " · " : "\n"), check.missed + " missed", MISSED_WORD);
 
@@ -1444,7 +1452,7 @@ public class MemorizeActivity extends AppCompatActivity {
             for (int i = 0; i < segments.getChildCount(); i++) {
                 android.graphics.drawable.GradientDrawable bar = new android.graphics.drawable.GradientDrawable();
                 bar.setCornerRadius(dp(3));
-                bar.setColor(i <= s ? 0xFF7E57C2 : 0xFFE6DCF5);
+                bar.setColor(i <= s ? 0xFF7E57C2 : androidx.core.content.ContextCompat.getColor(this, R.color.st_soft));
                 segments.getChildAt(i).setBackground(bar);
             }
             tvStep.setText("STEP " + (s + 1) + " OF " + LEARN_TITLES.length);
@@ -1776,7 +1784,7 @@ public class MemorizeActivity extends AppCompatActivity {
             if (isMast) {
                 boolean refreshDue = isDue && !partnerMode;
                 h.tvStage.setText(refreshDue ? "Mastered · refresh due" : "Mastered");
-                h.tvStage.setTextColor(0xFF8E2C9E);
+                h.tvStage.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_mastered));
                 h.viewStripe.setBackgroundColor(0xFFA23FB5);
                 if (h.tvDuePill != null) {
                     h.tvDuePill.setVisibility(refreshDue ? View.VISIBLE : View.GONE);
@@ -1784,7 +1792,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 }
             } else if (MemorizeActivity.needsLearning(v)) {
                 h.tvStage.setText(partnerMode ? "New, learning it" : "New · learn it first");
-                h.tvStage.setTextColor(0xFF6A1B9A);
+                h.tvStage.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent_strong));
                 h.viewStripe.setBackgroundColor(0xFF7E57C2);
                 if (h.tvDuePill != null) {
                     h.tvDuePill.setVisibility(partnerMode ? View.GONE : View.VISIBLE);
@@ -1792,7 +1800,7 @@ public class MemorizeActivity extends AppCompatActivity {
                 }
             } else if (isDue) {
                 h.tvStage.setText(partnerMode ? "Reviewing today" : "Due for review");
-                h.tvStage.setTextColor(0xFF6A1B9A);
+                h.tvStage.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent_strong));
                 h.viewStripe.setBackgroundColor(0xFF7E57C2);
                 if (h.tvDuePill != null && partnerMode) {
                     h.tvDuePill.setVisibility(View.GONE);
@@ -1802,12 +1810,12 @@ public class MemorizeActivity extends AppCompatActivity {
                 }
             } else if (MemorizeActivity.isLocked(v)) {
                 h.tvStage.setText("Locked");
-                h.tvStage.setTextColor(0xFF5F5F64);
-                h.viewStripe.setBackgroundColor(0xFFE0E0E0);
+                h.tvStage.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_text_3));
+                h.viewStripe.setBackgroundColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_stroke));
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
             } else {
                 h.tvStage.setText(v.getStage() != null ? capitalize(v.getStage()) : "Learning");
-                h.tvStage.setTextColor(0xFF5E35B1);
+                h.tvStage.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent));
                 h.viewStripe.setBackgroundColor(0xFFB39DDB);
                 if (h.tvDuePill != null) h.tvDuePill.setVisibility(View.GONE);
             }
@@ -1824,7 +1832,7 @@ public class MemorizeActivity extends AppCompatActivity {
             if (h.tvShared != null) h.tvShared.setVisibility(View.GONE);
             h.tvStage.setText(due ? "Say them as one" : "Next: " + new SimpleDateFormat("d MMM", Locale.getDefault())
                     .format(t.anchor.getTogetherNextDate().toDate()));
-            h.tvStage.setTextColor(due ? 0xFF6A1B9A : 0xFF5E35B1);
+            h.tvStage.setTextColor(due ? androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent_strong) : androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_accent));
             h.viewStripe.setBackgroundColor(due ? 0xFF7E57C2 : 0xFFB39DDB);
             if (h.tvDuePill != null) {
                 h.tvDuePill.setVisibility(due ? View.VISIBLE : View.GONE);

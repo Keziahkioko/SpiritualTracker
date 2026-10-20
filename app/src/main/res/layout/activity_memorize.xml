@@ -4,12 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F9">
+    android:background="@color/st_page">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F3F4F9"
+        android:background="@color/st_page"
         app:elevation="0dp">
 
     <LinearLayout
@@ -68,7 +68,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:text="Partner's verses"
-                        android:textColor="#7E57C2"
+                        android:textColor="@color/st_accent"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
                 </FrameLayout>
@@ -170,25 +170,28 @@
             android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"
             android:visibility="gone"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:strokeColor="#EDE7F6"
-            app:strokeWidth="1dp">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="14dp">
+                android:paddingStart="14dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="17dp"
+                android:background="@drawable/bg_card_small">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/partner_progress"
-                    android:textColor="#5E35B1"
+                    android:textColor="@color/st_accent_strong"
                     android:textSize="13sp"
                     android:textStyle="bold"/>
 
@@ -197,7 +200,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/partner_mastered_suffix"
-                    android:textColor="#6A4FB0"
+                    android:textColor="@color/st_accent"
                     android:textSize="13sp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -230,7 +233,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/no_verses_yet"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"/>
@@ -239,7 +242,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_first_verse_hint"
-                android:textColor="#5F5F64"
+                android:textColor="@color/st_text_2"
                 android:textSize="14sp"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.4"/>

@@ -23,10 +23,10 @@
             android:maxLines="1"
             android:paddingHorizontal="8dp"
             android:textAllCaps="false"
-            android:textColor="#5E35B1"
+            android:textColor="@color/st_accent_strong"
             android:textSize="13sp"
             android:letterSpacing="0"
-            app:backgroundTint="#EFE8FB"
+            app:backgroundTint="@color/st_soft"
             app:cornerRadius="24dp"
             app:icon="@drawable/ic_listen"
             app:iconGravity="textStart"
@@ -46,10 +46,10 @@
             android:maxLines="1"
             android:paddingHorizontal="8dp"
             android:textAllCaps="false"
-            android:textColor="#5E35B1"
+            android:textColor="@color/st_accent_strong"
             android:textSize="13sp"
             android:letterSpacing="0"
-            app:backgroundTint="#EFE8FB"
+            app:backgroundTint="@color/st_soft"
             app:cornerRadius="24dp"
             app:icon="@drawable/ic_repeat_after"
             app:iconGravity="textStart"
@@ -74,7 +74,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:paddingHorizontal="14dp"
             android:paddingVertical="6dp"
-            android:textColor="#7E57C2"
+            android:textColor="@color/st_accent"
             android:textSize="12sp"
             android:textStyle="bold" />
 
@@ -86,7 +86,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:paddingHorizontal="14dp"
             android:paddingVertical="6dp"
-            android:textColor="#7E57C2"
+            android:textColor="@color/st_accent"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>

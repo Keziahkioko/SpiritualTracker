@@ -28,10 +28,18 @@ final class LearnText {
 
     static final int FULL = 0, EVERY_THIRD = 1, EVERY_OTHER = 2, FIRST_LETTERS = 3, ALL_HIDDEN = 4;
 
-    private static final int GAP      = Color.parseColor("#E6DDF7");
-    private static final int REVEALED = Color.parseColor("#6A1B9A");
-    private static final int INK      = Color.parseColor("#1A1A2E");
-    private static final int TILE     = Color.parseColor("#EDE6FA");
+    private static int GAP      = Color.parseColor("#E6DDF7");
+    private static int REVEALED = Color.parseColor("#6A1B9A");
+    private static int INK      = Color.parseColor("#1A1A2E");
+    private static int TILE     = Color.parseColor("#EDE6FA");
+
+    /** Takes the colours from the palette, so the verse suits Light or Dark. */
+    static void theme(android.content.Context c) {
+        GAP = androidx.core.content.ContextCompat.getColor(c, R.color.st_stroke);
+        REVEALED = androidx.core.content.ContextCompat.getColor(c, R.color.st_accent_strong);
+        INK = androidx.core.content.ContextCompat.getColor(c, R.color.st_text);
+        TILE = androidx.core.content.ContextCompat.getColor(c, R.color.st_soft);
+    }
     private static final Pattern PARTS = Pattern.compile("^([^\\p{L}\\p{N}]*)(.*?)([^\\p{L}\\p{N}]*)$");
     private static final Pattern VERSE_NUMBER = Pattern.compile("^[\\[(]?\\d+[\\])]?[.:]?$");
 

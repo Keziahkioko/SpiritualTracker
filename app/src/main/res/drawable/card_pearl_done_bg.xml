@@ -51,10 +51,10 @@
                     <solid android:color="#FFFFFFFF" />
                 </shape>
             </item>
-            <!-- White rim around the face -->
+            <!-- Soft lavender rim around the face -->
             <item android:top="4dp" android:bottom="2dp">
                 <shape android:shape="rectangle">
-                    <stroke android:width="2dp" android:color="#C9A6F5" />
+                    <stroke android:width="1.5dp" android:color="#D6C2F7" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>
@@ -107,10 +107,10 @@
                     <solid android:color="#FFFFFFFF" />
                 </shape>
             </item>
-            <!-- White rim around the face -->
+            <!-- Soft lavender rim around the face -->
             <item android:top="0dp" android:bottom="6dp">
                 <shape android:shape="rectangle">
-                    <stroke android:width="2dp" android:color="#C9A6F5" />
+                    <stroke android:width="1.5dp" android:color="#D6C2F7" />
                     <corners android:radius="16dp" />
                 </shape>
             </item>

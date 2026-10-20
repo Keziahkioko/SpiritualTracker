@@ -704,7 +704,7 @@ public class MainActivity extends AppCompatActivity {
         float density = getResources().getDisplayMetrics().density;
         card.setCardElevation((done ? 16 : 10) * density);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            int glow = darkLook ? (done ? 0xFFB15CFF : 0xFF8E44C9) : (done ? 0xFF9C6BE8 : 0xFFB39DDB);
+            int glow = darkLook ? (done ? 0xFFB15CFF : 0xFF8E44C9) : (done ? 0xFFC9B2F0 : 0xFFCFC2EC);
             card.setOutlineSpotShadowColor(glow);
             card.setOutlineAmbientShadowColor(glow);
         }
@@ -874,11 +874,11 @@ public class MainActivity extends AppCompatActivity {
             for (int k = 0; k < g.getChildCount(); k++) {
                 View child = g.getChildAt(k);
                 if (child instanceof ImageView) {
-                    ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(darkLook ? Color.WHITE : 0xFF6A3CC8));
+                    ((ImageView) child).setImageTintList(android.content.res.ColorStateList.valueOf(darkLook ? Color.WHITE : 0xFF8C6FCB));
                     child.setBackgroundResource(darkLook ? R.drawable.bg_icon_glow : 0);
                 } else if (child instanceof TextView) {
                     TextView label = (TextView) child;
-                    label.setTextColor(darkLook ? Color.WHITE : 0xFF4A2C8F);
+                    label.setTextColor(darkLook ? Color.WHITE : 0xFF4E4168);
                     label.setShadowLayer(darkLook ? 10 : 0, 0, 0, 0x739F6BFF);
                 }
             }
@@ -898,8 +898,8 @@ public class MainActivity extends AppCompatActivity {
         binding.legendNone.setBackgroundResource(darkLook ? R.drawable.hm_none : R.drawable.hm_none_light);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             for (View tile : new View[]{binding.cardBible, binding.cardPrayer, binding.cardJournal, binding.cardMemory}) {
-                tile.setOutlineSpotShadowColor(darkLook ? 0xFF8E44C9 : 0xFFB39DDB);
-                tile.setOutlineAmbientShadowColor(darkLook ? 0xFF8E44C9 : 0xFFB39DDB);
+                tile.setOutlineSpotShadowColor(darkLook ? 0xFF8E44C9 : 0xFFCFC2EC);
+                tile.setOutlineAmbientShadowColor(darkLook ? 0xFF8E44C9 : 0xFFCFC2EC);
             }
         }
         refreshProgressCard();

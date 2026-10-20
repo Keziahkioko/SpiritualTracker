@@ -31,4 +31,5 @@
     <color name="st_pill_draft_text">#A65300</color>
     <color name="st_danger_soft">#FEE7E6</color>  <!-- soft red behind a delete icon -->
     <color name="st_partner">#3A66D1</color>  <!-- the partner's colour -->
+    <color name="st_mastered">#8E2C9E</color>  <!-- a mastered verse -->
 </resources>

@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FB"
+    android:background="@color/st_page"
     android:orientation="vertical">
 
     <LinearLayout
@@ -27,7 +27,7 @@
             android:contentDescription="Back"
             android:padding="12dp"
             android:src="@drawable/ic_back"
-            app:tint="#4A2C8F" />
+            app:tint="@color/st_accent_strong" />
 
         <Space
             android:layout_width="0dp"
@@ -44,7 +44,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="12dp"
             android:paddingBottom="5dp"
-            android:textColor="#6A4FB0"
+            android:textColor="@color/st_accent"
             android:textSize="12sp"
             android:visibility="gone" />
 
@@ -59,7 +59,7 @@
             android:paddingEnd="12dp"
             android:paddingBottom="5dp"
             android:text="Shared"
-            android:textColor="#5E35B1"
+            android:textColor="@color/st_accent_strong"
             android:textSize="12sp"
             android:textStyle="bold"
             android:visibility="gone" />
@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.1"
-                android:textColor="#1C1C1E"
+                android:textColor="@color/st_text"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
@@ -105,7 +105,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="#7A7385"
+                android:textColor="@color/st_text_3"
                 android:textSize="14sp"
                 android:visibility="gone" />
 
@@ -135,7 +135,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.08"
                         android:text="STAGE"
-                        android:textColor="#9A93A6"
+                        android:textColor="@color/st_text_3"
                         android:textSize="10sp"
                         android:textStyle="bold" />
 
@@ -144,7 +144,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:textColor="#4A2C8F"
+                        android:textColor="@color/st_accent_strong"
                         android:textSize="15sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -167,7 +167,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.08"
                         android:text="PROGRESS"
-                        android:textColor="#9A93A6"
+                        android:textColor="@color/st_text_3"
                         android:textSize="10sp"
                         android:textStyle="bold" />
 
@@ -176,7 +176,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:textColor="#4A2C8F"
+                        android:textColor="@color/st_accent_strong"
                         android:textSize="15sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -198,7 +198,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.08"
                         android:text="NEXT REVIEW"
-                        android:textColor="#9A93A6"
+                        android:textColor="@color/st_text_3"
                         android:textSize="10sp"
                         android:textStyle="bold" />
 
@@ -207,7 +207,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:textColor="#4A2C8F"
+                        android:textColor="@color/st_accent_strong"
                         android:textSize="15sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -222,7 +222,7 @@
                 android:fontFamily="serif"
                 android:lineSpacingMultiplier="1.55"
                 android:padding="20dp"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:textIsSelectable="true"
                 android:textSize="18sp" />
 
@@ -238,7 +238,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="This part unlocks when the part before it moves on."
-                android:textColor="#7A7385"
+                android:textColor="@color/st_text_3"
                 android:textSize="13sp"
                 android:visibility="gone" />
         </LinearLayout>
@@ -267,13 +267,14 @@
             android:letterSpacing="0"
             android:text="Edit"
             android:textAllCaps="false"
-            android:textColor="#5E35B1"
+            android:textColor="@color/st_accent_strong"
             android:textSize="15sp"
             app:cornerRadius="26dp"
-            app:strokeColor="#B39DDB"
+            app:strokeColor="@color/st_accent"
             app:strokeWidth="1dp" />
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ST.GlossyButton"
             android:id="@+id/btnDetailPractise"
             android:layout_width="0dp"
             android:layout_height="52dp"
@@ -284,9 +285,8 @@
             android:letterSpacing="0"
             android:text="Practise"
             android:textAllCaps="false"
-            android:textColor="#FFFFFF"
             android:textSize="15sp"
-            app:backgroundTint="#7E57C2"
-            app:cornerRadius="26dp" />
+            android:outlineSpotShadowColor="#8E44C9"
+            android:outlineAmbientShadowColor="#8E44C9" />
     </LinearLayout>
 </LinearLayout>
