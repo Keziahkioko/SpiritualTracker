@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F3F4F9"
+    android:background="@color/st_page"
     android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#F3F4F9"
+        android:background="@color/st_page"
         android:fillViewport="true">
 
             <LinearLayout
@@ -20,7 +20,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp"
-                android:background="#F3F4F9">
+                android:background="@color/st_page">
 
                 <ImageView
                     android:id="@+id/btnDetailBack"
@@ -32,23 +32,26 @@
                     android:contentDescription="Back"
                     android:padding="10dp"
                     android:src="@drawable/ic_back"
-                    app:tint="#1F1F1F" />
+                    app:tint="@color/st_text" />
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#E1BEE7"
-                    app:strokeWidth="1dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="@android:color/transparent"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="24dp">
+                        android:paddingStart="24dp"
+                        android:paddingTop="24dp"
+                        android:paddingEnd="24dp"
+                        android:paddingBottom="28dp"
+                        android:background="@drawable/bg_card">
 
                         <RelativeLayout
                             android:layout_width="match_parent"
@@ -70,7 +73,7 @@
                                     android:textSize="26sp"
                                     android:textStyle="bold"
                                     android:fontFamily="serif"
-                                    android:textColor="#1A1A2E"
+                                    android:textColor="@color/st_text"
                                     android:lineSpacingMultiplier="1.1"
                                     android:layout_marginBottom="10dp"/>
 
@@ -87,7 +90,7 @@
                                         android:text="By: Me"
                                         android:textSize="12sp"
                                         android:textStyle="bold"
-                                        android:textColor="#5B21B6"
+                                        android:textColor="@color/st_pill_me_text"
                                         android:background="@drawable/pill_me"
                                         android:paddingHorizontal="12dp"
                                         android:paddingVertical="4dp"/>
@@ -98,7 +101,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="Feb 18, 2026"
                                         android:textSize="13sp"
-                                        android:textColor="#6A4FB0"
+                                        android:textColor="@color/st_accent"
                                         android:layout_marginStart="12dp"/>
                                 </LinearLayout>
                             </LinearLayout>
@@ -110,10 +113,10 @@
                                 android:layout_alignParentEnd="true"
                                 android:layout_alignParentTop="true"
                                 android:background="@drawable/circle_background"
-                                android:backgroundTint="#F3E5F5"
+                                android:backgroundTint="@color/st_soft"
                                 android:contentDescription="Edit entry"
                                 android:src="@android:drawable/ic_menu_edit"
-                                app:tint="#673AB7"
+                                app:tint="@color/st_accent"
                                 android:padding="8dp"/>
                         </RelativeLayout>
 
@@ -122,7 +125,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:background="#F3E5F5"
+                            android:background="@color/st_soft"
                             android:padding="16dp"
                             android:layout_marginBottom="20dp"
                             android:visibility="gone">
@@ -142,7 +145,7 @@
                                         android:layout_height="match_parent"
                                         android:src="@android:drawable/ic_media_play"
                                         android:background="@drawable/circle_background"
-                                        android:backgroundTint="#673AB7"
+                                        android:backgroundTint="@color/st_accent_fill"
                                         app:tint="#FFFFFF" />
                                     <ProgressBar
                                         android:id="@+id/pbEntryDownload"
@@ -164,7 +167,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="Voice Note"
                                         android:textSize="14sp"
-                                        android:textColor="#333333"
+                                        android:textColor="@color/st_text"
                                         android:textStyle="bold"/>
 
                                     <TextView
@@ -173,7 +176,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="00:00 / 00:00"
                                         android:textSize="12sp"
-                                        android:textColor="#673AB7"
+                                        android:textColor="@color/st_accent"
                                         android:textStyle="bold"/>
                                 </LinearLayout>
                             </LinearLayout>
@@ -183,15 +186,15 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:progressBackgroundTint="#CCCCCC"
-                                android:progressTint="#673AB7"
-                                android:thumbTint="#673AB7" />
+                                android:progressBackgroundTint="@color/st_stroke"
+                                android:progressTint="@color/st_accent"
+                                android:thumbTint="@color/st_accent" />
                         </LinearLayout>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="#F0F0F0"
+                            android:background="@color/st_stroke"
                             android:layout_marginBottom="20dp"/>
 
                         <TextView
@@ -200,7 +203,7 @@
                             android:layout_height="wrap_content"
                             android:text="Content..."
                             android:textSize="17sp"
-                            android:textColor="#424242"
+                            android:textColor="@color/st_text"
                             android:lineSpacingExtra="6dp"
                             android:paddingBottom="8dp"/>
 
@@ -220,7 +223,7 @@
                     android:text="DISCUSSION"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="#673AB7"
+                    android:textColor="@color/st_accent"
                     android:letterSpacing="0.1"
                     android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"/>
@@ -230,7 +233,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="-16dp"
-                    android:background="#F3F4F9"
+                    android:background="@color/st_page"
                     android:nestedScrollingEnabled="false"
                     android:paddingBottom="8dp"
                     android:clipToPadding="false"/>
@@ -242,7 +245,7 @@
         android:id="@+id/layoutReplyBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FAFAFA"
+        android:background="@color/st_surface_alt"
         android:paddingHorizontal="8dp"
         android:paddingVertical="8dp"
         android:orientation="horizontal"
@@ -261,14 +264,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="#F5F5F5"
+                android:background="@color/st_page"
                 android:padding="8dp"
                 android:visibility="gone">
 
                 <View
                     android:layout_width="4dp"
                     android:layout_height="match_parent"
-                    android:background="#673AB7" />
+                    android:background="@color/st_accent_fill" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -282,7 +285,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Partner"
-                        android:textColor="#673AB7"
+                        android:textColor="@color/st_accent"
                         android:textStyle="bold"
                         android:textSize="12sp" />
 
@@ -292,7 +295,7 @@
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:textColor="#555555"
+                        android:textColor="@color/st_text_2"
                         android:textSize="14sp" />
                 </LinearLayout>
 
@@ -302,7 +305,7 @@
                     android:layout_height="24dp"
                     android:background="?selectableItemBackgroundBorderless"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    app:tint="#9E9E9E" />
+                    app:tint="@color/st_text_3" />
             </LinearLayout>
 
             <FrameLayout
@@ -316,7 +319,7 @@
                     android:layout_height="wrap_content"
                     android:text="Partner is typing..."
                     android:textSize="13sp"
-                    android:textColor="#673AB7"
+                    android:textColor="@color/st_accent"
                     android:textStyle="italic"
                     android:visibility="gone"
                     android:layout_marginStart="16dp"
@@ -331,8 +334,8 @@
                     android:paddingHorizontal="20dp"
                     android:paddingVertical="12dp"
                     android:textSize="16sp"
-                    android:textColor="#1A1A1A"
-                    android:textColorHint="#6E6E73"
+                    android:textColor="@color/st_text"
+                    android:textColorHint="@color/st_text_3"
                     android:maxLines="5"
                     android:inputType="textMultiLine|textCapSentences"/>
 
@@ -354,7 +357,7 @@
                         android:layout_gravity="center_vertical"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@android:drawable/ic_menu_delete"
-                        app:tint="#E53935" />
+                        app:tint="@color/st_danger" />
 
                     <TextView
                         android:id="@+id/tvRecordTimer"
@@ -363,7 +366,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
                         android:text="00:00"
-                        android:textColor="#673AB7"
+                        android:textColor="@color/st_accent"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:gravity="center" />
@@ -374,7 +377,7 @@
                         android:layout_height="36dp"
                         android:layout_gravity="center_vertical"
                         android:background="@drawable/circle_background"
-                        android:backgroundTint="#673AB7"
+                        android:backgroundTint="@color/st_accent_fill"
                         android:src="@android:drawable/ic_menu_send"
                         app:tint="#FFFFFF" />
                 </LinearLayout>
@@ -389,7 +392,7 @@
             android:layout_marginBottom="2dp"
             android:src="@android:drawable/ic_btn_speak_now"
             app:fabCustomSize="48dp"
-            app:backgroundTint="#673AB7"
+            app:backgroundTint="@color/st_accent_fill"
             app:tint="#FFFFFF"
             app:elevation="2dp"
             app:borderWidth="0dp"/>

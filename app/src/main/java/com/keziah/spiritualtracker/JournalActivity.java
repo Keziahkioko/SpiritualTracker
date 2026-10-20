@@ -114,7 +114,7 @@ public class JournalActivity extends AppCompatActivity {
             ArrayList<String> existing = getIntent().getStringArrayListExtra("imageUrls");
             if (existing != null) { photos.addAll(existing); originalPhotos.addAll(existing); }
 
-            binding.btnSaveJournal.setText("UPDATE ENTRY");
+            binding.btnSaveJournal.setText("Update Entry");
             binding.tvJournalHeading.setText("Edit Entry");
         }
 
@@ -147,6 +147,7 @@ public class JournalActivity extends AppCompatActivity {
         });
         renderPhotos();
 
+        SpringPress.on(binding.btnSaveJournal, 0.95f);
         binding.btnSaveJournal.setOnClickListener(v -> {
             saveJournalEntry("published");
         });
@@ -315,7 +316,8 @@ public class JournalActivity extends AppCompatActivity {
         }
 
         binding.btnSaveJournal.setEnabled(false);
-        binding.btnSaveJournal.setText(status.equals("draft") ? "SAVING DRAFT..." : "PROCESSING...");
+        binding.btnSaveJournal.setAlpha(0.6f);
+        binding.btnSaveJournal.setText(status.equals("draft") ? "Saving draft…" : "Saving…");
 
         final String finalTitle = title;
         uploadPhotosThen(() -> {
@@ -395,14 +397,15 @@ public class JournalActivity extends AppCompatActivity {
         if (!anyLocal) { next.run(); return; }
         JournalPhotos.uploadAll(photos, new JournalPhotos.Uploaded() {
             @Override public void progress(int done, int total) {
-                binding.btnSaveJournal.setText(total == 1 ? "UPLOADING PHOTO..."
-                        : "UPLOADING PHOTO " + (done + 1) + " OF " + total + "...");
+                binding.btnSaveJournal.setText(total == 1 ? "Uploading photo…"
+                        : "Uploading photo " + (done + 1) + " of " + total + "…");
             }
             @Override public void finished(ArrayList<String> urls) {
                 if (isFinishing()) return;
                 if (urls == null) {
                     binding.btnSaveJournal.setEnabled(true);
-                    binding.btnSaveJournal.setText(existingDocId != null ? "UPDATE ENTRY" : "SAVE ENTRY");
+                    binding.btnSaveJournal.setAlpha(1f);
+                    binding.btnSaveJournal.setText(existingDocId != null ? "Update Entry" : "Save Entry");
                     Toast.makeText(JournalActivity.this,
                             "Couldn't upload the photos. Check your connection and try again.", Toast.LENGTH_LONG).show();
                     return;
@@ -415,7 +418,7 @@ public class JournalActivity extends AppCompatActivity {
     }
 
     private void uploadAudioToCloudinary(String title, String content, String status) {
-        binding.btnSaveJournal.setText("UPLOADING AUDIO...");
+        binding.btnSaveJournal.setText("Uploading voice note…");
         MediaManager.get().upload(localAudioPath)
                 .option("folder", RelaySignatureProvider.FOLDER)
                 .option("resource_type", "auto")
@@ -432,6 +435,7 @@ public class JournalActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             Toast.makeText(JournalActivity.this, "Upload Failed", Toast.LENGTH_LONG).show();
                             binding.btnSaveJournal.setEnabled(true);
+                            binding.btnSaveJournal.setAlpha(1f);
                         });
                     }
                     @Override public void onStart(String id) {}
@@ -455,7 +459,7 @@ public class JournalActivity extends AppCompatActivity {
 
     private void saveToFirestore(String title, String content, String audioUrl, String status) {
         if (auth.getCurrentUser() == null) return;
-        runOnUiThread(() -> binding.btnSaveJournal.setText("SAVING..."));
+        runOnUiThread(() -> binding.btnSaveJournal.setText("Saving…"));
         String userId = auth.getCurrentUser().getUid();
 
         db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
@@ -483,7 +487,7 @@ public class JournalActivity extends AppCompatActivity {
                         .update(updates)
                         .addOnSuccessListener(aVoid -> {
                             if (publishingDraft) onPublished(userId, authorName, title, existingDocId);
-                            finish();
+                            closeAfterSave(publishingDraft);
                         })
                         .addOnFailureListener(e -> onSaveFailed());
 
@@ -505,11 +509,17 @@ public class JournalActivity extends AppCompatActivity {
                         .add(entry)
                         .addOnSuccessListener(documentReference -> {
                             if (publishing) onPublished(userId, authorName, title, documentReference.getId());
-                            finish();
+                            closeAfterSave(publishing);
                         })
                         .addOnFailureListener(e -> onSaveFailed());
             }
         }).addOnFailureListener(e -> onSaveFailed());
+    }
+
+    /** A newly published entry closes with a short sparkle from the save button; drafts just close. */
+    private void closeAfterSave(boolean published) {
+        if (!published || isFinishing()) { finish(); return; }
+        SparkleBurst.play(getWindow().getDecorView(), binding.btnSaveJournal, 28, 1.1f, 900, false, true, this::finish);
     }
 
     /** Ticks today's journal box (for both of us) and lets the partner know. */
@@ -525,7 +535,8 @@ public class JournalActivity extends AppCompatActivity {
 
     private void onSaveFailed() {
         binding.btnSaveJournal.setEnabled(true);
-        binding.btnSaveJournal.setText(existingDocId != null ? "UPDATE ENTRY" : "SAVE ENTRY");
+        binding.btnSaveJournal.setAlpha(1f);
+        binding.btnSaveJournal.setText(existingDocId != null ? "Update Entry" : "Save Entry");
         Toast.makeText(this, "Couldn't save. Check your connection and try again.", Toast.LENGTH_LONG).show();
     }
 

@@ -9,23 +9,24 @@
     android:layout_marginEnd="2dp"
     android:layout_marginBottom="12dp"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="18dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#EDE7F6"
-    app:strokeWidth="1dp">
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="3dp"
+        android:background="@drawable/bg_card_small">
 
     <!-- Purple for my entries, green for my partner's -->
     <View
         android:id="@+id/viewJournalStripe"
         android:layout_width="4dp"
         android:layout_height="match_parent"
-        android:background="#7E57C2"/>
+        android:background="@color/st_accent_fill"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -50,7 +51,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:fontFamily="serif"
-                android:textColor="#1A1A2E"
+                android:textColor="@color/st_text"
                 android:lineSpacingMultiplier="1.15"
                 android:layout_marginEnd="10dp"
                 tools:text="Eye witnesses of His majesty"/>
@@ -78,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="12sp"
-                android:textColor="#6A4FB0"
+                android:textColor="@color/st_accent"
                 tools:text="Apr 18, 2026  ·  6:22 AM"/>
 
             <TextView
@@ -93,7 +94,7 @@
                 android:paddingBottom="3dp"
                 android:layout_marginEnd="6dp"
                 android:background="@drawable/pill_draft"
-                android:textColor="#A65300"
+                android:textColor="@color/st_pill_draft_text"
                 android:visibility="gone"
                 tools:text="Draft"
                 tools:visibility="visible"/>
@@ -109,7 +110,7 @@
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
                 android:background="@drawable/pill_me"
-                android:textColor="#5B21B6"
+                android:textColor="@color/st_pill_me_text"
                 tools:text="Me"/>
 
             <TextView
@@ -134,7 +135,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:textColor="#4A4A4E"
+            android:textColor="@color/st_text_2"
             android:lineSpacingMultiplier="1.4"
             android:maxLines="2"
             android:ellipsize="end"
@@ -169,7 +170,7 @@
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_media_play"
                     android:background="@drawable/circle_background"
-                    android:backgroundTint="#7E57C2"
+                    android:backgroundTint="@color/st_accent_fill"
                     android:padding="5dp"
                     android:layout_marginEnd="8dp"
                     app:tint="#FFFFFF" />
@@ -188,7 +189,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
-                    android:textColor="#7E57C2"
+                    android:textColor="@color/st_accent"
                     tools:text="0:42"/>
             </LinearLayout>
 

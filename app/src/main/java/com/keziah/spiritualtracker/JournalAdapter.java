@@ -147,6 +147,7 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             return new HeaderVH(v);
         }
         View v = inf.inflate(R.layout.item_journal_entry, parent, false);
+        SpringPress.on(v, 0.97f);
         return new EntryVH(v);
     }
 
@@ -204,13 +205,13 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (isMe) {
             h.tvAuthor.setText("Me");
             h.tvAuthor.setBackgroundResource(R.drawable.pill_me);
-            h.tvAuthor.setTextColor(0xFF5B21B6);
+            h.tvAuthor.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_pill_me_text));
         } else {
             String name = PartnerName.isKnown(context) ? PartnerName.get(context)
                     : (entry.getAuthorName() != null ? entry.getAuthorName() : "Partner");
             h.tvAuthor.setText(name);
             h.tvAuthor.setBackgroundResource(R.drawable.pill_partner);
-            h.tvAuthor.setTextColor(0xFF166534);
+            h.tvAuthor.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_pill_partner_text));
         }
 
         // Status pill (Draft / NEW)
@@ -218,12 +219,12 @@ public class JournalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             h.tvStatus.setVisibility(View.VISIBLE);
             h.tvStatus.setText("Draft");
             h.tvStatus.setBackgroundResource(R.drawable.pill_draft);
-            h.tvStatus.setTextColor(0xFFA65300);
+            h.tvStatus.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_pill_draft_text));
         } else if (!entry.isReadByPartner() && !isMe) {
             h.tvStatus.setVisibility(View.VISIBLE);
             h.tvStatus.setText("New");
             h.tvStatus.setBackgroundResource(R.drawable.pill_me);
-            h.tvStatus.setTextColor(0xFF5B21B6);
+            h.tvStatus.setTextColor(androidx.core.content.ContextCompat.getColor(h.itemView.getContext(), R.color.st_pill_me_text));
         } else {
             h.tvStatus.setVisibility(View.GONE);
         }

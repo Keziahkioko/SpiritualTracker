@@ -208,7 +208,7 @@ public class JournalDetailActivity extends AppCompatActivity {
         // 3. Set Text & Styling
         if ("draft".equals(status)) {
             tvTitle.setText(title + " (Draft)");
-            tvTitle.setTextColor(Color.parseColor("#C25100"));
+            tvTitle.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_pill_draft_text));
         } else {
             tvTitle.setText(title);
         }
@@ -227,13 +227,13 @@ public class JournalDetailActivity extends AppCompatActivity {
 
             if (authorId != null && authorId.equals(currentUid)) {
                 tvAuthor.setText("By: Me");
-                tvAuthor.setTextColor(Color.parseColor("#673AB7"));
+                tvAuthor.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_pill_me_text));
                 btnEditEntry.setVisibility(View.VISIBLE);
             } else {
                 String displayAuthor = PartnerName.isKnown(this) ? PartnerName.get(this)
                         : (authorName != null ? authorName : "Partner");
                 tvAuthor.setText("By: " + displayAuthor);
-                tvAuthor.setTextColor(Color.parseColor("#166534"));
+                tvAuthor.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_pill_partner_text));
                 tvAuthor.setBackgroundResource(R.drawable.pill_partner);
                 btnEditEntry.setVisibility(View.GONE);
             }

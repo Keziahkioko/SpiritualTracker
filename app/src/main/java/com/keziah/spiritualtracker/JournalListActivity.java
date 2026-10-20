@@ -122,7 +122,7 @@ public class JournalListActivity extends AppCompatActivity {
                 chip.setTypeface(null, Typeface.BOLD);
             } else {
                 chip.setBackgroundResource(R.drawable.chip_inactive);
-                chip.setTextColor(0xFF7E57C2);
+                chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_accent));
                 chip.setTypeface(null, Typeface.NORMAL);
             }
         }
@@ -139,10 +139,12 @@ public class JournalListActivity extends AppCompatActivity {
         android.widget.ImageView closeIcon = binding.searchView
                 .findViewById(androidx.appcompat.R.id.search_close_btn);
 
-        et.setTextColor(0xFF1A1A2E);
-        et.setHintTextColor(0xFF6E6E73);
-        if (searchIcon != null) searchIcon.setColorFilter(0xFF9E9E9E);
-        if (closeIcon  != null) closeIcon .setColorFilter(0xFF9E9E9E);
+        et.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_text));
+        et.setHintTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.st_text_3));
+        if (searchIcon != null) searchIcon.setColorFilter(androidx.core.content.ContextCompat.getColor(this, R.color.st_text_3));
+        if (closeIcon  != null) closeIcon .setColorFilter(androidx.core.content.ContextCompat.getColor(this, R.color.st_text_3));
+        android.view.View plate = binding.searchView.findViewById(androidx.appcompat.R.id.search_plate);
+        if (plate != null) plate.setBackgroundColor(android.graphics.Color.TRANSPARENT); // no underline
 
         binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override public boolean onQueryTextSubmit(String q)  { return false; }

@@ -18,4 +18,12 @@
     <color name="st_success">#7BCB98</color>
     <color name="st_scrim">#99000000</color>
     <color name="st_bubble_theirs">#332C3D</color>  <!-- the other person's chat bubble -->
+    <!-- Journal author / draft pills -->
+    <color name="st_pill_me">#3A2E52</color>
+    <color name="st_pill_me_text">#D7C4FF</color>
+    <color name="st_pill_partner">#1E3A2A</color>
+    <color name="st_pill_partner_text">#8ADBA6</color>
+    <color name="st_pill_draft">#3F3120</color>
+    <color name="st_pill_draft_text">#F2C077</color>
+    <color name="st_danger_soft">#4A2328</color>  <!-- soft red behind a delete icon -->
 </resources>

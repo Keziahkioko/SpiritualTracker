@@ -10,5 +10,5 @@
     android:fontFamily="serif"
     android:textSize="18sp"
     android:textStyle="bold"
-    android:textColor="#4A148C"
+    android:textColor="@color/st_accent_strong"
     android:text="Today"/>
