@@ -32,6 +32,6 @@
     <color name="st_danger_soft">#FEE7E6</color>  <!-- soft red behind a delete icon -->
     <color name="st_partner">#3A66D1</color>  <!-- the partner's colour -->
     <color name="st_mastered">#8E2C9E</color>  <!-- a mastered verse -->
-    <color name="st_soft_button">#EDE5F8</color>  <!-- everyday main buttons -->
-    <color name="st_soft_button_text">#5E35B1</color>
+    <color name="st_soft_button">#DDCEF6</color>  <!-- everyday main buttons -->
+    <color name="st_soft_button_text">#4A2C8F</color>
 </resources>
